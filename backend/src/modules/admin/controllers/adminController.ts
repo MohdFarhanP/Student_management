@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AdminRepository } from "../repositories/adminRepository";
-import { LoginUseCase } from "../useCases/loginUseCase";
+import { LoginUseCase } from "../useCases/login/loginUseCase";
 
 const adminRepository = new AdminRepository();
 const loginUseCase = new LoginUseCase(adminRepository);

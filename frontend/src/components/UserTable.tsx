@@ -3,9 +3,6 @@ import React from 'react';
 const UserTable: React.FC = () => {
   return (
     <>
-      <div className='flex justify-end mr-20 pb-1'>
-        <button className="btn btn-primary btn-sm">Add Classes</button>
-      </div>
       <div className="relative mx-auto max-w-4xl overflow-x-auto shadow-md sm:rounded-lg">
         {/* Table */}
         <table className="w-full text-left text-xs text-gray-500 dark:text-gray-400">
@@ -81,10 +78,7 @@ const UserTable: React.FC = () => {
           </tbody>
         </table>
       </div>
-      <div className="join flex sm:justify-end pt-2 mr-20">
-        <button className="join-item btn btn-outline btn-sm">Previous page</button>
-        <button className="join-item btn btn-outline btn-sm">Next</button>
-      </div>
+      
     </>
   );
 };

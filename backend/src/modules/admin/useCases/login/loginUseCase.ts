@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { AdminRepository } from "../repositories/adminRepository";
+import { AdminRepository } from "../../repositories/adminRepository";
 
 import dotenv from "dotenv";
 dotenv.config();
