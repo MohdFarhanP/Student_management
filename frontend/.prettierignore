@@ -1,0 +1,7 @@
+# Ignore built files
+node_modules
+dist
+build
+coverage
+package-lock.json
+*.log
