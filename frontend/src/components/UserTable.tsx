@@ -1,85 +1,55 @@
-import React from 'react';
+import { IClassData } from '../api/adminApi';
+import EditClassModal from './EditClassModal';
 
-const UserTable: React.FC = () => {
+interface UserTableProps {
+  data?: IClassData[];
+}
+
+const UserTable = ({ data = [] }: UserTableProps) => {
+  if (!data || data.length === 0) {
+    return (
+      <p className="mt-4 text-center text-lg font-semibold text-gray-500">
+        No classes available.
+      </p>
+    );
+  }
+
   return (
-    <>
-      <div className="relative mx-auto max-w-4xl overflow-x-auto shadow-md sm:rounded-lg">
-        {/* Table */}
-        <table className="w-full text-left text-xs text-gray-500 dark:text-gray-400">
-          <thead className="bg-gray-50 text-xs uppercase dark:bg-gray-700 dark:text-gray-400">
-            <tr className="pb-4">
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Position</th>
-              <th className="px-4 py-2">Status</th>
-              <th className="px-4 py-2">Action</th>
+    <div className="relative mx-auto mt-6 max-w-5xl overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+      {/* Table */}
+      <table className="w-full table-auto border-collapse">
+        {/* Table Header */}
+        <thead className="bg-gray-100 text-gray-700">
+          <tr className="text-sm font-semibold uppercase">
+            <th className="px-5 py-3 text-left">Class Name</th>
+            <th className="px-5 py-3 text-left">Room No</th>
+            <th className="px-5 py-3 text-left">Total Students</th>
+            <th className="px-5 py-3 text-left">Grade</th>
+            <th className="px-5 py-3 text-left">Tutor</th>
+            <th className="px-5 py-3 text-center">Actions</th>
+          </tr>
+        </thead>
+
+        {/* Table Body */}
+        <tbody className="divide-y divide-gray-200">
+          {data.map((cls: IClassData) => (
+            <tr
+              key={cls.id}
+              className="transition duration-200 hover:bg-gray-50"
+            >
+              <td className="px-5 py-4 text-gray-900">{cls.name}</td>
+              <td className="px-5 py-4 text-gray-700">{cls.roomNo}</td>
+              <td className="px-5 py-4 text-gray-700">{cls.totalStudents}</td>
+              <td className="px-5 py-4 text-gray-700">{cls.grade}</td>
+              <td className="px-5 py-4 text-gray-700">{cls.tutor}</td>
+              <td className="px-5 py-4 text-center">
+                <EditClassModal classData={cls} />
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {[
-              {
-                name: 'Neil Sims',
-                email: 'neil.sims@flowbite.com',
-                position: 'React Developer',
-                status: 'Online',
-                img: '/docs/images/people/profile-picture-1.jpg',
-              },
-              {
-                name: 'Bonnie Green',
-                email: 'bonnie@flowbite.com',
-                position: 'Designer',
-                status: 'Online',
-                img: '/docs/images/people/profile-picture-3.jpg',
-              },
-              {
-                name: 'Jese Leos',
-                email: 'jese@flowbite.com',
-                position: 'Vue JS Developer',
-                status: 'Online',
-                img: '/docs/images/people/profile-picture-2.jpg',
-              },
-              {
-                name: 'Thomas Lean',
-                email: 'thomes@flowbite.com',
-                position: 'UI/UX Engineer',
-                status: 'Online',
-                img: '/docs/images/people/profile-picture-5.jpg',
-              },
-              {
-                name: 'Leslie Livingston',
-                email: 'leslie@flowbite.com',
-                position: 'SEO Specialist',
-                status: 'Offline',
-                img: '/docs/images/people/profile-picture-4.jpg',
-              },
-            ].map((user, index) => (
-              <tr
-                key={index}
-                className="border-b bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-600"
-              >
-                <td className="flex items-center px-4 py-2">
-                  <div className="font-semibold">{user.name}</div>
-                </td>
-                <td className="px-4 py-2">{user.position}</td>
-                <td className="px-4 py-2">
-                  <div className="flex items-center">
-                    <span
-                      className={`h-2 w-2 rounded-full ${user.status === 'Online' ? 'bg-green-500' : 'bg-red-500'} mr-1`}
-                    />
-                    {user.status}
-                  </div>
-                </td>
-                <td className="px-4 py-2">
-                  <a href="#" className="text-blue-600 hover:underline">
-                    Edit
-                  </a>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      
-    </>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };
 

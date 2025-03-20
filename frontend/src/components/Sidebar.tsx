@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FiHome, FiUser, FiSettings, FiLogOut, FiMenu } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { RootState } from '../redux/store';
+import { logout } from '../redux/slices/authSlice';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
+  const dispatch = useDispatch();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const menuItems = [
@@ -11,6 +15,20 @@ const Sidebar = () => {
     { name: 'Class Management', path: '/admin/class', icon: <FiUser /> },
     { name: 'Settings', path: '/admin/settings', icon: <FiSettings /> },
   ];
+  const handleClick = () => {
+    console.log('handling click');
+    dispatch(logout());
+    console.log();
+  };
+
+  const { user } = useSelector((state: RootState) => state.auth);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
   return (
     <div
@@ -46,6 +64,7 @@ const Sidebar = () => {
       <div className="absolute bottom-6 left-5 flex cursor-pointer items-center gap-4 rounded-md p-3 hover:bg-[#F6F6F6]">
         <FiLogOut className="text-xl" />
         <span className={`${!isOpen && 'hidden'} duration-200`}>Logout</span>
+        <button onClick={handleClick}>logout</button>
       </div>
     </div>
   );

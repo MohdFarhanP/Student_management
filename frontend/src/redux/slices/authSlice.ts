@@ -3,14 +3,12 @@ import { adminLogin } from '../../api/adminApi';
 
 interface AuthState {
   user: string | null;
-  token: string | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: AuthState = {
   user: null,
-  token: null,
   loading: false,
   error: null,
 };
@@ -38,7 +36,7 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
-      state.token = null;
+      console.log('store');
     },
   },
   extraReducers: (builder) => {
@@ -49,8 +47,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.user = action.payload.email;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
