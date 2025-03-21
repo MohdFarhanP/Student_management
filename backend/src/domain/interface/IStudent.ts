@@ -6,10 +6,9 @@ export interface IStudent extends mongoose.Document {
   password: string;
   age: number;
   gender: 'Male' | 'Female';
-  phoneNo: number;
   roleNumber: string;
-  class: mongoose.Types.ObjectId;
-  subjectIds: mongoose.Types.ObjectId[];
+  class?: mongoose.Types.ObjectId | null;
+  subjectIds?: mongoose.Types.ObjectId[];
   dob: string;
   profileImage?: string;
   address: {
@@ -19,9 +18,8 @@ export interface IStudent extends mongoose.Document {
     pincode: number;
     phoneNo: number;
     guardianName: string;
-    guardianContact?: number;
+    guardianContact?: number | null;
   };
-  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

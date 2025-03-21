@@ -8,10 +8,9 @@ const StudentSchema = new Schema<IStudent>(
     password: { type: String, required: true },
     age: { type: Number, required: true },
     gender: { type: String, enum: ['Male', 'Female'], required: true },
-    phoneNo: { type: Number, required: true },
     roleNumber: { type: String, required: true, unique: true },
-    class: { type: Schema.Types.ObjectId, ref: 'Class', required: true },
-    subjectIds: [{ type: Schema.Types.ObjectId, ref: 'Subject' }],
+    class: { type: Schema.Types.ObjectId, ref: 'Class', default: null },
+    subjectIds: [{ type: Schema.Types.ObjectId, ref: 'Subject', default: [] }],
     dob: { type: String, required: true },
     profileImage: { type: String, default: '' },
     address: {
@@ -23,7 +22,6 @@ const StudentSchema = new Schema<IStudent>(
       guardianName: { type: String, required: true },
       guardianContact: { type: Number, default: null },
     },
-    isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
