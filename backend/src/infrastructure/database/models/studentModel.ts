@@ -20,7 +20,7 @@ const StudentSchema = new Schema<IStudent>(
       pincode: { type: Number, required: true },
       phoneNo: { type: Number, required: true },
       guardianName: { type: String, required: true },
-      guardianContact: { type: Number, default: null },
+      guardianContact: { type: String, default: null },
     },
   },
   { timestamps: true }

@@ -17,14 +17,16 @@ interface TeacherExcelRow {
 export class TeacherExcelParser implements IExcelParser<Teacher> {
   parse(buffer: Buffer): Teacher[] {
     const workbook = xlsx.read(buffer, { type: 'buffer' });
-    console.log('Available sheets:', workbook.SheetNames);
 
+    if (!workbook.Sheets['Teachers']) {
+      throw new Error('Sheet name should be Teachers ');
+    }
     const sheet = workbook.Sheets['Teachers'];
+
     if (!sheet) throw new Error('No "Teachers" sheet found');
 
     const data: TeacherExcelRow[] =
       xlsx.utils.sheet_to_json<TeacherExcelRow>(sheet);
-    console.log('Parsed Excel Data:', data);
 
     return data.map((t) => {
       return new Teacher({

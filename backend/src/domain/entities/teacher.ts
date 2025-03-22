@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
 
 export class Teacher {
+  id?: string;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   gender: 'Male' | 'Female';
   phoneNo: number;
   empId: string;
@@ -14,13 +15,11 @@ export class Teacher {
   specialization?: string;
   experienceYears?: number;
   qualification?: string;
-  createdAt: Date;
-  updatedAt: Date;
 
   constructor(data: Partial<Teacher>) {
+    this.id = data.id;
     this.name = data.name || 'Unknown';
     this.email = data.email || '';
-    this.password = data.password || 'defaultPassword123';
     this.gender = data.gender || 'Male';
     this.phoneNo = data.phoneNo || 0;
     this.empId = data.empId || '';
@@ -31,7 +30,5 @@ export class Teacher {
     this.specialization = data.specialization || '';
     this.experienceYears = data.experienceYears || 0;
     this.qualification = data.qualification || '';
-    this.createdAt = new Date();
-    this.updatedAt = new Date();
   }
 }

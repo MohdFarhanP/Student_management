@@ -1,6 +1,9 @@
 import axios, { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { uploadToCloudinary } from '../utils/cloudinaryUpload';
+import { ITeacher } from '../pages/admin/Teacher';
+import { IStudent } from '../pages/admin/Student';
+
 export const ADMIN_API_URL = `http://localhost:5000/api/admin`;
 
 interface ICredintials {
@@ -160,10 +163,130 @@ export const getSubjectsByClass = async (cls: string) => {
     );
 
     return response.data;
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof AxiosError) {
       toast.error(error.response?.data?.message || 'Error adding subject');
     }
     return null;
   }
 };
+export const studentsBulkUpload = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await axios.post(
+      `${ADMIN_API_URL}/upload/students/bulk-upload`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true,
+      }
+    );
+
+    toast.success(response.data?.message);
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      toast.error(error.response?.data?.message || 'Error adding students');
+      console.log(error);
+    }
+    return null;
+  }
+};
+export const teachersBulkUpload = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await axios.post(
+      `${ADMIN_API_URL}/upload/teachers/bulk-upload`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true,
+      }
+    );
+
+    toast.success(response.data?.message);
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      toast.error(error.response?.data?.message || 'Error adding teachers');
+      console.log(error);
+    }
+    return null;
+  }
+};
+export const getTeachers = async (page: number, limit: number) => {
+  try {
+    const response = await axios.get(`${ADMIN_API_URL}/teacher/allTeachers`, {
+      params: {
+        page,
+        limit,
+      },
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      toast.error(error.response?.data?.message || 'Error on getting teachers');
+      console.log(error);
+    }
+    return null;
+  }
+};
+export const getStudents = async (page: number, limit: number) => {
+  try {
+    const response = await axios.get(`${ADMIN_API_URL}/student/allStudents`, {
+      params: {
+        page,
+        limit,
+      },
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      toast.error(error.response?.data?.message || 'Error on getting students');
+      console.log(error);
+    }
+    return null;
+  }
+};
+export const editStudents = async (studnetId: string, data: IStudent) => {
+  try {
+    const response = await axios.put(`${ADMIN_API_URL}/teacher/teacherById${studnetId}`,data,{
+      withCredentials:true
+    });
+    console.log('API Response:', response.data);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const message = error.response?.data?.message || 'Error updating teacher';
+      toast.error(message);
+      console.log('API Error:', error);
+      throw new Error(message);
+    }
+    throw error;
+  }
+}
+export const editTeacher = async (teacherId: string, data: ITeacher) => {
+  try {
+    const response = await axios.put(`${ADMIN_API_URL}/teacher/teacherById${teacherId}`,data,{
+      withCredentials:true
+    });
+    console.log('API Response:', response.data);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const message = error.response?.data?.message || 'Error updating teacher';
+      toast.error(message);
+      console.log('API Error:', error);
+      throw new Error(message);
+    }
+    throw error;
+  }
+}

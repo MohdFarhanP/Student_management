@@ -5,7 +5,7 @@ import { fetchClasses } from '../../redux/slices/classSlice';
 import PaginationButton from '../../components/PaginationButton';
 import Modal from '../../components/Modal';
 import AdminSideBar from '../../components/AdminSideBar';
-import UserTable from '../../components/UserTable';
+import ClassTable from '../../components/ClassTable';
 
 const Class = () => {
   const [page, setPage] = useState(1);
@@ -24,20 +24,17 @@ const Class = () => {
 
   return (
     <div className="flex bg-white">
-      {/* Sidebar */}
       <AdminSideBar />
 
-      {/* Main Content */}
       <div className="flex flex-1 flex-col px-6 py-4">
         <h1 className="mb-4 text-2xl font-bold text-gray-800">Classes</h1>
 
-        {/* Add Class Button */}
         <div className="mb-4 flex justify-end">
           <Modal />
         </div>
 
         {/* Class Table */}
-        <UserTable data={classes ?? []} />
+        <ClassTable data={classes ?? []} />
 
         {/* Pagination */}
         <PaginationButton

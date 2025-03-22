@@ -5,7 +5,7 @@ interface UserTableProps {
   data?: IClassData[];
 }
 
-const UserTable = ({ data = [] }: UserTableProps) => {
+const ClassTable = ({ data = [] }: UserTableProps) => {
   if (!data || data.length === 0) {
     return (
       <p className="mt-4 text-center text-lg font-semibold text-gray-500">
@@ -53,4 +53,4 @@ const UserTable = ({ data = [] }: UserTableProps) => {
   );
 };
 
-export default UserTable;
+export default ClassTable;

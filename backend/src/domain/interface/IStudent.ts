@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 export interface IStudent extends mongoose.Document {
+  id?: string;
   name: string;
   email: string;
   password: string;
@@ -18,7 +19,7 @@ export interface IStudent extends mongoose.Document {
     pincode: number;
     phoneNo: number;
     guardianName: string;
-    guardianContact?: number | null;
+    guardianContact?: string | null;
   };
   createdAt: Date;
   updatedAt: Date;

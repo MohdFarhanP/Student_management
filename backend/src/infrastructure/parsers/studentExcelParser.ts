@@ -25,12 +25,16 @@ interface StudentExcelRow {
 export class StudentExcelParser implements IExcelParser<Student> {
   parse(buffer: Buffer): Student[] {
     const workbook = xlsx.read(buffer, { type: 'buffer' });
+
+    if (!workbook.Sheets['Students']) {
+      throw new Error('Sheet name should be Students ');
+    }
     const sheet = workbook.Sheets['Students'];
+
     if (!sheet) throw new Error('No "Students" sheet found');
 
     const data: StudentExcelRow[] =
       xlsx.utils.sheet_to_json<StudentExcelRow>(sheet);
-    console.log('Parsed Excel Data:', data);
 
     return data.map(
       (s) =>

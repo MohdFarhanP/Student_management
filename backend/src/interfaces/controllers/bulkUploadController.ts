@@ -3,7 +3,7 @@ import { BulkUploadStudentUseCase } from '../../application/useCases/student/bul
 import { BulkUploadTeacherUseCase } from '../../application/useCases/teacher/bulkUploadTeachersUseCase.js';
 import { StudentRepository } from '../../infrastructure/repositories/studentRepository.js';
 import { TeacherRepository } from '../../infrastructure/repositories/teacherRepository.js';
-import { StudentExcelParser } from '../../infrastructure/parsers/StudentExcelParser.js';
+import { StudentExcelParser } from '../../infrastructure/parsers/studentExcelParser.js';
 import { TeacherExcelParser } from '../../infrastructure/parsers/teacherExcelParser.js';
 
 export class BulkUploadController {
@@ -35,13 +35,26 @@ export class BulkUploadController {
         studentsAdded: studentResult.studentsAdded,
       });
       return;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Student bulk upload error:', error);
-      res.status(500).json({ message: 'Internal Server Error' });
-      return;
+
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const mongoError = error as { code: number };
+
+        if (mongoError.code === 11000) {
+          res
+            .status(400)
+            .json({ message: 'Some students already exist in the database.' });
+          return;
+        }
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Internal Server Error';
+
+      res.status(500).json({ message: errorMessage });
     }
   }
-
   async uploadTeachers(req: Request, res: Response) {
     try {
       if (!req.file) {
@@ -56,10 +69,23 @@ export class BulkUploadController {
         teachersAdded: teacherResult.teachersAdded,
       });
       return;
-    } catch (error) {
-      console.error('Teacher bulk upload error:', error);
-      res.status(500).json({ message: 'Internal Server Error' });
-      return;
+    } catch (error: unknown) {
+      console.error('Student bulk upload error:', error);
+
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const mongoError = error as { code: number };
+
+        if (mongoError.code === 11000) {
+          res
+            .status(400)
+            .json({ message: 'Some teachers already exist in the database.' });
+          return;
+        }
+      }
+      const errorMessage =
+        error instanceof Error ? error.message : 'Internal Server Error';
+
+      res.status(500).json({ message: errorMessage });
     }
   }
 }

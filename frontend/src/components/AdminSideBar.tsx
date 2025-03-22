@@ -4,7 +4,7 @@ import { MdDashboard, MdPeople, MdSchool, MdLogout } from 'react-icons/md';
 import { GiNotebook } from 'react-icons/gi';
 import { FaSchool } from 'react-icons/fa';
 import { adminLogout } from '../api/adminApi';
-import { useDispatch  } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
 
 const AdminSideBar = () => {
@@ -13,7 +13,7 @@ const AdminSideBar = () => {
   const dispatch = useDispatch();
 
   const handleLogout = async () => {
-    dispatch(logout())
+    dispatch(logout());
     await adminLogout();
     navigate('/login');
   };
@@ -27,12 +27,12 @@ const AdminSideBar = () => {
     {
       name: 'Students',
       icon: <MdPeople size={22} />,
-      path: '#',
+      path: '/admin/students',
     },
     {
       name: 'Teachers',
       icon: <MdSchool size={22} />,
-      path: '#',
+      path: '/admin/teachers',
     },
     {
       name: 'Class',

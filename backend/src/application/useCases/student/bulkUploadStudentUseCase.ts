@@ -9,10 +9,17 @@ export class BulkUploadStudentUseCase {
   ) {}
 
   async execute(fileBuffer: Buffer) {
-    const students = this.studentParser.parse(fileBuffer);
-    if (students.length > 0) {
-      await this.studentRepo.insertMany(students);
+    try {
+      const students = this.studentParser.parse(fileBuffer);
+      if (students.length > 0) {
+        await this.studentRepo.insertMany(students);
+      }
+      return { studentsAdded: students.length };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'Error processing student upload');
+      }
+      throw new Error('An unknown error occurred during bulk upload');
     }
-    return { studentsAdded: students.length };
   }
 }

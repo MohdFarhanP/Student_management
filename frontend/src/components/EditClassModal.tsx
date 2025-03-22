@@ -138,7 +138,7 @@ const EditClassModal = ({ classData }: { classData: IClassData }) => {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                      className="mt-1 w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none"
                       placeholder="Type class name"
                       readOnly
                       disabled
@@ -158,7 +158,7 @@ const EditClassModal = ({ classData }: { classData: IClassData }) => {
                       name="section"
                       value={formData.section}
                       onChange={handleChange}
-                      className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                      className="mt-1 w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none"
                     >
                       <option value="">Select section</option>
                       {[...Array(10)].map((_, i) => (
@@ -182,7 +182,7 @@ const EditClassModal = ({ classData }: { classData: IClassData }) => {
                       name="section"
                       value={formData.section}
                       onChange={handleChange}
-                      className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                      className="mt-1 w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none"
                     >
                       <option value="">Select Grade</option>
                       {['A', 'B', 'C', 'D', 'E'].map((grade) => (
@@ -207,7 +207,7 @@ const EditClassModal = ({ classData }: { classData: IClassData }) => {
                       name="roomNo"
                       value={formData.roomNo}
                       onChange={handleChange}
-                      className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                      className="mt-1 w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none"
                       placeholder="Room Number"
                       min={0}
                     />
@@ -226,7 +226,7 @@ const EditClassModal = ({ classData }: { classData: IClassData }) => {
                       name="tutor"
                       value={formData.tutor}
                       onChange={handleChange}
-                      className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                      className="mt-1 w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none"
                     >
                       <option value="">Select Tutor</option>
                       {[

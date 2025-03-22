@@ -1,4 +1,5 @@
 export class Student {
+  id?: string;
   name: string;
   email: string;
   roleNumber: string;
@@ -7,7 +8,7 @@ export class Student {
   age: number;
   class?: string | null;
   subjectIds?: string[];
-  password: string;
+  password?: string;
   profileImage?: string;
   address: {
     houseName: string;
@@ -20,6 +21,7 @@ export class Student {
   };
 
   constructor(data: Partial<Student>) {
+    this.id = data.id;
     this.name = data.name || 'Unknown';
     this.email = data.email || '';
     this.roleNumber = data.roleNumber || '';
@@ -28,7 +30,6 @@ export class Student {
     this.age = data.age || 0;
     this.class = data.class || null;
     this.subjectIds = data.subjectIds || [];
-    this.password = data.password || 'defaultPassword123';
     this.profileImage = data.profileImage || '';
     this.address = {
       houseName: data.address?.houseName || '',
