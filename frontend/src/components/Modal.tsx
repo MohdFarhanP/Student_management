@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CiCirclePlus } from 'react-icons/ci';
 import { createClass } from '../redux/slices/classSlice';
-import { IClassData } from '../api/adminApi';
+import { getTeachersNames, IClassData } from '../api/adminApi';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../redux/store';
 
@@ -12,9 +12,13 @@ interface FormFields {
   roomNo?: string;
   tutor?: string;
 }
-
+interface Teacher {
+  name:string;
+  id:string
+}
 const Modal = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [formData, setFormData] = useState<IClassData>({
     name: '',
     grade: '',
@@ -32,10 +36,20 @@ const Modal = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
+    const fetchTeachers = async () => {
+      const responseTeachers = await getTeachersNames();
+      if (responseTeachers) {
+        setTeachers(responseTeachers);
+      }
+    };
+    fetchTeachers();
+  }, []);
+
+  useEffect(() => {
     if (formData.grade && formData.section) {
       setFormData((prev) => ({
         ...prev,
-        name: `${formData.grade}${formData.section} `,
+        name: `${formData.grade}${formData.section}`,
       }));
     } else {
       setFormData((prev) => ({
@@ -107,11 +121,11 @@ const Modal = () => {
       {isOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
-          onClick={toggleModal} // Close on overlay click
+          onClick={toggleModal}
         >
           <div
             className="relative max-h-screen w-full max-w-md overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()} // Prevent closing on modal click
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Modal header */}
             <div className="mb-4 flex items-center justify-between border-b pb-2">
@@ -152,7 +166,7 @@ const Modal = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                    className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
                     placeholder="Type product name"
                     readOnly
                     disabled
@@ -170,7 +184,7 @@ const Modal = () => {
                     name="grade"
                     value={formData.grade}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                    className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
                   >
                     <option value="">Select Grade</option>
                     {[...Array(10)].map((_, i) => (
@@ -192,7 +206,7 @@ const Modal = () => {
                     name="section"
                     value={formData.section}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                    className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
                   >
                     <option value="">Select Section</option>
                     {['A', 'B', 'C', 'D', 'E'].map((section) => (
@@ -215,7 +229,7 @@ const Modal = () => {
                     name="roomNo"
                     value={formData.roomNo}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                    className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
                     placeholder="Room Number"
                     min={0}
                   />
@@ -232,21 +246,11 @@ const Modal = () => {
                     name="tutor"
                     value={formData.tutor}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 p-2 focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                    className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
                   >
-                    <option value="">Select Tutor</option>
-                    {[
-                      'Ramesh',
-                      'Sumesh',
-                      'Gouthem',
-                      'Sujatha',
-                      'ManiKandan',
-                      'Sujesh',
-                      'Suhail',
-                      'Sabida',
-                    ].map((tutor) => (
-                      <option key={tutor} value={tutor}>
-                        {tutor}
+                    {teachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.name}
                       </option>
                     ))}
                   </select>

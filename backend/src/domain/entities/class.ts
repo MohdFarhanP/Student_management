@@ -36,7 +36,7 @@ export class ClassEntity {
       timetable as Types.ObjectId | null,
       students as Types.ObjectId[],
       totalStudents,
-      tutor.toString(),
+      tutor,
       roomNo,
       subjects as Types.ObjectId[],
       grade

@@ -6,7 +6,9 @@ interface ProfileCardProps {
   selectedStudent: IStudent;
 }
 
-const ProfileCardStudents: React.FC<ProfileCardProps> = ({ selectedStudent }) => {
+const ProfileCardStudents: React.FC<ProfileCardProps> = ({
+  selectedStudent,
+}) => {
   return (
     <div className="w-80 rounded-lg border border-gray-200 bg-white p-4 shadow-md">
       {/* Profile Image */}

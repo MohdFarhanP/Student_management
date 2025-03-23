@@ -1,10 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
-
-interface ISubject extends Document {
-  subjectName: string;
-  teachers: string[];
-  notes: string[];
-}
+import mongoose, { Schema } from 'mongoose';
+import { ISubject } from '../../../domain/interface/ISubject.js';
 
 const SubjectSchema = new Schema<ISubject>({
   subjectName: { type: String, required: true },

@@ -1,7 +1,6 @@
-import xlsx from '@e965/xlsx';
+import XLSX from '@e965/xlsx';
 import { IExcelParser } from '../../domain/interface/IExcelParser.js';
 import { Teacher } from '../../domain/entities/teacher.js';
-import mongoose from 'mongoose';
 
 interface TeacherExcelRow {
   name: string;
@@ -16,17 +15,9 @@ interface TeacherExcelRow {
 
 export class TeacherExcelParser implements IExcelParser<Teacher> {
   parse(buffer: Buffer): Teacher[] {
-    const workbook = xlsx.read(buffer, { type: 'buffer' });
-
-    if (!workbook.Sheets['Teachers']) {
-      throw new Error('Sheet name should be Teachers ');
-    }
-    const sheet = workbook.Sheets['Teachers'];
-
-    if (!sheet) throw new Error('No "Teachers" sheet found');
-
-    const data: TeacherExcelRow[] =
-      xlsx.utils.sheet_to_json<TeacherExcelRow>(sheet);
+    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json<TeacherExcelRow>(sheet);
 
     return data.map((t) => {
       return new Teacher({
@@ -36,8 +27,8 @@ export class TeacherExcelParser implements IExcelParser<Teacher> {
         gender: t.gender,
         phoneNo: t.phoneNo,
         dateOfBirth: t.dateOfBirth,
-        assignedClass: new mongoose.Types.ObjectId(t.assignedClass),
-        subject: new mongoose.Types.ObjectId(t.subject),
+        assignedClass: t.assignedClass,
+        subject: t.subject,
         password: 'defaultPassword123',
         profileImage: '',
         specialization: '',

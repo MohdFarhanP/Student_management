@@ -7,7 +7,7 @@ import EditStudentModal from '../../components/EditStudentModal';
 import StudentTable from '../../components/StudentTable';
 
 export interface IStudent {
-  id:string,
+  id: string;
   roleNumber: string;
   name: string;
   email: string;
@@ -75,7 +75,9 @@ const Student = () => {
             setPage={setPage}
           />
           {/* Profile Card */}
-          {selectedStudent && <ProfileCardStudents selectedStudent={selectedStudent} />}
+          {selectedStudent && (
+            <ProfileCardStudents selectedStudent={selectedStudent} />
+          )}
 
           {/*Edit modal */}
           {isOpen && selectedStudent && (

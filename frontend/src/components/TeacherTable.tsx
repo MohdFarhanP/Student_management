@@ -49,7 +49,7 @@ const TeacherTable = ({
                 </td>
                 <td className="px-5 py-4 text-center">
                   <button
-                    className="text-blue-500 hover:underline"
+                    className="btn btn-black btn-sm w-1/2 text-white"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedTeacher(teacher);

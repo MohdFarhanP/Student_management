@@ -5,7 +5,7 @@ const TeacherSchema = new Schema<ITeacher>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String },
     gender: { type: String, enum: ['Male', 'Female'], required: true },
     phoneNo: { type: Number, required: true },
     empId: { type: String, required: true, unique: true },
@@ -24,4 +24,4 @@ const TeacherSchema = new Schema<ITeacher>(
   { timestamps: true }
 );
 
-export const teacherModel = mongoose.model<ITeacher>('Teacher', TeacherSchema);
+export const TeacherModel = mongoose.model<ITeacher>('Teacher', TeacherSchema);

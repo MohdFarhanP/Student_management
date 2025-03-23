@@ -1,10 +1,10 @@
 import { IRepository } from '../../../domain/interface/IRepository.js';
 import { Teacher } from '../../../domain/entities/teacher.js';
 
-export class GetAllTeachersUseCase {
+export class GetTeachersByLimitUseCase {
   constructor(private teacherRepository: IRepository<Teacher>) {}
 
-  async execute(): Promise<{ data: Teacher[] }> {
-    return await this.teacherRepository.getAll();
+  async execute(page: number, limit: number) {
+    return await this.teacherRepository.getAllByLimit(page, limit);
   }
 }

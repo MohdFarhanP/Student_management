@@ -24,8 +24,7 @@ export class BulkUploadController {
   async uploadStudents(req: Request, res: Response) {
     try {
       if (!req.file) {
-        res.status(400).json({ message: 'No file uploaded' });
-        return;
+        return res.status(400).json({ message: 'No file uploaded' });
       }
 
       const studentResult = await this.studentUseCase.execute(req.file.buffer);
@@ -40,7 +39,6 @@ export class BulkUploadController {
 
       if (typeof error === 'object' && error !== null && 'code' in error) {
         const mongoError = error as { code: number };
-
         if (mongoError.code === 11000) {
           res
             .status(400)
@@ -51,8 +49,8 @@ export class BulkUploadController {
 
       const errorMessage =
         error instanceof Error ? error.message : 'Internal Server Error';
-
       res.status(500).json({ message: errorMessage });
+      return;
     }
   }
   async uploadTeachers(req: Request, res: Response) {
@@ -86,6 +84,7 @@ export class BulkUploadController {
         error instanceof Error ? error.message : 'Internal Server Error';
 
       res.status(500).json({ message: errorMessage });
+      return;
     }
   }
 }

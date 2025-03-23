@@ -50,14 +50,22 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
     const newErrors: { [key: string]: string } = {};
 
     // Consistent validation with trim() for strings
-    if (!String(formData.name || '').trim()) newErrors.name = 'Name is required';
-    if (!String(formData.email || '').trim()) newErrors.email = 'Email is required';
-    if (!String(formData.gender || '').trim()) newErrors.gender = 'Gender is required';
-    if (!formData.phoneNo || formData.phoneNo <= 0) newErrors.phoneNo = 'Valid phone number is required';
-    if (!String(formData.empId || '').trim()) newErrors.empId = 'Employee ID is required';
-    if (!String(formData.assignedClass || '').trim()) newErrors.assignedClass = 'Assigned Class is required';
-    if (!String(formData.subject || '').trim()) newErrors.subject = 'Subject is required';
-    if (!String(formData.dateOfBirth || '').trim()) newErrors.dateOfBirth = 'Date of Birth is required';
+    if (!String(formData.name || '').trim())
+      newErrors.name = 'Name is required';
+    if (!String(formData.email || '').trim())
+      newErrors.email = 'Email is required';
+    if (!String(formData.gender || '').trim())
+      newErrors.gender = 'Gender is required';
+    if (!formData.phoneNo || formData.phoneNo <= 0)
+      newErrors.phoneNo = 'Valid phone number is required';
+    if (!String(formData.empId || '').trim())
+      newErrors.empId = 'Employee ID is required';
+    if (!String(formData.assignedClass || '').trim())
+      newErrors.assignedClass = 'Assigned Class is required';
+    if (!String(formData.subject || '').trim())
+      newErrors.subject = 'Subject is required';
+    if (!String(formData.dateOfBirth || '').trim())
+      newErrors.dateOfBirth = 'Date of Birth is required';
 
     // Optional fields (only validate if required)
     // if (!String(formData.specialization || '').trim()) newErrors.specialization = 'Specialization is required';
@@ -75,7 +83,10 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
     const { name, value } = e.target;
 
     if (name === 'phoneNo' || name === 'experienceYears') {
-      setFormData((prevData) => ({ ...prevData, [name]: value ? parseInt(value) : 0 }));
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value ? parseInt(value) : 0,
+      }));
     } else {
       setFormData((prevData) => ({ ...prevData, [name]: value }));
     }
@@ -86,17 +97,17 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const isValid = validateForm();
-  
+
     if (!isValid) {
       console.log('Validation failed, errors:', errors);
       return;
     }
-  
+
     try {
       const updatedTeacher = await editTeacher(teacherData.id, formData);
       if (updatedTeacher) {
         console.log('Teacher updated successfully:', updatedTeacher);
-        onClose(); 
+        onClose();
       }
     } catch (error) {
       console.log('Failed to update teacher:', error);
@@ -105,10 +116,13 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="relative w-full max-w-3xl rounded-lg bg-white p-6 shadow-lg text-black">
+      <div className="relative w-full max-w-3xl rounded-lg bg-white p-6 text-black shadow-lg">
         <div className="flex items-center justify-between border-b border-gray-300 pb-4">
           <h3 className="text-xl font-semibold">Edit Teacher</h3>
-          <button onClick={onClose} className="text-gray-600 hover:text-black text-lg">
+          <button
+            onClick={onClose}
+            className="text-lg text-gray-600 hover:text-black"
+          >
             ✕
           </button>
         </div>
@@ -123,9 +137,11 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               value={formData.name}
               onChange={handleChange}
               placeholder="Name"
-              className="w-full rounded-md border p-2 bg-white text-black placeholder-gray-500"
+              className="w-full rounded-md border bg-white p-2 text-black placeholder-gray-500"
             />
-            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+            {errors.name && (
+              <p className="mt-1 text-xs text-red-500">{errors.name}</p>
+            )}
           </div>
 
           {/* Email */}
@@ -137,9 +153,11 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               value={formData.email}
               onChange={handleChange}
               placeholder="Email"
-              className="w-full rounded-md border p-2 bg-white text-black placeholder-gray-500"
+              className="w-full rounded-md border bg-white p-2 text-black placeholder-gray-500"
             />
-            {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+            {errors.email && (
+              <p className="mt-1 text-xs text-red-500">{errors.email}</p>
+            )}
           </div>
 
           {/* Gender */}
@@ -149,13 +167,15 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               name="gender"
               value={formData.gender}
               onChange={handleChange}
-              className="w-full rounded-md border p-2 bg-white text-black"
+              className="w-full rounded-md border bg-white p-2 text-black"
             >
               <option value="">Select Gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
             </select>
-            {errors.gender && <p className="text-xs text-red-500 mt-1">{errors.gender}</p>}
+            {errors.gender && (
+              <p className="mt-1 text-xs text-red-500">{errors.gender}</p>
+            )}
           </div>
 
           {/* Phone Number */}
@@ -167,9 +187,11 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               value={formData.phoneNo}
               onChange={handleChange}
               placeholder="Phone Number"
-              className="w-full rounded-md border p-2 bg-white text-black placeholder-gray-500"
+              className="w-full rounded-md border bg-white p-2 text-black placeholder-gray-500"
             />
-            {errors.phoneNo && <p className="text-xs text-red-500 mt-1">{errors.phoneNo}</p>}
+            {errors.phoneNo && (
+              <p className="mt-1 text-xs text-red-500">{errors.phoneNo}</p>
+            )}
           </div>
 
           {/* Employee ID */}
@@ -181,9 +203,11 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               value={formData.empId}
               onChange={handleChange}
               placeholder="Employee ID"
-              className="w-full rounded-md border p-2 bg-white text-black placeholder-gray-500"
+              className="w-full rounded-md border bg-white p-2 text-black placeholder-gray-500"
             />
-            {errors.empId && <p className="text-xs text-red-500 mt-1">{errors.empId}</p>}
+            {errors.empId && (
+              <p className="mt-1 text-xs text-red-500">{errors.empId}</p>
+            )}
           </div>
 
           {/* Assigned Class */}
@@ -195,10 +219,12 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               value={formData.assignedClass}
               onChange={handleChange}
               placeholder="Assigned Class"
-              className="w-full rounded-md border p-2 bg-white text-black placeholder-gray-500"
+              className="w-full rounded-md border bg-white p-2 text-black placeholder-gray-500"
             />
             {errors.assignedClass && (
-              <p className="text-xs text-red-500 mt-1">{errors.assignedClass}</p>
+              <p className="mt-1 text-xs text-red-500">
+                {errors.assignedClass}
+              </p>
             )}
           </div>
 
@@ -211,9 +237,11 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               value={formData.subject}
               onChange={handleChange}
               placeholder="Subject"
-              className="w-full rounded-md border p-2 bg-white text-black placeholder-gray-500"
+              className="w-full rounded-md border bg-white p-2 text-black placeholder-gray-500"
             />
-            {errors.subject && <p className="text-xs text-red-500 mt-1">{errors.subject}</p>}
+            {errors.subject && (
+              <p className="mt-1 text-xs text-red-500">{errors.subject}</p>
+            )}
           </div>
 
           {/* Date of Birth */}
@@ -224,10 +252,10 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               name="dateOfBirth"
               value={formData.dateOfBirth}
               onChange={handleChange}
-              className="w-full rounded-md border p-2 bg-white text-black"
+              className="w-full rounded-md border bg-white p-2 text-black"
             />
             {errors.dateOfBirth && (
-              <p className="text-xs text-red-500 mt-1">{errors.dateOfBirth}</p>
+              <p className="mt-1 text-xs text-red-500">{errors.dateOfBirth}</p>
             )}
           </div>
 
@@ -240,27 +268,33 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               value={formData.specialization}
               onChange={handleChange}
               placeholder="Specialization"
-              className="w-full rounded-md border p-2 bg-white text-black placeholder-gray-500"
+              className="w-full rounded-md border bg-white p-2 text-black placeholder-gray-500"
             />
             {errors.specialization && (
-              <p className="text-xs text-red-500 mt-1">{errors.specialization}</p>
+              <p className="mt-1 text-xs text-red-500">
+                {errors.specialization}
+              </p>
             )}
           </div>
 
           {/* Experience */}
           <div>
-            <label className="block text-sm font-medium">Experience (Years)</label>
+            <label className="block text-sm font-medium">
+              Experience (Years)
+            </label>
             <input
               type="number"
               name="experienceYears"
               value={formData.experienceYears}
               onChange={handleChange}
               placeholder="Experience Years"
-              className="w-full rounded-md border p-2 bg-white text-black placeholder-gray-500"
+              className="w-full rounded-md border bg-white p-2 text-black placeholder-gray-500"
               min="0"
             />
             {errors.experienceYears && (
-              <p className="text-xs text-red-500 mt-1">{errors.experienceYears}</p>
+              <p className="mt-1 text-xs text-red-500">
+                {errors.experienceYears}
+              </p>
             )}
           </div>
 
@@ -273,10 +307,12 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               value={formData.qualification}
               onChange={handleChange}
               placeholder="Qualification"
-              className="w-full rounded-md border p-2 bg-white text-black placeholder-gray-500"
+              className="w-full rounded-md border bg-white p-2 text-black placeholder-gray-500"
             />
             {errors.qualification && (
-              <p className="text-xs text-red-500 mt-1">{errors.qualification}</p>
+              <p className="mt-1 text-xs text-red-500">
+                {errors.qualification}
+              </p>
             )}
           </div>
 

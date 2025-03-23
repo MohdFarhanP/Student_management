@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import AdminSideBar from '../../components/AdminSideBar';
 import BulkUploadButton from '../../components/BulkUploadButton';
 import { getTeachers } from '../../api/adminApi'; // Replace with your actual API function
-import ProfileCardTeacher from '../../components/ProfileCardTeacher'; 
+import ProfileCardTeacher from '../../components/ProfileCardTeacher';
 import EditTeacherModal from '../../components/EditTeacherModal';
 import TeacherTable from '../../components/TeacherTable';
 
@@ -68,7 +68,9 @@ const Teacher = () => {
             setPage={setPage}
           />
           {/* Profile Card */}
-          {selectedTeacher && <ProfileCardTeacher selectedTeacher={selectedTeacher} />}
+          {selectedTeacher && (
+            <ProfileCardTeacher selectedTeacher={selectedTeacher} />
+          )}
 
           {/* Edit Modal */}
           {isOpen && selectedTeacher && (

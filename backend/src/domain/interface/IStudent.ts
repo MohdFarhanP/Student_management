@@ -9,7 +9,6 @@ export interface IStudent extends mongoose.Document {
   gender: 'Male' | 'Female';
   roleNumber: string;
   class?: mongoose.Types.ObjectId | null;
-  subjectIds?: mongoose.Types.ObjectId[];
   dob: string;
   profileImage?: string;
   address: {

@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 
 export class SubjectEntity {
   constructor(
-    public id: string = new Types.ObjectId().toString(), // Ensure it has an id
+    public id: string = new Types.ObjectId().toString(),
     public subjectName: string,
     public teachers: string[],
     public notes: string[] = []

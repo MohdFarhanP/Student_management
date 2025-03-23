@@ -222,7 +222,7 @@ export const teachersBulkUpload = async (file: File) => {
 };
 export const getTeachers = async (page: number, limit: number) => {
   try {
-    const response = await axios.get(`${ADMIN_API_URL}/teacher/allTeachers`, {
+    const response = await axios.get(`${ADMIN_API_URL}/teacher/teachers`, {
       params: {
         page,
         limit,
@@ -238,9 +238,24 @@ export const getTeachers = async (page: number, limit: number) => {
     return null;
   }
 };
+export const getTeachersNames = async () => {
+  try {
+    const response = await axios.get(`${ADMIN_API_URL}/teacher/allTeachers`, {
+      withCredentials: true,
+    });
+    console.log("response from api ",response.data)
+    return response.data.teachers;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      toast.error(error.response?.data?.message || 'Error on getting teachers');
+      console.log(error);
+    }
+    return null;
+  }
+};
 export const getStudents = async (page: number, limit: number) => {
   try {
-    const response = await axios.get(`${ADMIN_API_URL}/student/allStudents`, {
+    const response = await axios.get(`${ADMIN_API_URL}/student/students`, {
       params: {
         page,
         limit,
@@ -258,9 +273,13 @@ export const getStudents = async (page: number, limit: number) => {
 };
 export const editStudents = async (studnetId: string, data: IStudent) => {
   try {
-    const response = await axios.put(`${ADMIN_API_URL}/teacher/teacherById${studnetId}`,data,{
-      withCredentials:true
-    });
+    const response = await axios.put(
+      `${ADMIN_API_URL}/teacher/teacherById${studnetId}`,
+      data,
+      {
+        withCredentials: true,
+      }
+    );
     console.log('API Response:', response.data);
     return response.data;
   } catch (error: unknown) {
@@ -272,12 +291,16 @@ export const editStudents = async (studnetId: string, data: IStudent) => {
     }
     throw error;
   }
-}
+};
 export const editTeacher = async (teacherId: string, data: ITeacher) => {
   try {
-    const response = await axios.put(`${ADMIN_API_URL}/teacher/teacherById${teacherId}`,data,{
-      withCredentials:true
-    });
+    const response = await axios.put(
+      `${ADMIN_API_URL}/teacher/teacherById${teacherId}`,
+      data,
+      {
+        withCredentials: true,
+      }
+    );
     console.log('API Response:', response.data);
     return response.data;
   } catch (error: unknown) {
@@ -289,4 +312,4 @@ export const editTeacher = async (teacherId: string, data: ITeacher) => {
     }
     throw error;
   }
-}
+};

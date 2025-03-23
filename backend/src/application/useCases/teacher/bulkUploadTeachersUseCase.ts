@@ -11,9 +11,10 @@ export class BulkUploadTeacherUseCase {
   async execute(fileBuffer: Buffer) {
     try {
       const teachers = this.teacherParser.parse(fileBuffer);
-      if (teachers.length > 0) {
-        await this.teacherRepo.insertMany(teachers);
+      if (teachers.length === 0) {
+        throw new Error('No teachers found in the uploaded file');
       }
+      await this.teacherRepo.insertMany(teachers);
       return { teachersAdded: teachers.length };
     } catch (error: unknown) {
       if (error instanceof Error) {

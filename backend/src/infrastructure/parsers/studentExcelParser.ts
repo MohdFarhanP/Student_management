@@ -1,6 +1,6 @@
-import xlsx from '@e965/xlsx';
 import { IExcelParser } from '../../domain/interface/IExcelParser.js';
 import { Student } from '../../domain/entities/student.js';
+import XLSX from '@e965/xlsx';
 
 interface StudentExcelRow {
   name: string;
@@ -9,8 +9,7 @@ interface StudentExcelRow {
   dob: string;
   gender: 'Male' | 'Female';
   age: number;
-  className?: string;
-  subjectIds?: string;
+  class?: string;
   password?: string;
   profileImage?: string;
   houseName?: string;
@@ -24,41 +23,32 @@ interface StudentExcelRow {
 
 export class StudentExcelParser implements IExcelParser<Student> {
   parse(buffer: Buffer): Student[] {
-    const workbook = xlsx.read(buffer, { type: 'buffer' });
+    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet) as StudentExcelRow[];
 
-    if (!workbook.Sheets['Students']) {
-      throw new Error('Sheet name should be Students ');
-    }
-    const sheet = workbook.Sheets['Students'];
-
-    if (!sheet) throw new Error('No "Students" sheet found');
-
-    const data: StudentExcelRow[] =
-      xlsx.utils.sheet_to_json<StudentExcelRow>(sheet);
-
-    return data.map(
-      (s) =>
-        new Student({
-          name: s.name,
-          email: s.email,
-          roleNumber: s.roleNumber,
-          dob: s.dob,
-          gender: s.gender,
-          age: s.age,
-          class: s.className || null,
-          subjectIds: s.subjectIds ? s.subjectIds.split(',') : [],
-          password: s.password || 'defaultPassword123',
-          profileImage: s.profileImage || '',
-          address: {
-            houseName: s.houseName || '',
-            place: s.place || '',
-            district: s.district || '',
-            pincode: s.pincode || 0,
-            phoneNo: s.phoneNo || 0,
-            guardianName: s.guardianName || '',
-            guardianContact: s.guardianContact || null,
-          },
-        })
-    );
+    return rows.map((row) => {
+      const typedRow = row as StudentExcelRow;
+      return new Student({
+        name: typedRow.name,
+        email: typedRow.email,
+        roleNumber: typedRow.roleNumber,
+        dob: typedRow.dob,
+        gender: typedRow.gender,
+        age: typedRow.age,
+        class: typedRow.class || null,
+        password: typedRow.password || 'defaultPassword',
+        profileImage: typedRow.profileImage || '',
+        address: {
+          houseName: typedRow.houseName || '',
+          place: typedRow.place || '',
+          district: typedRow.district || '',
+          pincode: typedRow.pincode || 0,
+          phoneNo: typedRow.phoneNo || 0,
+          guardianName: typedRow.guardianName || '',
+          guardianContact: typedRow.guardianContact || null,
+        },
+      });
+    });
   }
 }

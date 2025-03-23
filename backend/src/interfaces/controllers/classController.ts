@@ -28,7 +28,7 @@ export class ClassController {
     try {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 5;
-      const { classes, totalCount } = await getAllClassesUseCase.execute(
+      const { data: classes, totalCount } = await getAllClassesUseCase.execute(
         page,
         limit
       );

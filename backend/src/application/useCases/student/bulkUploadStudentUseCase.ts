@@ -1,3 +1,4 @@
+// application/useCase/bulkUploadStudentUseCase.ts
 import { Student } from '../../../domain/entities/student.js';
 import { IRepository } from '../../../domain/interface/IRepository.js';
 import { IExcelParser } from '../../../domain/interface/IExcelParser.js';
@@ -11,9 +12,11 @@ export class BulkUploadStudentUseCase {
   async execute(fileBuffer: Buffer) {
     try {
       const students = this.studentParser.parse(fileBuffer);
-      if (students.length > 0) {
-        await this.studentRepo.insertMany(students);
+      if (students.length === 0) {
+        throw new Error('No students found in the uploaded file');
       }
+
+      await this.studentRepo.insertMany(students);
       return { studentsAdded: students.length };
     } catch (error: unknown) {
       if (error instanceof Error) {

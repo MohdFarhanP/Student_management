@@ -5,12 +5,11 @@ const StudentSchema = new Schema<IStudent>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String },
     age: { type: Number, required: true },
     gender: { type: String, enum: ['Male', 'Female'], required: true },
     roleNumber: { type: String, required: true, unique: true },
     class: { type: Schema.Types.ObjectId, ref: 'Class', default: null },
-    subjectIds: [{ type: Schema.Types.ObjectId, ref: 'Subject', default: [] }],
     dob: { type: String, required: true },
     profileImage: { type: String, default: '' },
     address: {

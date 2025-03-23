@@ -2,6 +2,7 @@ import { SubjectRepository } from '../../../infrastructure/repositories/subjectR
 import { ClassRepository } from '../../../infrastructure/repositories/classRepository.js';
 import { SubjectEntity } from '../../../domain/entities/subject.js';
 import { Types } from 'mongoose';
+import { ISubject } from '../../../domain/interface/ISubject.js';
 
 export class CreateSubjectUseCase {
   constructor(
@@ -9,7 +10,7 @@ export class CreateSubjectUseCase {
     private classRepository: ClassRepository
   ) {}
 
-  async execute(grade: string, subjectData: Omit<SubjectEntity, 'id'>) {
+  async execute(grade: string, subjectData: ISubject) {
     const classesInGrade = await this.classRepository.findByGrade(grade);
     console.log('CLASSES WITH GRADE:', classesInGrade);
 
