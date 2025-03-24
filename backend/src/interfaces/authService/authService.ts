@@ -13,7 +13,7 @@ export class AuthService {
   }
 
   static generateToken(payload: object): string {
-    const jwtSecret = process.env.JWT_SECRET as string;
+    const jwtSecret = (process.env.JWT_SECRET as string) || 'secret_key ';
     return jwt.sign(payload, jwtSecret, { expiresIn: '1h' });
   }
 }

@@ -1,7 +1,7 @@
 import { Student } from '../entities/student.js';
 
 export interface IStudentRepository {
-  insertMany(data: []): Promise<void>;
+  insertMany(data: Student[]): Promise<void>;
   getAll(
     page: number,
     limit: number

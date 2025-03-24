@@ -5,18 +5,22 @@ import { StudentRepository } from '../../infrastructure/repositories/studentRepo
 import { TeacherRepository } from '../../infrastructure/repositories/teacherRepository.js';
 import { StudentExcelParser } from '../../infrastructure/parsers/studentExcelParser.js';
 import { TeacherExcelParser } from '../../infrastructure/parsers/teacherExcelParser.js';
+import { IStudentRepository } from '../../domain/interface/IStudentRepository.js';
 
 export class BulkUploadController {
   private studentUseCase: BulkUploadStudentUseCase;
   private teacherUseCase: BulkUploadTeacherUseCase;
 
-  constructor() {
+  constructor(
+    studentRepository: IStudentRepository = new StudentRepository(),
+    teacherRepository: TeacherRepository = new TeacherRepository()
+  ) {
     this.studentUseCase = new BulkUploadStudentUseCase(
-      new StudentRepository(),
+      studentRepository,
       new StudentExcelParser()
     );
     this.teacherUseCase = new BulkUploadTeacherUseCase(
-      new TeacherRepository(),
+      teacherRepository,
       new TeacherExcelParser()
     );
   }
@@ -24,7 +28,8 @@ export class BulkUploadController {
   async uploadStudents(req: Request, res: Response) {
     try {
       if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
+        res.status(400).json({ message: 'No file uploaded' });
+        return;
       }
 
       const studentResult = await this.studentUseCase.execute(req.file.buffer);

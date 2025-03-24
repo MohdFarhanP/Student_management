@@ -1,5 +1,4 @@
 import { studentModel } from '../database/models/studentModel.js';
-import { IRepository } from '../../domain/interface/IRepository.js';
 import { Student } from '../../domain/entities/student.js';
 import { ClassModel } from '../database/models/classModel.js';
 import mongoose from 'mongoose';

@@ -1,5 +1,6 @@
 import { SubjectEntity } from '../../domain/entities/subject.js';
-import { ISubject, SubjectModel } from '../database/models/subjectModel.js';
+import { ISubject } from '../../domain/interface/ISubject.js';
+import { SubjectModel } from '../database/models/subjectModel.js';
 import { Types } from 'mongoose';
 
 export class SubjectRepository {

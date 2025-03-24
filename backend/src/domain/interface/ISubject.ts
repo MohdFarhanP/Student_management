@@ -1,6 +1,6 @@
-export interface ISubject extends Document {
-  id: string;
+export interface ISubject {
+  id?: string;
   subjectName: string;
   teachers: string[];
-  notes: string[];
+  notes?: string[];
 }

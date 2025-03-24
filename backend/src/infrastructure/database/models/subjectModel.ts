@@ -7,5 +7,4 @@ const SubjectSchema = new Schema<ISubject>({
   notes: { type: [String], default: [] },
 });
 
-const SubjectModel = mongoose.model<ISubject>('Subject', SubjectSchema);
-export { SubjectModel, ISubject };
+export const SubjectModel = mongoose.model<ISubject>('Subject', SubjectSchema);

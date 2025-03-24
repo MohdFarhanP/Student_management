@@ -1,11 +1,10 @@
-// application/useCase/bulkUploadStudentUseCase.ts
 import { Student } from '../../../domain/entities/student.js';
-import { IRepository } from '../../../domain/interface/IRepository.js';
 import { IExcelParser } from '../../../domain/interface/IExcelParser.js';
+import { IStudentRepository } from '../../../domain/interface/IStudentRepository.js';
 
 export class BulkUploadStudentUseCase {
   constructor(
-    private studentRepo: IRepository<Student>,
+    private studentRepo: IStudentRepository,
     private studentParser: IExcelParser<Student>
   ) {}
 
