@@ -5,14 +5,14 @@ const TeacherSchema = new Schema<ITeacher>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String },
+    password: { type: String }, // Optional
     gender: { type: String, enum: ['Male', 'Female'], required: true },
     phoneNo: { type: Number, required: true },
     empId: { type: String, required: true, unique: true },
     assignedClass: {
       type: Schema.Types.ObjectId,
       ref: 'Class',
-      required: true,
+      default: null, // Make optional
     },
     subject: { type: Schema.Types.ObjectId, ref: 'Subject', default: null },
     dateOfBirth: { type: String, required: true },
@@ -20,6 +20,7 @@ const TeacherSchema = new Schema<ITeacher>(
     specialization: { type: String, default: '' },
     experienceYears: { type: Number, default: 0 },
     qualification: { type: String, default: '' },
+    availability: { type: Object, required: true },
   },
   { timestamps: true }
 );

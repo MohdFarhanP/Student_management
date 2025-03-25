@@ -6,10 +6,12 @@ import { SubjectController } from '../controllers/subjectController.js';
 const router = express.Router();
 
 router.post('/class', ClassController.addClasses);
-router.get('/class', ClassController.getClasses);
+router.get('/classdata', ClassController.getClasses);
 router.put('/update/:id', ClassController.updateClass);
+router.get('/:classId/subject', SubjectController.fetchSubjectsByClassId);
 
 router.get('/classNames', ClassController.getAllClassNames);
+router.get('/classlist', ClassController.fetchClasses);
 router.post('/:grade/subjects', SubjectController.createSubject);
 router.get('/:grade/subjects', SubjectController.getClassSubjects);
 // router.put('/:classId/subjects/:subjectId', SubjectController.updateSubject);

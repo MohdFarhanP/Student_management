@@ -1,10 +1,10 @@
-import mongoose from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 export interface ITeacher extends Document {
-  _id?: string;
+  _id: mongoose.Types.ObjectId;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   gender: 'Male' | 'Female';
   phoneNo: number;
   empId: string;
@@ -17,4 +17,5 @@ export interface ITeacher extends Document {
   qualification?: string;
   createdAt: Date;
   updatedAt: Date;
+  availability: { [day: string]: number[] };
 }

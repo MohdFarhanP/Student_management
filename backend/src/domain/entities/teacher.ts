@@ -15,11 +15,13 @@ export class Teacher {
   specialization?: string;
   experienceYears?: number;
   qualification?: string;
+  availability: { [day: string]: number[] };
 
   constructor(data: Partial<Teacher>) {
     this.id = data.id;
     this.name = data.name || 'Unknown';
     this.email = data.email || '';
+    this.password = data.password;
     this.gender = data.gender || 'Male';
     this.phoneNo = data.phoneNo || 0;
     this.empId = data.empId || '';
@@ -30,5 +32,12 @@ export class Teacher {
     this.specialization = data.specialization || '';
     this.experienceYears = data.experienceYears || 0;
     this.qualification = data.qualification || '';
+    this.availability = data.availability || {
+      Monday: [],
+      Tuesday: [],
+      Wednesday: [],
+      Thursday: [],
+      Friday: [],
+    };
   }
 }

@@ -6,6 +6,7 @@ import { FaSchool } from 'react-icons/fa';
 import { adminLogout } from '../api/adminApi';
 import { useDispatch } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
+import { BsTable } from 'react-icons/bs';
 
 const AdminSideBar = () => {
   const [active, setActive] = useState<string>('');
@@ -43,6 +44,11 @@ const AdminSideBar = () => {
       name: 'Subject',
       icon: <GiNotebook size={22} />,
       path: '/admin/subject',
+    },
+    {
+      name: 'TimeTable',
+      icon: <BsTable size={22} />,
+      path: '/admin/timetable',
     },
   ];
 

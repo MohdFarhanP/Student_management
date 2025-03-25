@@ -1,7 +1,8 @@
 import { AxiosError } from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ImSpinner2 } from 'react-icons/im';
+import { getTeachersNames } from '../api/adminApi';
 
 interface AddSubjectModalProps {
   isOpen: boolean;
@@ -12,6 +13,10 @@ interface AddSubjectModalProps {
     notes: File[];
   }) => void;
 }
+interface Teacher {
+  name: string;
+  id: string;
+}
 
 const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   isOpen,
@@ -21,7 +26,18 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   const [subjectName, setSubjectName] = useState('');
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   const [notesFiles, setNotesFiles] = useState<File[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      const responseTeachers = await getTeachersNames();
+      if (responseTeachers) {
+        setTeachers(responseTeachers);
+      }
+    };
+    fetchTeachers();
+  }, []);
 
   if (!isOpen) return null;
 
@@ -105,18 +121,18 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
             Select Teachers
           </label>
           <div className="mt-1 flex flex-wrap gap-2">
-            {['Teacher A', 'Teacher B', 'Teacher C'].map((teacher) => (
+            {teachers.map((teacher) => (
               <button
-                key={teacher}
+                key={teacher.id}
                 type="button"
-                onClick={() => handleTeacherSelection(teacher)}
+                onClick={() => handleTeacherSelection(teacher.name)}
                 className={`rounded-md px-3 py-1 text-sm ${
-                  selectedTeachers.includes(teacher)
+                  selectedTeachers.includes(teacher.name)
                     ? 'bg-black text-white'
                     : 'bg-gray-200 text-gray-800'
                 }`}
               >
-                {teacher}
+                {teacher.name}
               </button>
             ))}
           </div>

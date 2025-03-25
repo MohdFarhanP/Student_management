@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { IClassData } from '../api/adminApi';
+import { getTeachersNames, IClassData } from '../api/adminApi';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../redux/store';
 import { editClass } from '../redux/slices/classSlice';
@@ -11,8 +11,13 @@ interface FormFields {
   roomNo?: string;
   tutor?: string;
 }
+interface Teacher {
+  name: string;
+  id: string;
+}
 const EditClassModal = ({ classData }: { classData: IClassData }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [formData, setFormData] = useState<IClassData>(classData);
   const [errors, setErrors] = useState<FormFields>({
     name: '',
@@ -26,6 +31,16 @@ const EditClassModal = ({ classData }: { classData: IClassData }) => {
   useEffect(() => {
     setFormData(classData);
   }, [classData]);
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      const responseTeachers = await getTeachersNames();
+      if (responseTeachers) {
+        setTeachers(responseTeachers);
+      }
+    };
+    fetchTeachers();
+  }, []);
 
   useEffect(() => {
     if (formData.grade && formData.section) {
@@ -229,18 +244,9 @@ const EditClassModal = ({ classData }: { classData: IClassData }) => {
                       className="mt-1 w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none"
                     >
                       <option value="">Select Tutor</option>
-                      {[
-                        'Ramesh',
-                        'Sumesh',
-                        'Gouthem',
-                        'Sujatha',
-                        'ManiKandan',
-                        'Sujesh',
-                        'Suhail',
-                        'Sabida',
-                      ].map((tutor) => (
-                        <option key={tutor} value={tutor}>
-                          {tutor}
+                      {teachers.map((teacher) => (
+                        <option key={teacher.id} value={teacher.id}>
+                          {teacher.name}
                         </option>
                       ))}
                     </select>

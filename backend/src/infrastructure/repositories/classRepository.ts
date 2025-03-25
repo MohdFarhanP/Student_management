@@ -22,7 +22,6 @@ export class ClassRepository {
     private classModel = ClassModel,
     private teacherModel = TeacherModel
   ) {}
-
   async findAllGrades(): Promise<{ grade: string }[]> {
     try {
       const uniqueGrades = await this.classModel.distinct('grade');
@@ -32,7 +31,6 @@ export class ClassRepository {
       throw new Error('Failed to fetch unique grades from database');
     }
   }
-
   async findByNameAndSection(
     name: string,
     section: string
@@ -63,7 +61,6 @@ export class ClassRepository {
       throw new Error('Failed to retrieve class by name and section');
     }
   }
-
   async create(classData: Partial<ClassEntity>): Promise<ClassEntity> {
     try {
       const newClass = await this.classModel.create({
@@ -98,7 +95,6 @@ export class ClassRepository {
       throw new Error('Failed to create class in database');
     }
   }
-
   async findAll(
     page: number,
     limit: number
@@ -137,7 +133,6 @@ export class ClassRepository {
       throw new Error('Failed to fetch classes from database');
     }
   }
-
   async findById(id: string): Promise<ClassEntity | null> {
     try {
       const classDoc = await this.classModel
@@ -165,7 +160,6 @@ export class ClassRepository {
       throw new Error('Failed to retrieve class by ID');
     }
   }
-
   async findByGrade(grade: string): Promise<ClassEntity[]> {
     try {
       const rawClasses = await this.classModel
@@ -194,7 +188,6 @@ export class ClassRepository {
       throw new Error('Failed to retrieve classes by grade');
     }
   }
-
   async update(
     id: string,
     classData: Partial<ClassEntity>
@@ -235,6 +228,22 @@ export class ClassRepository {
     } catch (error) {
       console.error('Error updating class:', error);
       throw new Error('Failed to update class in database');
+    }
+  }
+  async fetchClass(): Promise<{ _id: string; name: string }[]> {
+    try {
+      const classes = await this.classModel
+        .find({}, { _id: 1, name: 1 })
+        .lean()
+        .exec();
+
+      return classes.map((cls) => ({
+        _id: cls._id.toString(),
+        name: cls.name,
+      }));
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+      throw new Error('Failed to fetch classes from database');
     }
   }
 }

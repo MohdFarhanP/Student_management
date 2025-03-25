@@ -13,8 +13,8 @@ interface FormFields {
   tutor?: string;
 }
 interface Teacher {
-  name:string;
-  id:string
+  name: string;
+  id: string;
 }
 const Modal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -248,6 +248,7 @@ const Modal = () => {
                     onChange={handleChange}
                     className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
                   >
+                    <option value="">Select Tutor</option>
                     {teachers.map((teacher) => (
                       <option key={teacher.id} value={teacher.id}>
                         {teacher.name}

@@ -3,7 +3,19 @@ import { toast } from 'react-toastify';
 import { uploadToCloudinary } from '../utils/cloudinaryUpload';
 import { ITeacher } from '../pages/admin/Teacher';
 import { IStudent } from '../pages/admin/Student';
+import { TimetableData } from '../types/timetable';
 
+type AssignTeacherFormData = {
+  day: string;
+  period: number;
+  teacherId: string;
+  subject: string;
+};
+
+type DeleteSlotData = {
+  day: string;
+  period: number;
+};
 export const ADMIN_API_URL = `http://localhost:5000/api/admin`;
 
 interface ICredintials {
@@ -24,6 +36,12 @@ export interface ISubjectData {
   teachers: string[];
   notes: File[] | null;
 }
+
+type Subject = {
+  id: string;
+  name: string;
+};
+
 export const adminLogin = async (data: ICredintials) => {
   try {
     const response = await axios.post(`${ADMIN_API_URL}/auth/login`, data, {
@@ -68,7 +86,7 @@ export const getClasses = async (
   limit: number
 ): Promise<{ classes: IClassData[]; totalCount: number } | null> => {
   try {
-    const response = await axios.get(`${ADMIN_API_URL}/classes/class`, {
+    const response = await axios.get(`${ADMIN_API_URL}/classes/classdata`, {
       params: {
         page,
         limit,
@@ -238,21 +256,6 @@ export const getTeachers = async (page: number, limit: number) => {
     return null;
   }
 };
-export const getTeachersNames = async () => {
-  try {
-    const response = await axios.get(`${ADMIN_API_URL}/teacher/allTeachers`, {
-      withCredentials: true,
-    });
-    console.log("response from api ",response.data)
-    return response.data.teachers;
-  } catch (error: unknown) {
-    if (error instanceof AxiosError) {
-      toast.error(error.response?.data?.message || 'Error on getting teachers');
-      console.log(error);
-    }
-    return null;
-  }
-};
 export const getStudents = async (page: number, limit: number) => {
   try {
     const response = await axios.get(`${ADMIN_API_URL}/student/students`, {
@@ -311,5 +314,148 @@ export const editTeacher = async (teacherId: string, data: ITeacher) => {
       throw new Error(message);
     }
     throw error;
+  }
+};
+export const assignTeacherToClass = async (
+  classId: string,
+  data: AssignTeacherFormData
+) => {
+  try {
+    const response = await axios.put(
+      `${ADMIN_API_URL}/timetable/${classId}/assign`,
+      data,
+      {
+        withCredentials: true,
+      }
+    );
+    console.log('Timetable updated:', response.data);
+    toast.success('Teacher assigned successfully!');
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const message = error.response?.data?.message || 'Error updating teacher';
+      toast.error(message);
+      console.log('API Error:', error);
+      throw new Error(message);
+    }
+    throw error;
+  }
+};
+export const fetchTimetable = async (classId: string) => {
+  try {
+    const response = await axios.get<TimetableData>(
+      `${ADMIN_API_URL}/timetable/${classId}`,
+      {
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const message =
+        error.response?.data?.message || 'Error fetching timetable';
+      toast.error(message);
+      throw new Error(message);
+    }
+    throw error;
+  }
+};
+export const updateTimetableSlot = async (
+  classId: string,
+  data: AssignTeacherFormData
+) => {
+  try {
+    const response = await axios.put(
+      `${ADMIN_API_URL}/timetable/${classId}/update`,
+      data,
+      {
+        withCredentials: true,
+      }
+    );
+    toast.success('Timetable slot updated successfully!');
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const message =
+        error.response?.data?.message || 'Error updating timetable slot';
+      toast.error(message);
+      throw new Error(message);
+    }
+    throw error;
+  }
+};
+export const deleteTimetableSlot = async (
+  classId: string,
+  data: DeleteSlotData
+) => {
+  try {
+    const response = await axios.delete(
+      `${ADMIN_API_URL}/timetable/${classId}/slot`,
+      {
+        data,
+        withCredentials: true,
+      }
+    );
+    toast.success('Timetable slot deleted successfully!');
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const message =
+        error.response?.data?.message || 'Error deleting timetable slot';
+      toast.error(message);
+      throw new Error(message);
+    }
+    throw error;
+  }
+};
+export const fetchClasses = async () => {
+  try {
+    const response = await axios.get(`${ADMIN_API_URL}/classes/classlist`, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const message = error.response?.data?.message || 'Error fetching classes';
+      toast.error(message);
+      throw new Error(message);
+    }
+    throw error;
+  }
+};
+export const fetchSubjectsByClassId = async (
+  classId: string
+): Promise<Subject[]> => {
+  try {
+    const response = await axios.get(
+      `${ADMIN_API_URL}/classes/${classId}/subject`,
+      {
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      const message =
+        error.response?.data?.message || 'Error fetching subjects';
+      toast.error(message);
+      throw new Error(message);
+    }
+    throw error;
+  }
+};
+export const getTeachersNames = async () => {
+  try {
+    const response = await axios.get(`${ADMIN_API_URL}/teacher/allTeachers`, {
+      withCredentials: true,
+    });
+    console.log('response from api ', response.data);
+    return response.data.teachers;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      toast.error(error.response?.data?.message || 'Error on getting teachers');
+      console.log(error);
+    }
+    return null;
   }
 };

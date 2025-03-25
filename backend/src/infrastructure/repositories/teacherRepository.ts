@@ -4,7 +4,7 @@ import { Teacher } from '../../domain/entities/teacher.js';
 import { ClassModel } from '../database/models/classModel.js';
 import { SubjectModel } from '../database/models/subjectModel.js';
 import mongoose from 'mongoose';
-
+import { ObjectId } from '../../types/index.js';
 interface PopulatedTeacher {
   _id: string | mongoose.Types.ObjectId;
   name: string;
@@ -15,6 +15,7 @@ interface PopulatedTeacher {
   assignedClass?: { name: string } | null;
   subject?: { subjectName: string } | null;
   dateOfBirth: string;
+  availability: { [day: string]: number[] };
   profileImage?: string;
   specialization?: string;
   experienceYears?: number;
@@ -107,8 +108,44 @@ export class TeacherRepository implements IRepository<Teacher> {
       specialization: '',
       experienceYears: 0,
       qualification: '',
+      availability: {
+        Monday: [],
+        Tuesday: [],
+        Wednesday: [],
+        Thursday: [],
+        Friday: [],
+      },
     }));
 
     return { data: teachers };
+  }
+  async getById(teacherId: ObjectId): Promise<Teacher> {
+    const rawTeacher = await TeacherModel.findById(teacherId)
+      .populate('assignedClass', 'name')
+      .populate('subject', 'subjectName')
+      .lean();
+
+    if (!rawTeacher) throw new Error('Teacher not found');
+
+    const teacherData = rawTeacher as unknown as PopulatedTeacher;
+
+    return new Teacher({
+      id: teacherData._id.toString(),
+      name: teacherData.name,
+      email: teacherData.email,
+      gender: teacherData.gender,
+      phoneNo: teacherData.phoneNo,
+      empId: teacherData.empId,
+      assignedClass: teacherData.assignedClass
+        ? teacherData.assignedClass.name
+        : null,
+      subject: teacherData.subject ? teacherData.subject.subjectName : null,
+      dateOfBirth: teacherData.dateOfBirth,
+      profileImage: teacherData.profileImage || '',
+      specialization: teacherData.specialization || '',
+      experienceYears: teacherData.experienceYears || 0,
+      qualification: teacherData.qualification || '',
+      availability: teacherData.availability,
+    });
   }
 }

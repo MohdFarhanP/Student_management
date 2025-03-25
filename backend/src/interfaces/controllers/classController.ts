@@ -5,9 +5,11 @@ import { GetClassesUseCase } from '../../application/useCases/class/getAllClasse
 import { UpdateClassUseCase } from '../../application/useCases/class/updateUseCase.js';
 import { GetClassNameUseCase } from '../../application/useCases/class/getClassNames.js';
 import { CreateClassUseCase } from '../../application/useCases/class/createClassUseCase.js';
+import { FetchClassUseCase } from '../../application/useCases/class/fetchClassUseCase.js';
 
 const classRepository = new ClassRepository();
 const createClassUseCase = new CreateClassUseCase(classRepository);
+const fetchClassUseCase = new FetchClassUseCase(classRepository);
 const getAllClassesUseCase = new GetClassesUseCase(classRepository);
 const updateClassUseCase = new UpdateClassUseCase(classRepository);
 const getAllClassNamesUseCase = new GetClassNameUseCase(classRepository);
@@ -23,7 +25,6 @@ export class ClassController {
       }
     }
   }
-
   static async getClasses(req: Request, res: Response) {
     try {
       const page = Number(req.query.page) || 1;
@@ -39,7 +40,6 @@ export class ClassController {
       }
     }
   }
-
   static async updateClass(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -51,10 +51,19 @@ export class ClassController {
       }
     }
   }
-
   static async getAllClassNames(req: Request, res: Response) {
     try {
       const classes = await getAllClassNamesUseCase.execute();
+      res.status(HttpStatus.OK).json(classes);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+      }
+    }
+  }
+  static async fetchClasses(req: Request, res: Response) {
+    try {
+      const classes = await fetchClassUseCase.execute();
       res.status(HttpStatus.OK).json(classes);
     } catch (error: unknown) {
       if (error instanceof Error) {
