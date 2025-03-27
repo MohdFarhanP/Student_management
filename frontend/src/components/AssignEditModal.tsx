@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { fetchSubjectsByClassId } from '../api/adminApi';
+import { fetchSubjectsByClassId } from '../api/admin/subjectApi';
 
 type FormData = {
   teacherId: string;
@@ -9,11 +9,11 @@ type FormData = {
 };
 type Subject = {
   id: string;
-  name: string;
+  subjectName: string;
 };
 type AssignEditModalProps = {
   mode: 'assign' | 'edit';
-  teachers: { _id: string; name: string }[];
+  teachers: { id: string; name: string }[];
   classId: string;
   initialData?: FormData;
   onSubmit: (data: FormData) => void;
@@ -38,14 +38,13 @@ const AssignEditModal: React.FC<AssignEditModalProps> = ({
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
 
-
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
         const subjectsData = await fetchSubjectsByClassId(classId);
         setSubjects(subjectsData);
       } catch (err: unknown) {
-        if (err instanceof AxiosError) console.log(err?.message)
+        if (err instanceof AxiosError) console.log(err?.message);
       }
     };
 
@@ -78,7 +77,7 @@ const AssignEditModal: React.FC<AssignEditModalProps> = ({
             >
               <option value="">Select a teacher</option>
               {teachers.map((teacher) => (
-                <option key={teacher._id} value={teacher._id}>
+                <option key={teacher.id} value={teacher.id}>
                   {teacher.name}
                 </option>
               ))}
@@ -105,8 +104,12 @@ const AssignEditModal: React.FC<AssignEditModalProps> = ({
             >
               <option value="">Select a subject</option>
               {subjects.map((subject) => (
-                <option key={subject.id} value={subject.name}>
-                  {subject.name}
+                <option
+                  className="text-black"
+                  key={subject.id}
+                  value={subject.subjectName}
+                >
+                  {subject.subjectName}
                 </option>
               ))}
             </select>

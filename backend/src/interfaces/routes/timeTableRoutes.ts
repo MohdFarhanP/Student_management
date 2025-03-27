@@ -11,7 +11,11 @@ const manageTimetable = new ManageTimetable(timetableRepo, teacherRepo);
 const controller = new TimetableController(manageTimetable);
 
 router.put('/:classId/assign', controller.assignTeacher.bind(controller));
-router.put('/:classId/update', controller.assignTeacher.bind(controller));
+router.put('/:classId/update', controller.updateTimetableSlot.bind(controller));
+router.delete(
+  '/:classId/slot',
+  controller.deleteTimetableSlot.bind(controller)
+);
 router.get('/:classId', controller.getTimetable.bind(controller));
 
 export default router;

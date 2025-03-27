@@ -5,6 +5,8 @@ import { ClassModel } from '../database/models/classModel.js';
 import { SubjectModel } from '../database/models/subjectModel.js';
 import mongoose from 'mongoose';
 import { ObjectId } from '../../types/index.js';
+import { ITeacher } from '../../domain/interface/ITeacher.js';
+
 interface PopulatedTeacher {
   _id: string | mongoose.Types.ObjectId;
   name: string;
@@ -119,7 +121,7 @@ export class TeacherRepository implements IRepository<Teacher> {
 
     return { data: teachers };
   }
-  async getById(teacherId: ObjectId): Promise<Teacher> {
+  async getById(teacherId: ObjectId | string): Promise<Teacher> {
     const rawTeacher = await TeacherModel.findById(teacherId)
       .populate('assignedClass', 'name')
       .populate('subject', 'subjectName')
@@ -147,5 +149,86 @@ export class TeacherRepository implements IRepository<Teacher> {
       qualification: teacherData.qualification || '',
       availability: teacherData.availability,
     });
+  }
+  async save(teacher: Teacher): Promise<void> {
+    try {
+      await TeacherModel.findByIdAndUpdate(teacher.id, {
+        availability: teacher.availability,
+      });
+    } catch (error) {
+      throw new Error(`Failed to save teacher: ${(error as Error).message}`);
+    }
+  }
+  async update(id: string, data: Partial<ITeacher>): Promise<Teacher> {
+    const updatedTeacher = await TeacherModel.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { new: true, runValidators: true }
+    ).lean();
+
+    if (!updatedTeacher) {
+      throw new Error('Teacher not found or update failed');
+    }
+
+    return new Teacher({
+      id: updatedTeacher._id.toString(),
+      name: updatedTeacher.name,
+      email: updatedTeacher.email,
+      gender: updatedTeacher.gender,
+      phoneNo: updatedTeacher.phoneNo,
+      empId: updatedTeacher.empId,
+      assignedClass: updatedTeacher.assignedClass,
+      subject: updatedTeacher.subject,
+      dateOfBirth: updatedTeacher.dateOfBirth,
+      profileImage: updatedTeacher.profileImage,
+      specialization: updatedTeacher.specialization,
+      experienceYears: updatedTeacher.experienceYears,
+      qualification: updatedTeacher.qualification,
+    });
+  }
+  async create(data: Partial<ITeacher>): Promise<Teacher> {
+    if (data.subject && typeof data.subject === 'string') {
+      const subjectDoc = await SubjectModel.findOne({
+        subjectName: data.subject,
+      });
+      if (!subjectDoc) {
+        throw new Error(`Subject '${data.subject}' not found`);
+      }
+      data.subject = subjectDoc._id;
+    }
+
+    if (data.assignedClass && typeof data.assignedClass === 'string') {
+      const classDoc = await ClassModel.findOne({
+        name: data.assignedClass,
+      });
+      if (!classDoc) {
+        throw new Error(`Class '${data.assignedClass}' not found`);
+      }
+      data.assignedClass = classDoc._id;
+    }
+
+    const newTeacher = await TeacherModel.create(data);
+    return new Teacher({
+      id: newTeacher._id.toString(),
+      name: newTeacher.name,
+      email: newTeacher.email,
+      gender: newTeacher.gender,
+      phoneNo: newTeacher.phoneNo,
+      empId: newTeacher.empId,
+      assignedClass: newTeacher.assignedClass,
+      subject: newTeacher.subject,
+      dateOfBirth: newTeacher.dateOfBirth,
+      profileImage: newTeacher.profileImage,
+      specialization: newTeacher.specialization,
+      experienceYears: newTeacher.experienceYears,
+      qualification: newTeacher.qualification,
+      availability: newTeacher.availability,
+    });
+  }
+  async delete(id: string): Promise<void> {
+    const result = await TeacherModel.findByIdAndDelete(id);
+    if (!result) {
+      throw new Error('Teacher not found or already deleted');
+    }
   }
 }

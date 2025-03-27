@@ -1,6 +1,9 @@
 import { useRef } from 'react';
 import { toast } from 'react-toastify';
-import { studentsBulkUpload, teachersBulkUpload } from '../api/adminApi';
+import {
+  studentsBulkUpload,
+  teachersBulkUpload,
+} from '../api/admin/bulkUploadApi';
 
 const BulkUploadButton = ({ role }: { role: string }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);

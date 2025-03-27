@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { MdDashboard, MdPeople, MdSchool, MdLogout } from 'react-icons/md';
 import { GiNotebook } from 'react-icons/gi';
 import { FaSchool } from 'react-icons/fa';
-import { adminLogout } from '../api/adminApi';
+import { adminLogout } from '../api/admin/authenticationApi';
 import { useDispatch } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
 import { BsTable } from 'react-icons/bs';

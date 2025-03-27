@@ -3,10 +3,10 @@ import { Request, Response, NextFunction } from 'express';
 import HttpStatus from '../../utils/httpStatus.js';
 
 interface AuthRequest extends Request {
-  user?: string | JwtPayload;
+  user?: { id: string; email: string; role: string } | JwtPayload;
 }
 
-export const authenticateAdmin = (
+export const authenticateUser = (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -18,14 +18,16 @@ export const authenticateAdmin = (
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
+      id: string;
+      email: string;
+      role: string;
+    };
     req.user = decoded;
     next();
   } catch (err) {
-    console.error(err);
     res
       .status(HttpStatus.FORBIDDEN)
       .json({ message: 'Invalid or expired token' });
-    return;
   }
 };

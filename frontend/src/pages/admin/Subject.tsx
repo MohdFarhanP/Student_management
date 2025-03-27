@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import AdminSideBar from '../../components/AdminSideBar';
 import ClassDropdown from '../../components/ClassDropdown';
 import AddSubjectModal from '../../components/AddSubjectModal';
-import { addSubject, getSubjectsByClass } from '../../api/adminApi';
+import { addSubject, getSubjectsByClass } from '../../api/admin/subjectApi';
 import { AxiosError } from 'axios';
 
 const Subject = () => {

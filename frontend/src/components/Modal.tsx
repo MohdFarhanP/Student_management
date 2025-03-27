@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { CiCirclePlus } from 'react-icons/ci';
 import { createClass } from '../redux/slices/classSlice';
-import { getTeachersNames, IClassData } from '../api/adminApi';
+import { IClassData } from '../api/admin/classApi';
+import { getTeachersNames } from '../api/admin/teacherApi';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../redux/store';
 

@@ -2,7 +2,7 @@ import { AxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ImSpinner2 } from 'react-icons/im';
-import { getTeachersNames } from '../api/adminApi';
+import { getTeachersNames } from '../api/admin/teacherApi';
 
 interface AddSubjectModalProps {
   isOpen: boolean;

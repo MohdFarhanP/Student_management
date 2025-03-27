@@ -1,4 +1,5 @@
 import { ObjectId } from '../../types/index.js';
+import { Teacher } from '../entities/teacher.js';
 
 export interface IRepository<T> {
   insertMany(data: T[]): Promise<void>;
@@ -8,4 +9,5 @@ export interface IRepository<T> {
   ): Promise<{ data: T[]; totalCount: number }>;
   getAll(): Promise<{ data: T[] }>;
   getById(id: ObjectId): Promise<T>;
+  save(teacher: Teacher): Promise<void>;
 }

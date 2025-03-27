@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getTeachersNames, IClassData } from '../api/adminApi';
+import { IClassData } from '../api/admin/classApi';
+import { getTeachersNames } from '../api/admin/teacherApi';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../redux/store';
 import { editClass } from '../redux/slices/classSlice';
@@ -91,6 +92,7 @@ const EditClassModal = ({ classData }: { classData: IClassData }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (ValidateForm()) {
+      console.log('before submitting form :', formData);
       await dispatch(editClass(formData));
       toggleModal();
     }

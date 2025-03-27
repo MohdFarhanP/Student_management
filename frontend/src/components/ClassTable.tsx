@@ -1,4 +1,4 @@
-import { IClassData } from '../api/adminApi';
+import { IClassData } from '../api/admin/classApi';
 import EditClassModal from './EditClassModal';
 
 interface UserTableProps {

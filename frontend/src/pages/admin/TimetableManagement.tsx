@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchClasses } from '../../api/adminApi';
+import { fetchClasses } from '../../api/admin/classApi';
 import ClassSelector from '../../components/ClassSelector';
 import TimetableTable from '../../components/TimetableTable';
 import ErrorMessage from '../../components/ErrorMessage';

@@ -1,5 +1,9 @@
+import { useState } from 'react';
+import { toast } from 'react-toastify';
+import { deleteTeacher } from '../api/admin/teacherApi';
 import { ITeacher } from '../pages/admin/Teacher';
 import PaginationButton from './PaginationButton';
+import ConfirmDialog from './ConfirmDialog';
 
 interface TeacherTableProps {
   teachers: ITeacher[];
@@ -18,6 +22,36 @@ const TeacherTable = ({
   page,
   setPage,
 }: TeacherTableProps) => {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [teacherIdToDelete, setTeacherIdToDelete] = useState<string | null>(
+    null
+  );
+
+  const handleDelete = (teacherId: string) => {
+    setTeacherIdToDelete(teacherId);
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!teacherIdToDelete) return;
+    try {
+      await deleteTeacher(teacherIdToDelete);
+      toast.success('Teacher deleted successfully');
+      setIsConfirmOpen(false);
+      setTeacherIdToDelete(null);
+    } catch (error) {
+      console.error('Delete failed:', error);
+      toast.error('Failed to delete teacher');
+      setIsConfirmOpen(false);
+      setTeacherIdToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setIsConfirmOpen(false);
+    setTeacherIdToDelete(null);
+  };
+
   return (
     <div className="flex-1">
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
@@ -47,7 +81,7 @@ const TeacherTable = ({
                 <td className="px-5 py-4 text-gray-700">
                   {teacher.assignedClass || 'N/A'}
                 </td>
-                <td className="px-5 py-4 text-center">
+                <td className="flex justify-around px-5 py-4 text-center">
                   <button
                     className="btn btn-black btn-sm w-1/2 text-white"
                     onClick={(e) => {
@@ -57,6 +91,12 @@ const TeacherTable = ({
                     }}
                   >
                     Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(teacher.id)}
+                    className="btn btn-sm border-none bg-red-500 text-white"
+                  >
+                    Delete
                   </button>
                 </td>
               </tr>
@@ -73,6 +113,14 @@ const TeacherTable = ({
           totalPages={totalPages}
         />
       </div>
+
+      {/* Custom confirmation dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        message="Are you sure you want to delete this teacher?"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 };

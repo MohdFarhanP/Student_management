@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getClassNames } from '../api/adminApi';
+import { getClassNames } from '../api/admin/classApi';
 
 interface ClassDropdownProps {
   onSelectClass: (className: string) => void;

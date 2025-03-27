@@ -119,7 +119,7 @@ export class ClassRepository {
           timetable: c.timetable,
           students: c.students,
           totalStudents: c.totalStudents,
-          tutor: c.tutor.name,
+          tutor: c.tutor ? c.tutor.name : 'No Tutor Assigned',
           roomNo: c.roomNo,
           subjects: c.subjects,
           grade: c.grade,

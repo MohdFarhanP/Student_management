@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { connectDB } from './infrastructure/database/database.js';
 import adminRoutes from './interfaces/routes/adminRoutes.js';
 import cookieParser from 'cookie-parser';
+import athenticationRoutes from './interfaces/routes/athenticationRoutes.js';
 
 dotenv.config();
 
@@ -21,5 +22,5 @@ app.use(
 );
 
 app.use('/api/admin', adminRoutes);
-
+app.use('api/auth', athenticationRoutes);
 export default app;

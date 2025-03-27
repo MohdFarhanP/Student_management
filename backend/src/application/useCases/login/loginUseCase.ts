@@ -1,31 +1,35 @@
-import { AdminRepository } from '../../../infrastructure/repositories/adminRepository.js';
+import { UserRepository } from '../../../infrastructure/repositories/userRepository.js';
 import { AuthService } from '../../../interfaces/authService/authService.js';
 
 export class LoginUseCase {
-  constructor(private adminRepository: AdminRepository) {}
+  constructor(private userRepository: UserRepository) {}
 
-  async execute(email: string, password: string) {
-    const admin = await this.adminRepository.findByEmail(email);
-    if (!admin) {
-      throw new Error('Admin not found');
+  async execute(email: string, password: string, role: string) {
+    const user = await this.userRepository.findByEmailAndRole(email, role);
+    if (!user) {
+      throw new Error(`${role} not found`);
     }
 
-    // Verify password using AuthService
-    const isValidPassword = await AuthService.comparePasswords(
-      password,
-      admin.password
-    );
-    if (!isValidPassword) {
+    const defaultPasswords: { [key: string]: string } = {
+      Student: 'student123',
+      Teacher: 'teacher123',
+    };
+
+    let isInitialLogin = false;
+    if (role !== 'Admin' && password === defaultPasswords[role]) {
+      isInitialLogin = true;
+    } else if (!(await AuthService.comparePasswords(password, user.password))) {
       throw new Error('Invalid username or password');
     }
 
     const token = AuthService.generateToken({
-      id: admin.id,
-      email: admin.email,
+      id: user.id,
+      email: user.email,
+      role,
     });
 
     return {
-      user: { email: admin.email },
+      user: { email: user.email, role, isInitialLogin },
       token,
     };
   }

@@ -29,8 +29,8 @@ class Timetable {
   assignTeacher(
     day: string,
     period: number,
-    teacherId: ObjectId,
-    subject: string
+    teacherId: ObjectId | null,
+    subject: string | null
   ): void {
     if (!this.schedule[day] || period < 1 || period > 6) {
       throw new Error('Invalid slot');

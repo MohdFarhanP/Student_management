@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ITeacher } from '../pages/admin/Teacher';
-import { editTeacher } from '../api/adminApi';
+import { editTeacher } from '../api/admin/teacherApi';
 
 interface EditTeacherModalProps {
   teacherData: ITeacher;
@@ -48,14 +48,13 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-
-    // Consistent validation with trim() for strings
-    if (!String(formData.name || '').trim())
-      newErrors.name = 'Name is required';
-    if (!String(formData.email || '').trim())
-      newErrors.email = 'Email is required';
-    if (!String(formData.gender || '').trim())
-      newErrors.gender = 'Gender is required';
+    const trimmedName = String(formData.name || '').trim();
+    const trimmedEmail = String(formData.email || '').trim();
+    if (!trimmedName) newErrors.name = 'Name is required';
+    if (!trimmedEmail) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(trimmedEmail))
+      newErrors.email = 'Email is invalid';
+    if (!formData.gender) newErrors.gender = 'Gender is required';
     if (!formData.phoneNo || formData.phoneNo <= 0)
       newErrors.phoneNo = 'Valid phone number is required';
     if (!String(formData.empId || '').trim())
@@ -64,7 +63,7 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
       newErrors.assignedClass = 'Assigned Class is required';
     if (!String(formData.subject || '').trim())
       newErrors.subject = 'Subject is required';
-    if (!String(formData.dateOfBirth || '').trim())
+    if (!formData.dateOfBirth)
       newErrors.dateOfBirth = 'Date of Birth is required';
 
     // Optional fields (only validate if required)

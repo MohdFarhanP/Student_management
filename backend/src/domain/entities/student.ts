@@ -19,7 +19,7 @@ export class Student {
     pincode: number;
     phoneNo: number;
     guardianName: string;
-    guardianContact: string | null;
+    guardianContact?: string | null | undefined;
   };
 
   constructor(data: Partial<Student>) {
@@ -31,6 +31,8 @@ export class Student {
     this.gender = data.gender || 'Male';
     this.age = data.age || 0;
     this.class = data.class || null;
+    this.subjectIds = data.subjectIds || [];
+    this.password = data.password;
     this.profileImage = data.profileImage || '';
     this.address = {
       houseName: data.address?.houseName || '',
@@ -39,7 +41,7 @@ export class Student {
       pincode: data.address?.pincode || 0,
       phoneNo: data.address?.phoneNo || 0,
       guardianName: data.address?.guardianName || '',
-      guardianContact: data.address?.guardianContact || null,
+      guardianContact: data.address?.guardianContact ?? null,
     };
   }
 }

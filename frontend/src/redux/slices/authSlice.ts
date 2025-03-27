@@ -1,8 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { adminLogin } from '../../api/adminApi';
+import {
+  adminLogin,
+  updateUserPassword,
+} from '../../api/admin/authenticationApi';
+
+interface User {
+  email: string;
+  role: string;
+  isInitialLogin: boolean;
+}
 
 interface AuthState {
-  user: string | null;
+  user: User | null;
   loading: boolean;
   error: string | null;
 }
@@ -15,16 +24,32 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials: { email: string; password: string }, thunkAPI) => {
+  async (
+    credentials: { email: string; password: string; role: string },
+    thunkAPI
+  ) => {
     try {
-      console.log('credintials ', credentials);
       const response = await adminLogin(credentials);
-      console.log('this is the response ', response);
       return response;
     } catch (error: unknown) {
       if (error instanceof Error) {
-        console.log('Error in thunk:', error.message);
         return thunkAPI.rejectWithValue(error.message || 'Login failed');
+      }
+    }
+  }
+);
+
+export const updatePassword = createAsyncThunk(
+  'auth/updatePassword',
+  async (data: { email: string; password: string; role: string }, thunkAPI) => {
+    try {
+      const response = await updateUserPassword(data);
+      return response;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return thunkAPI.rejectWithValue(
+          error.message || 'Password update failed'
+        );
       }
     }
   }
@@ -36,7 +61,6 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
-      console.log('store');
     },
   },
   extraReducers: (builder) => {
@@ -47,9 +71,25 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.email;
+        state.user = action.payload;
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updatePassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updatePassword.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = {
+          ...state.user!,
+          ...action.payload,
+          isInitialLogin: false,
+        };
+      })
+      .addCase(updatePassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

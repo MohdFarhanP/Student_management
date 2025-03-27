@@ -1,18 +1,34 @@
 import { useState } from 'react';
-import { IStudent, editStudent } from '../api/admin/studentApi';
+import { IStudent, addStudent } from '../api/admin/studentApi';
 
-interface EditStudentModalProps {
-  studentData: IStudent;
+interface AddStudentModalProps {
   onClose: () => void;
-  onUpdate?: (updatedStudent: IStudent) => void;
+  onAdd?: (newStudent: IStudent) => void;
 }
 
-const EditStudentModal: React.FC<EditStudentModalProps> = ({
-  studentData,
+const AddStudentModal: React.FC<AddStudentModalProps> = ({
   onClose,
-  onUpdate,
+  onAdd,
 }) => {
-  const [formData, setFormData] = useState<Partial<IStudent>>(studentData);
+  const [formData, setFormData] = useState<Partial<IStudent>>({
+    name: '',
+    email: '',
+    roleNumber: '',
+    dob: '',
+    gender: '',
+    age: 0,
+    class: '',
+    profileImage: '',
+    address: {
+      houseName: '',
+      place: '',
+      district: '',
+      pincode: '',
+      phoneNo: '',
+      guardianName: '',
+      guardianContact: '',
+    },
+  });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -86,11 +102,11 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      const updatedStudent = await editStudent(studentData.id, formData);
-      onUpdate?.(updatedStudent);
+      const newStudent = await addStudent(formData);
+      onAdd?.(newStudent);
       onClose();
     } catch (error) {
-      console.error('Failed to edit student:', error);
+      console.error('Failed to add student:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -100,11 +116,11 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="relative w-full max-w-3xl rounded-lg bg-white p-6 shadow-lg">
         <div className="flex items-center justify-between border-b pb-4">
-          <h3 className="text-xl font-semibold text-black">Edit Student</h3>
+          <h3 className="text-xl font-semibold text-black">Add Student</h3>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-lg text-black hover:text-gray-800"
+            className="text-lg text-gray-600 hover:text-black"
           >
             ✕
           </button>
@@ -367,7 +383,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
               className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Updating...' : 'Update Student'}
+              {isSubmitting ? 'Adding...' : 'Add Student'}
             </button>
           </div>
         </form>
@@ -376,4 +392,4 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
   );
 };
 
-export default EditStudentModal;
+export default AddStudentModal;

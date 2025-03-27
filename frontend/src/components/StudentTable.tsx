@@ -1,23 +1,61 @@
-import { IStudent } from '../pages/admin/Student';
+import { useState } from 'react';
+import { deleteStudent, IStudent } from '../api/admin/studentApi';
 import PaginationButton from './PaginationButton';
+import ConfirmDialog from './ConfirmDialog';
 
 interface StudentTableProps {
   students: IStudent[];
   totalPages: number;
-  setSelectedStudent: (student: IStudent) => void;
-  setIsOpen: (isOpen: boolean) => void;
   page: number;
   setPage: React.Dispatch<React.SetStateAction<number>>;
+  setSelectedStudent: (student: IStudent | null) => void;
+  setIsOpen: (isOpen: boolean) => void;
+  onDelete: (studentId: string) => void;
 }
 
-const StudentTable = ({
+const StudentTable: React.FC<StudentTableProps> = ({
   students,
   totalPages,
-  setSelectedStudent,
-  setIsOpen,
   page,
   setPage,
-}: StudentTableProps) => {
+  setSelectedStudent,
+  setIsOpen,
+  onDelete,
+}) => {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [studentIdToDelete, setStudentIdToDelete] = useState<string | null>(
+    null
+  );
+
+  const handleEdit = (student: IStudent) => {
+    setSelectedStudent(student);
+    setIsOpen(true);
+  };
+
+  const handleDelete = (studentId: string) => {
+    setStudentIdToDelete(studentId);
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!studentIdToDelete) return;
+    try {
+      await deleteStudent(studentIdToDelete);
+      onDelete(studentIdToDelete);
+      setIsConfirmOpen(false);
+      setStudentIdToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete student:', error);
+      setIsConfirmOpen(false);
+      setStudentIdToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setIsConfirmOpen(false);
+    setStudentIdToDelete(null);
+  };
+
   return (
     <div className="flex-1">
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
@@ -44,16 +82,18 @@ const StudentTable = ({
                 <td className="px-5 py-4 text-gray-700">
                   {student.class || 'N/A'}
                 </td>
-                <td className="px-5 py-4 text-center">
+                <td className="flex justify-around px-5 py-4 text-center">
                   <button
                     className="btn btn-black btn-sm w-1/2 text-white"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedStudent(student);
-                      setIsOpen(true);
-                    }}
+                    onClick={() => handleEdit(student)}
                   >
                     Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(student.id)}
+                    className="rounded bg-red-500 px-2 py-1 text-white hover:bg-red-600"
+                  >
+                    Delete
                   </button>
                 </td>
               </tr>
@@ -70,6 +110,14 @@ const StudentTable = ({
           totalPages={totalPages}
         />
       </div>
+
+      {/* Custom confirmation dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        message="Are you sure you want to delete this student?"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 };

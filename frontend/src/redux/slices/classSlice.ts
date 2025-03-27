@@ -1,8 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getClasses, addClass, updateClass } from '../../api/adminApi';
-import { IClassData } from '../../api/adminApi';
+import { getClasses, addClass, updateClass } from '../../api/admin/classApi';
+import { IClassData } from '../../api/admin/classApi';
 
-// Define initial state
 interface ClassState {
   classes: IClassData[];
   totalCount: number;

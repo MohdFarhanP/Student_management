@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   fetchTimetable,
-  getTeachersNames,
-  assignTeacherToClass,
   updateTimetableSlot,
   deleteTimetableSlot,
-} from '../api/adminApi';
+  assignTeacherToClass,
+} from '../api/admin/timeTableApi';
+import { getTeachersNames } from '../api/admin/teacherApi';
 import { TimetableData, TimetableSlot } from '../types/timetable/index';
 import AssignEditModal from './AssignEditModal';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
@@ -18,7 +18,7 @@ type TimetableTableProps = {
 };
 
 type Teacher = {
-  _id: string;
+  id: string;
   name: string;
 };
 
@@ -155,7 +155,7 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
                 const slot = timetable.schedule[day].find(
                   (s: TimetableSlot) => s.period === period
                 );
-                const teacher = teachers.find((t) => t._id === slot?.teacherId);
+                const teacher = teachers.find((t) => t.id === slot?.teacherId);
                 return (
                   <td
                     key={`${day}-${period}`}
