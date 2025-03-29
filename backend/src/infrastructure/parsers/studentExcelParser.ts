@@ -1,4 +1,4 @@
-import { IExcelParser } from '../../domain/interface/IExcelParser.js';
+import { IExcelParser } from '../../domain/interface/admin/IExcelParser.js';
 import { Student } from '../../domain/entities/student.js';
 import XLSX from '@e965/xlsx';
 

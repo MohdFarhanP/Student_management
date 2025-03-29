@@ -15,7 +15,7 @@ const Student = () => {
   const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
-  
+
   useEffect(() => {
     const fetch = async () => {
       const { students, totalCount } = await getStudents(page, limit);

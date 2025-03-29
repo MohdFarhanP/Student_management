@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
-import { ADMIN_API_URL } from './authenticationApi';
+import { ADMIN_API_URL } from './bulkUploadApi';
 
 export interface IStudent {
   id: string;

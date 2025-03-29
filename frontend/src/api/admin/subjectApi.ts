@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { ADMIN_API_URL } from './authenticationApi';
+import { ADMIN_API_URL } from './bulkUploadApi';
 import { toast } from 'react-toastify';
 import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
 

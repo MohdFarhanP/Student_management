@@ -1,18 +1,13 @@
 import { Request, Response } from 'express';
-import { UserRepository } from '../../infrastructure/repositories/userRepository.js';
-import { LoginUseCase } from '../../application/useCases/login/loginUseCase.js';
-import { UpdatePasswordUseCase } from '../../application/useCases/login/updatePasswordUseCase.js';
+import { LoginUseCase } from '../../application/useCases/admin/login/loginUseCase.js';
+import { UpdatePasswordUseCase } from '../../application/useCases/admin/login/updatePasswordUseCase.js';
 import HttpStatus from '../../utils/httpStatus.js';
 
 export class UserController {
-  private loginUseCase: LoginUseCase;
-  private updatePasswordUseCase: UpdatePasswordUseCase;
-
-  constructor() {
-    const userRepository = new UserRepository();
-    this.loginUseCase = new LoginUseCase(userRepository);
-    this.updatePasswordUseCase = new UpdatePasswordUseCase(userRepository);
-  }
+  constructor(
+    private loginUseCase: LoginUseCase,
+    private updatePasswordUseCase: UpdatePasswordUseCase
+  ) {}
 
   async login(req: Request, res: Response) {
     try {
@@ -22,13 +17,11 @@ export class UserController {
         password,
         role
       );
-
       res.cookie('access_token', token, {
         httpOnly: true,
         secure: false,
         sameSite: 'strict',
       });
-
       res.status(HttpStatus.OK).json({ message: 'Login successful', user });
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -38,21 +31,7 @@ export class UserController {
   }
 
   async logout(req: Request, res: Response) {
-    try {
-      res.cookie('access_token', '', {
-        httpOnly: true,
-        expires: new Date(0),
-        secure: false,
-        sameSite: 'strict',
-      });
-      res.status(HttpStatus.OK).json({ message: 'Logout successful' });
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .json({ message: error.message });
-      }
-    }
+    // ...
   }
 
   async updatePassword(req: Request, res: Response) {

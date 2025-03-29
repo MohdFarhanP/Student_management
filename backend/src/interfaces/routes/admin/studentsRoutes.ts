@@ -1,0 +1,41 @@
+import express from 'express';
+import { StudentController } from '../../controllers/admin/studentsController.js';
+import { GetAllStudentsUseCase } from '../../../application/useCases/admin/student/getAllStudentsUseCase.js';
+import { StudentRepository } from '../../../infrastructure/repositories/admin/studentRepository.js';
+import { AddStudentUseCase } from '../../../application/useCases/admin/student/addStudentUseCase.js';
+import { EditStudentUseCase } from '../../../application/useCases/admin/student/editStudentUseCase.js';
+import { DeleteStudentUseCase } from '../../../application/useCases/admin/student/deleteStudentUseCase.js';
+import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase.js';
+
+const router = express.Router();
+const studentRepository = new StudentRepository();
+const getAllStudentsUseCase = new GetAllStudentsUseCase(studentRepository);
+const addStudentUseCase = new AddStudentUseCase(studentRepository);
+const editStudentUseCase = new EditStudentUseCase(studentRepository);
+const deleteStudentUseCase = new DeleteStudentUseCase(studentRepository);
+const getStudentProfileUseCase = new GetStudentProfileUseCase(
+  studentRepository
+);
+const studentController = new StudentController(
+  getAllStudentsUseCase,
+  addStudentUseCase,
+  editStudentUseCase,
+  deleteStudentUseCase,
+  getStudentProfileUseCase
+);
+
+router.get('/students', studentController.getStudents.bind(studentController));
+router.post('/student', studentController.addStudent.bind(studentController));
+router.put(
+  '/studentById/:studentId',
+  studentController.editStudent.bind(studentController)
+);
+router.delete(
+  '/studentById/:studentId',
+  studentController.deleteStudent.bind(studentController)
+);
+router.get(
+  '/profile/:email',
+  studentController.getProfile.bind(studentController)
+);
+export default router;

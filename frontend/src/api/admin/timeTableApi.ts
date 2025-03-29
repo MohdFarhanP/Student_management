@@ -1,4 +1,4 @@
-import { ADMIN_API_URL } from './authenticationApi';
+import { ADMIN_API_URL } from './bulkUploadApi';
 import { TimetableData } from '../../types/timetable';
 import axios, { AxiosError } from 'axios';
 import { toast } from 'react-toastify';

@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
-import { ADMIN_API_URL } from './authenticationApi';
+
+export const ADMIN_API_URL = `http://localhost:5000/api/admin`;
 
 export const studentsBulkUpload = async (file: File) => {
   try {

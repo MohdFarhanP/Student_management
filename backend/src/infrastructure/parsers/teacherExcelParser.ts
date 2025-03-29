@@ -1,5 +1,5 @@
 import XLSX from '@e965/xlsx';
-import { IExcelParser } from '../../domain/interface/IExcelParser.js';
+import { IExcelParser } from '../../domain/interface/admin/IExcelParser.js';
 import { Teacher } from '../../domain/entities/teacher.js';
 
 interface TeacherExcelRow {

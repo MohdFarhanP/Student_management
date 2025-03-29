@@ -1,8 +1,9 @@
 import { AdminModel } from '../database/models/adminModel.js';
 import { studentModel } from '../database/models/studentModel.js';
 import { TeacherModel } from '../database/models/teacherModel.js';
+import { IUserRepository } from '../../domain/interface/IUserRepository.js';
 
-export class UserRepository {
+export class UserRepository implements IUserRepository {
   async findByEmailAndRole(
     email: string,
     role: string
@@ -16,14 +17,10 @@ export class UserRepository {
       user = await TeacherModel.findOne({ email });
     }
     if (!user) return null;
-    return {
-      id: user.id,
-      email: user.email,
-      password: user.password || '',
-    };
+    return { id: user.id, email: user.email, password: user.password ?? '' };
   }
 
-  async updatePassword(id: string, password: string) {
+  async updatePassword(id: string, password: string): Promise<void> {
     await Promise.all([
       AdminModel.findByIdAndUpdate(id, { password }),
       studentModel.findByIdAndUpdate(id, { password }),
