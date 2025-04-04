@@ -28,6 +28,6 @@ export const authenticateUser = (
   } catch (err) {
     res
       .status(HttpStatus.FORBIDDEN)
-      .json({ message: 'Invalid or expired token' });
+      .json({ message: `${err}` || 'Invalid or expired token' });
   }
 };

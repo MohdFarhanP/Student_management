@@ -1,8 +1,8 @@
-import { SubjectRepository } from '../../../infrastructure/repositories/subjectRepository.js';
-import { ClassRepository } from '../../../infrastructure/repositories/classRepository.js';
-import { SubjectEntity } from '../../../domain/entities/subject.js';
+import { SubjectRepository } from '../../../../infrastructure/repositories/admin/subjectRepository.js';
+import { ClassRepository } from '../../../../infrastructure/repositories/admin/classRepository.js';
+import { SubjectEntity } from '../../../../domain/entities/subject.js';
 import { Types } from 'mongoose';
-import { ISubject } from '../../../domain/interface/ISubject.js';
+import { ISubject } from '../../../../domain/interface/ISubject.js';
 
 export class CreateSubjectUseCase {
   constructor(

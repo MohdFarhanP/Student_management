@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { StudentController } from '../../controllers/student/studentController.js';
 import { StudentProfileRepository } from '../../../infrastructure/repositories/student/StudentProfileRepository.js';
 import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase.js';
+import { authenticateUser } from '../../middleware/authenticateUser.js';
 
 const router = Router();
 
@@ -11,6 +12,10 @@ const getStudentProfileUseCase = new GetStudentProfileUseCase(
 );
 const studentController = new StudentController(getStudentProfileUseCase);
 
-router.get('/profile', (req, res) => studentController.getProfile(req, res));
+router.get(
+  '/profile',
+  authenticateUser,
+  studentController.getProfile.bind(studentController)
+);
 
 export default router;

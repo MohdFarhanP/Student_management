@@ -1,4 +1,4 @@
-import { TeacherRepository } from '../../../../infrastructure/repositories/teacherRepository.js';
+import { TeacherRepository } from '../../../../infrastructure/repositories/admin/teacherRepository.js';
 import { Types } from 'mongoose';
 
 export class DeleteTeacherUseCase {

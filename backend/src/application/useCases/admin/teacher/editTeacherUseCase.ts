@@ -1,4 +1,4 @@
-import { TeacherRepository } from '../../../../infrastructure/repositories/teacherRepository.js';
+import { TeacherRepository } from '../../../../infrastructure/repositories/admin/teacherRepository.js';
 import { ITeacher } from '../../../../domain/interface/ITeacher.js';
 import { Teacher } from '../../../../domain/entities/teacher.js';
 import { Types } from 'mongoose';

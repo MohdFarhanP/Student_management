@@ -1,6 +1,6 @@
 import { Student } from '../../../../domain/entities/student.js';
 import { IExcelParser } from '../../../../domain/interface/admin/IExcelParser.js';
-import { IStudentRepository } from '../../../../domain/interface/IStudentRepository.js';
+import { IStudentRepository } from '../../../../domain/interface/admin/IStudentRepository.js';
 
 export class BulkUploadStudentUseCase {
   constructor(

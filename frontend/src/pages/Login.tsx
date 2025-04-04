@@ -75,8 +75,8 @@ const Login: React.FC = () => {
           user.role === 'Admin'
             ? '/admin/dashboard'
             : user.role === 'Student'
-              ? '/student/dashboard'
-              : '/teacher/dashboard';
+              ? '/student/profile'
+              : '/teacher/profile';
         navigate(redirectPath);
       });
     }

@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
-import { BulkUploadStudentUseCase } from '../../application/useCases/student/bulkUploadStudentUseCase.js';
-import { BulkUploadTeacherUseCase } from '../../application/useCases/teacher/bulkUploadTeachersUseCase.js';
-import { StudentRepository } from '../../infrastructure/repositories/studentRepository.js';
-import { TeacherRepository } from '../../infrastructure/repositories/teacherRepository.js';
-import { StudentExcelParser } from '../../infrastructure/parsers/studentExcelParser.js';
-import { TeacherExcelParser } from '../../infrastructure/parsers/teacherExcelParser.js';
-import { IStudentRepository } from '../../domain/interface/IStudentRepository.js';
+import { BulkUploadStudentUseCase } from '../../../application/useCases/admin/student/bulkUploadStudentUseCase.js';
+import { BulkUploadTeacherUseCase } from '../../../application/useCases/admin/teacher/bulkUploadTeachersUseCase.js';
+import { StudentRepository } from '../../../infrastructure/repositories/admin/studentRepository.js';
+import { TeacherRepository } from '../../../infrastructure/repositories/admin/teacherRepository.js';
+import { StudentExcelParser } from '../../../infrastructure/parsers/studentExcelParser.js';
+import { TeacherExcelParser } from '../../../infrastructure/parsers/teacherExcelParser.js';
+import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository.js';
 
 export class BulkUploadController {
   private studentUseCase: BulkUploadStudentUseCase;

@@ -23,7 +23,7 @@ app.use(
   })
 );
 
-app.use('/api/admi/', adminRoutes);
+app.use('/api/admin/', adminRoutes);
 app.use('/api/auth', athenticationRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/teacher', teacherRoutes);

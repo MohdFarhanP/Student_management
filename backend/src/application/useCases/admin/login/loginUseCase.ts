@@ -1,5 +1,5 @@
-import { IUserRepository } from '../../../domain/interface/IUserRepository.js';
-import { AuthService } from '../../../interfaces/authService/authService.js';
+import { IUserRepository } from '../../../../domain/interface/IUserRepository.js';
+import { AuthService } from '../../../../interfaces/authService/authService.js';
 
 export class LoginUseCase {
   constructor(private userRepository: IUserRepository) {}

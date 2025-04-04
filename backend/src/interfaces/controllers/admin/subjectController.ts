@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { ClassRepository } from '../../infrastructure/repositories/classRepository.js';
-import { SubjectRepository } from '../../infrastructure/repositories/subjectRepository.js';
-import { CreateSubjectUseCase } from '../../application/useCases/subject/createSubjectUseCase.js';
-import HttpStatus from '../../utils/httpStatus.js';
-import { GetSubjectsByClassUseCase } from '../../application/useCases/subject/getSubjectUseCase.js';
-import { FetchSubjectsByClassIdUseCase } from '../../application/useCases/subject/fetchSubjectsByClassIdUseCase.js';
+import { ClassRepository } from '../../../infrastructure/repositories/admin/classRepository.js';
+import { SubjectRepository } from '../../../infrastructure/repositories/admin/subjectRepository.js';
+import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/createSubjectUseCase.js';
+import HttpStatus from '../../../utils/httpStatus.js';
+import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/getSubjectUseCase.js';
+import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/fetchSubjectsByClassIdUseCase.js';
 
 const classRepository = new ClassRepository();
 const subjectRepository = new SubjectRepository();

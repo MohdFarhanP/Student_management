@@ -1,5 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { teachersProfileFetch } from '../../api/teacher/teacherApi';
+import {
+  teachersProfileFetch,
+  updateTeacherProfileApi,
+} from '../../api/teacher/teacherApi';
 
 interface TeacherProfile {
   id?: string;
@@ -7,10 +10,10 @@ interface TeacherProfile {
   email: string;
   password?: string;
   gender: 'Male' | 'Female';
-  phoneNo: number;
+  phoneNo: string;
   empId: string;
   assignedClass?: string | null;
-  subject?:string | null;
+  subject?: string | null;
   dateOfBirth: string;
   profileImage?: string;
   specialization?: string;
@@ -36,10 +39,45 @@ export const fetchTeacherProfile = createAsyncThunk(
   async (email: string, { rejectWithValue }) => {
     try {
       const response = await teachersProfileFetch(email);
+
+      if (!response || typeof response !== 'object') {
+        throw new Error('Invalid data received from API');
+      }
+
       return response;
-    } catch (error) {
-      console.log(error);
-      return rejectWithValue('Failed to fetch teacher profile');
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to fetch teacher profile';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      console.error('Error fetching teacher profile:', errorMessage);
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const updateTeacherProfile = createAsyncThunk(
+  'teacher/updateTeacherProfile',
+  async (profile: Partial<TeacherProfile>, { rejectWithValue }) => {
+    try {
+      const response = await updateTeacherProfileApi(profile);
+
+      if (!response || typeof response !== 'object') {
+        throw new Error('Invalid data received from API');
+      }
+
+      return response;
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to fetch teacher profile';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      console.error('Error fetching teacher profile:', errorMessage);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -56,9 +94,21 @@ const teacherSlice = createSlice({
       })
       .addCase(fetchTeacherProfile.fulfilled, (state, action) => {
         state.loading = false;
-        state.profile = action.payload;
+        state.profile = action.payload ?? null;
       })
       .addCase(fetchTeacherProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateTeacherProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateTeacherProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.profile = action.payload;
+      })
+      .addCase(updateTeacherProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

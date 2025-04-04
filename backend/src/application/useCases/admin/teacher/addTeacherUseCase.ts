@@ -1,4 +1,4 @@
-import { TeacherRepository } from '../../../../infrastructure/repositories/teacherRepository.js';
+import { TeacherRepository } from '../../../../infrastructure/repositories/admin/teacherRepository.js';
 import { SubjectModel } from '../../../../infrastructure/database/models/subjectModel.js';
 import { ClassModel } from '../../../../infrastructure/database/models/classModel.js';
 import { ITeacher } from '../../../../domain/interface/ITeacher.js';

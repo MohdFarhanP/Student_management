@@ -10,10 +10,11 @@ const loginUseCase = new LoginUseCase(userRepository);
 const updatePasswordUseCase = new UpdatePasswordUseCase(userRepository);
 const userController = new UserController(loginUseCase, updatePasswordUseCase);
 
-router.post('/login', (req, res) => userController.login(req, res));
-router.post('/logout', (req, res) => userController.logout(req, res));
-router.put('/update-password', (req, res) =>
-  userController.updatePassword(req, res)
+router.post('/login', userController.login.bind(userController));
+router.post('/logout', userController.logout.bind(userController));
+router.put(
+  '/update-password',
+  userController.updatePassword.bind(userController)
 );
 
 export default router;

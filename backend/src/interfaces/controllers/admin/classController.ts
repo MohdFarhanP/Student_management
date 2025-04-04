@@ -1,11 +1,11 @@
 import { Response, Request } from 'express';
-import { ClassRepository } from '../../infrastructure/repositories/classRepository.js';
-import HttpStatus from '../../utils/httpStatus.js';
-import { GetClassesUseCase } from '../../application/useCases/class/getAllClasses.js';
-import { UpdateClassUseCase } from '../../application/useCases/class/updateUseCase.js';
-import { GetClassNameUseCase } from '../../application/useCases/class/getClassNames.js';
-import { CreateClassUseCase } from '../../application/useCases/class/createClassUseCase.js';
-import { FetchClassUseCase } from '../../application/useCases/class/fetchClassUseCase.js';
+import { ClassRepository } from '../../../infrastructure/repositories/admin/classRepository.js';
+import HttpStatus from '../../../utils/httpStatus.js';
+import { GetClassesUseCase } from '../../../application/useCases/admin/class/getAllClasses.js';
+import { UpdateClassUseCase } from '../../../application/useCases/admin/class/updateUseCase.js';
+import { GetClassNameUseCase } from '../../../application/useCases/admin/class/getClassNames.js';
+import { CreateClassUseCase } from '../../../application/useCases/admin/class/createClassUseCase.js';
+import { FetchClassUseCase } from '../../../application/useCases/admin/class/fetchClassUseCase.js';
 
 const classRepository = new ClassRepository();
 const createClassUseCase = new CreateClassUseCase(classRepository);

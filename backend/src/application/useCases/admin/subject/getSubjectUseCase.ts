@@ -1,5 +1,5 @@
-import { SubjectRepository } from '../../../infrastructure/repositories/subjectRepository.js';
-import { ClassRepository } from '../../../infrastructure/repositories/classRepository.js';
+import { SubjectRepository } from '../../../../infrastructure/repositories/admin/subjectRepository.js';
+import { ClassRepository } from '../../../../infrastructure/repositories/admin/classRepository.js';
 
 export class GetSubjectsByClassUseCase {
   constructor(

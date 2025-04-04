@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
-import ManageTimetable from '../../application/useCases/timeTable/timetableUseCase.js';
+import ManageTimetable from '../../../application/useCases/admin/timeTable/timetableUseCase.js';
 import mongoose from 'mongoose';
-import HttpStatus from '../../utils/httpStatus.js';
-import { ObjectId } from '../../types/index.js';
+import HttpStatus from '../../../utils/httpStatus.js';
 
 class TimetableController {
   private manageTimetable: ManageTimetable;
