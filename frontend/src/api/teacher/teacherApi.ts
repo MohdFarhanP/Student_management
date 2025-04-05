@@ -45,6 +45,19 @@ export const teachersProfileFetch = async (
 };
 
 export const updateTeacherProfileApi = async (profile: Partial<TeacherProfile>) => {
-  const response = await axios.put(`${TEACHER_API_URL}/profile`, profile);
-  return response.data;
+  try {
+    const response = await axios.patch(`${TEACHER_API_URL}/profile`, profile,{
+      withCredentials:true
+    });
+    console.log(response.data)
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      toast.error(
+        error.response?.data?.message || 'Error on getting teacher profile'
+      );
+      console.error(error);
+    }
+    return null;
+  }
 };

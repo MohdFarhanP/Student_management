@@ -1,15 +1,29 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { studentsProfileFetch } from '../../api/student/studentApi';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { studentsProfileFetch, updateProfileImg } from '../../api/student/studentApi'; 
 
-interface StudentProfile {
+interface IStudent {
   name: string;
-  rollNumber: string;
-  class: string;
-  classes: string[];
+  email: string;
+  age: number;
+  gender: 'Male' | 'Female';
+  roleNumber: string;
+  class: string | null;
+  dob: string;
+  profileImage: string;
+  address: {
+    houseName: string;
+    place: string;
+    district: string;
+    pincode: number;
+    phoneNo: number;
+    guardianName: string;
+    guardianContact: string | null;
+  };
+  classes?: string[];
 }
 
 interface StudentState {
-  profile: StudentProfile | null;
+  profile: IStudent | null;
   loading: boolean;
   error: string | null;
 }
@@ -21,14 +35,39 @@ const initialState: StudentState = {
 };
 
 export const fetchStudentProfile = createAsyncThunk(
-  'student/fetchProfile',
+  'student/fetchStudentProfile',
   async (email: string, { rejectWithValue }) => {
     try {
-      const response = await studentsProfileFetch(email);
-      return response;
-    } catch (error) {
-      console.log(error);
-      return rejectWithValue('Failed to fetch student profile');
+      const data = await studentsProfileFetch(email);
+      return data;
+    }catch (error: unknown) {
+      let errorMessage = 'Failed to fetch teacher profile';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      console.error('Error fetching teacher profile:', errorMessage);
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const updateStudentProfileImage = createAsyncThunk(
+  'student/updateStudentProfileImage',
+  async ({ email, profileImage }: { email: string; profileImage: string }, { rejectWithValue }) => {
+    try {
+      const data = await updateProfileImg(profileImage, email);
+      return data;
+    }catch (error: unknown) {
+      let errorMessage = 'Failed to fetch teacher profile';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      console.error('Error fetching teacher profile:', errorMessage);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -43,11 +82,25 @@ const studentSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchStudentProfile.fulfilled, (state, action) => {
+      .addCase(fetchStudentProfile.fulfilled, (state, action: PayloadAction<IStudent>) => {
         state.loading = false;
         state.profile = action.payload;
       })
       .addCase(fetchStudentProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    builder
+      .addCase(updateStudentProfileImage.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateStudentProfileImage.fulfilled, (state, action: PayloadAction<IStudent>) => {
+        state.loading = false;
+        state.profile = action.payload;
+      })
+      .addCase(updateStudentProfileImage.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

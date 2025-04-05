@@ -31,7 +31,7 @@ export class UserController {
   }
 
   async logout(req: Request, res: Response) {
-    // ...
+    //...
   }
 
   async updatePassword(req: Request, res: Response) {

@@ -8,6 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import TeacherSidebar from '../../components/TeacherSidebar';
 import { IoCameraOutline } from 'react-icons/io5';
+import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
 
 interface TeacherProfile {
   id?: string;
@@ -24,7 +25,6 @@ interface TeacherProfile {
   specialization?: string;
   experienceYears?: number;
   qualification?: string;
-  availability: { [day: string]: number[] };
 }
 
 const TeacherProfile: React.FC = () => {
@@ -35,7 +35,7 @@ const TeacherProfile: React.FC = () => {
   );
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProfile, setEditedProfile] = useState<TeacherProfile | null>(
+  const [editedProfile, setEditedProfile] = useState<Partial<TeacherProfile> | null>(
     null
   );
   const [formErrors, setFormErrors] = useState<Partial<TeacherProfile>>({});
@@ -75,17 +75,19 @@ const TeacherProfile: React.FC = () => {
     });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
+      const uploadedUrl = await uploadToCloudinary(file);
+      console.log("this is the url for uploading to the database ",uploadedUrl)
+      if (uploadedUrl) {
         setEditedProfile((prev) => {
           if (!prev) return prev;
-          return { ...prev, profileImage: reader.result as string };
+          return { ...prev, profileImage: uploadedUrl };
         });
-      };
-      reader.readAsDataURL(file);
+      } else {
+        alert('Failed to upload image. Please try again.');
+      }
     }
   };
 
