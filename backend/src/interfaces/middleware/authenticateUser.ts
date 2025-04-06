@@ -1,33 +1,31 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import { ITokenService } from '../../domain/interface/ITokenService.js';
+import { AuthService } from '../../application/services/authService.js';
 import HttpStatus from '../../utils/httpStatus.js';
 
-interface AuthRequest extends Request {
-  user?: { id: string; email: string; role: string } | JwtPayload;
+interface AuthenticatedRequest extends Request {
+  user?: { id: string; email: string; role: string };
 }
 
+const tokenService: ITokenService = new AuthService();
+
 export const authenticateUser = (
-  req: AuthRequest,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
   const token = req.cookies.access_token;
   if (!token) {
-    res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Unauthorized' });
+    res.status(HttpStatus.UNAUTHORIZED).json({ message: 'No token provided' });
     return;
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
-      id: string;
-      email: string;
-      role: string;
-    };
+    const decoded = tokenService.verifyToken(token);
     req.user = decoded;
     next();
-  } catch (err) {
-    res
-      .status(HttpStatus.FORBIDDEN)
-      .json({ message: `${err}` || 'Invalid or expired token' });
+  } catch (error) {
+    res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid token' });
+    return;
   }
 };

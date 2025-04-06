@@ -1,8 +1,11 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 import {
   adminLogin,
   updateUserPassword,
-} from '../../api/admin/authenticationApi';
+  adminLogout,
+  refreshUserToken,
+} from '../../api/authenticationApi';
 
 interface User {
   email: string;
@@ -16,6 +19,10 @@ interface AuthState {
   error: string | null;
 }
 
+interface ErrorResponse {
+  message: string;
+}
+
 const initialState: AuthState = {
   user: null,
   loading: false,
@@ -24,33 +31,59 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (
-    credentials: { email: string; password: string; role: string },
-    thunkAPI
-  ) => {
+  async (credentials: { email: string; password: string; role: string }, { rejectWithValue }) => {
     try {
-      const response = await adminLogin(credentials);
-      return response;
+      const user = await adminLogin(credentials);
+      return user;
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        return thunkAPI.rejectWithValue(error.message || 'Login failed');
-      }
+      const axiosError = error as AxiosError<ErrorResponse>;
+      return rejectWithValue(
+        axiosError.response?.data?.message || 'Login failed'
+      );
     }
   }
 );
 
 export const updatePassword = createAsyncThunk(
   'auth/updatePassword',
-  async (data: { email: string; password: string; role: string }, thunkAPI) => {
+  async (password: string, { rejectWithValue }) => {
     try {
-      const response = await updateUserPassword(data);
-      return response;
+      const user = await updateUserPassword(password);
+      return user;
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        return thunkAPI.rejectWithValue(
-          error.message || 'Password update failed'
-        );
-      }
+      const axiosError = error as AxiosError<ErrorResponse>;
+      return rejectWithValue(
+        axiosError.response?.data?.message || 'Password update failed'
+      );
+    }
+  }
+);
+
+export const logoutUser = createAsyncThunk(
+  'auth/logoutUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      await adminLogout();
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      return rejectWithValue(
+        axiosError.response?.data?.message || 'Logout failed'
+      );
+    }
+  }
+);
+
+export const refreshToken = createAsyncThunk(
+  'auth/refreshToken',
+  async (_, { rejectWithValue }) => {
+    try {
+      await refreshUserToken();
+      return true;
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<ErrorResponse>;
+      return rejectWithValue(
+        axiosError.response?.data?.message || 'Token refresh failed'
+      );
     }
   }
 );
@@ -61,6 +94,8 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
+      state.loading = false;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -69,7 +104,7 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state, action) => {
+      .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
         state.user = action.payload;
       })
@@ -81,17 +116,37 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updatePassword.fulfilled, (state, action) => {
+      .addCase(updatePassword.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
-        state.user = {
-          ...state.user!,
-          ...action.payload,
-          isInitialLogin: false,
-        };
+        state.user = { ...state.user!, ...action.payload, isInitialLogin: false };
       })
       .addCase(updatePassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.user = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(refreshToken.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(refreshToken.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(refreshToken.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.user = null;
       });
   },
 });

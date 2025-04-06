@@ -21,6 +21,7 @@ const StudentSchema = new Schema<IStudent>(
       guardianName: { type: String },
       guardianContact: { type: String, default: null },
     },
+    refreshToken: { type: String },
   },
   { timestamps: true }
 );

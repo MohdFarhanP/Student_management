@@ -10,6 +10,9 @@ const AdminSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  refreshToken: {
+    type: String,
+  },
 });
 
 export const AdminModel = mongoose.model('Admin', AdminSchema);

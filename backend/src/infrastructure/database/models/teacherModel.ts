@@ -18,6 +18,7 @@ const TeacherSchema = new Schema<ITeacher>(
     dateOfBirth: { type: String, required: true },
     profileImage: { type: String, default: '' },
     specialization: { type: String, default: '' },
+    refreshToken: { type: String },
     experienceYears: { type: Number, default: 0 },
     qualification: { type: String, default: '' },
     availability: {

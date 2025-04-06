@@ -20,6 +20,7 @@ export interface IStudent extends Document {
     guardianName: string;
     guardianContact?: string | null | undefined;
   };
+  refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
 }
