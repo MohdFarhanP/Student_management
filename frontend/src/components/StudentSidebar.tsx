@@ -5,7 +5,8 @@ import { RootState } from '../redux/store';
 
 const StudentSidebar: React.FC = () => {
   const navigate = useNavigate();
-  const profile = useSelector((state: RootState) => state.student.profile) ?? null;
+  const profile =
+    useSelector((state: RootState) => state.student.profile) ?? null;
 
   const defaultImage =
     'https://media.istockphoto.com/id/814423752/photo/eye-of-model-with-colorful-art-make-up-close-up.jpg?s=612x612&w=0&k=20&c=l15OdMWjgCKycMMShP8UK94ELVlEGvt7GmB_esHWPYE=';
@@ -25,7 +26,7 @@ const StudentSidebar: React.FC = () => {
           {profile?.name || 'Student'}
         </h2>
       </div>
-      <div className="border-t border-gray-600 mb-4"></div>
+      <div className="mb-4 border-t border-gray-600"></div>
       <nav className="space-y-2">
         <Link
           to="/student/classes"

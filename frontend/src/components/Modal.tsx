@@ -168,7 +168,7 @@ const Modal = () => {
                     value={formData.name}
                     onChange={handleChange}
                     className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
-                    placeholder="Type product name"
+                    placeholder="Class Name"
                     readOnly
                     disabled
                   />

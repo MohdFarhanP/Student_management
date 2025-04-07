@@ -20,27 +20,40 @@ const AdminSideBar = () => {
       navigate('/login');
       toast.success('Logged out successfully');
     } catch (err) {
-      console.log(err)
+      console.log(err);
       toast.error('Logout failed');
     }
   };
 
   const menuItems = [
-    { name: 'Dashboard', icon: <MdDashboard size={22} />, path: '/admin/dashboard' },
+    {
+      name: 'Dashboard',
+      icon: <MdDashboard size={22} />,
+      path: '/admin/dashboard',
+    },
     { name: 'Students', icon: <MdPeople size={22} />, path: '/admin/students' },
     { name: 'Teachers', icon: <MdSchool size={22} />, path: '/admin/teachers' },
     { name: 'Class', icon: <FaSchool size={22} />, path: '/admin/class' },
     { name: 'Subject', icon: <GiNotebook size={22} />, path: '/admin/subject' },
-    { name: 'TimeTable', icon: <BsTable size={22} />, path: '/admin/timetable' },
+    {
+      name: 'TimeTable',
+      icon: <BsTable size={22} />,
+      path: '/admin/timetable',
+    },
   ];
 
   return (
     <div className="fixed top-0 left-0 flex h-screen w-64 flex-col justify-between bg-black text-white shadow-lg md:relative">
       <div>
-        <div className="flex items-center justify-center py-6">
-          <img src="/logo.png" alt="Logo" className="w-36" />
+        <div className="mr-25 flex items-center justify-center py-6">
+          <img
+            src="/favIcon.jpg"
+            alt="Logo"
+            className="h-12 w-12 rounded-full"
+          />
+          <p className="m-2 p-2 text-2xl font-semibold">STM</p>
         </div>
-
+        <div className="divider"></div>
         <ul className="mt-4 space-y-2 px-4">
           {menuItems.map((item) => (
             <li
@@ -50,7 +63,9 @@ const AdminSideBar = () => {
                 setActive(item.path);
               }}
               className={`flex cursor-pointer items-center space-x-3 rounded-md px-4 py-3 transition ${
-                active === item.path ? 'bg-white text-black' : 'hover:bg-white hover:text-black'
+                active === item.path
+                  ? 'bg-white text-black'
+                  : 'hover:bg-white hover:text-black'
               }`}
             >
               {item.icon}

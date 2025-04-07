@@ -35,9 +35,8 @@ const TeacherProfile: React.FC = () => {
   );
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProfile, setEditedProfile] = useState<Partial<TeacherProfile> | null>(
-    null
-  );
+  const [editedProfile, setEditedProfile] =
+    useState<Partial<TeacherProfile> | null>(null);
   const [formErrors, setFormErrors] = useState<Partial<TeacherProfile>>({});
 
   const defaultImage =
@@ -79,7 +78,10 @@ const TeacherProfile: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       const uploadedUrl = await uploadToCloudinary(file);
-      console.log("this is the url for uploading to the database ",uploadedUrl)
+      console.log(
+        'this is the url for uploading to the database ',
+        uploadedUrl
+      );
       if (uploadedUrl) {
         setEditedProfile((prev) => {
           if (!prev) return prev;

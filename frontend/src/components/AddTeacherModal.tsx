@@ -19,7 +19,6 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
     phoneNo: 0,
     empId: '',
     assignedClass: '',
-    subject: '',
     dateOfBirth: '',
     profileImage: '',
     specialization: '',
@@ -41,7 +40,6 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
     if (!formData.empId?.trim()) newErrors.empId = 'Employee ID is required';
     if (!formData.assignedClass?.trim())
       newErrors.assignedClass = 'Assigned Class is required';
-    if (!formData.subject?.trim()) newErrors.subject = 'Subject is required';
     if (!formData.dateOfBirth)
       newErrors.dateOfBirth = 'Date of Birth is required';
 
@@ -88,12 +86,12 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
           <h3 className="text-xl font-semibold text-black">Add Teacher</h3>
           <button
             onClick={onClose}
+            disabled={isSubmitting}
             className="text-lg text-gray-600 hover:text-black"
           >
             ✕
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="mt-4 grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-black">Name</label>
@@ -104,12 +102,12 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               onChange={handleChange}
               placeholder="Name"
               className="mt-1 w-full rounded-md border p-2 text-black placeholder-gray-500"
+              disabled={isSubmitting}
             />
             {errors.name && (
               <p className="mt-1 text-xs text-red-500">{errors.name}</p>
             )}
           </div>
-
           <div>
             <label className="block text-sm font-medium text-black">
               Email
@@ -121,12 +119,12 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               onChange={handleChange}
               placeholder="Email"
               className="mt-1 w-full rounded-md border p-2 text-black placeholder-gray-500"
+              disabled={isSubmitting}
             />
             {errors.email && (
               <p className="mt-1 text-xs text-red-500">{errors.email}</p>
             )}
           </div>
-
           <div>
             <label className="block text-sm font-medium text-black">
               Gender
@@ -136,6 +134,7 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               value={formData.gender || ''}
               onChange={handleChange}
               className="mt-1 w-full rounded-md border p-2 text-black"
+              disabled={isSubmitting}
             >
               <option value="">Select Gender</option>
               <option value="Male">Male</option>
@@ -145,7 +144,6 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               <p className="mt-1 text-xs text-red-500">{errors.gender}</p>
             )}
           </div>
-
           <div>
             <label className="block text-sm font-medium text-black">
               Phone Number
@@ -157,12 +155,12 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               onChange={handleChange}
               placeholder="Phone Number"
               className="mt-1 w-full rounded-md border p-2 text-black placeholder-gray-500"
+              disabled={isSubmitting}
             />
             {errors.phoneNo && (
               <p className="mt-1 text-xs text-red-500">{errors.phoneNo}</p>
             )}
           </div>
-
           <div>
             <label className="block text-sm font-medium text-black">
               Employee ID
@@ -174,12 +172,12 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               onChange={handleChange}
               placeholder="Employee ID"
               className="mt-1 w-full rounded-md border p-2 text-black placeholder-gray-500"
+              disabled={isSubmitting}
             />
             {errors.empId && (
               <p className="mt-1 text-xs text-red-500">{errors.empId}</p>
             )}
           </div>
-
           <div>
             <label className="block text-sm font-medium text-black">
               Assigned Class
@@ -191,6 +189,7 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               onChange={handleChange}
               placeholder="Assigned Class (e.g., 10B)"
               className="mt-1 w-full rounded-md border p-2 text-black placeholder-gray-500"
+              disabled={isSubmitting}
             />
             {errors.assignedClass && (
               <p className="mt-1 text-xs text-red-500">
@@ -198,24 +197,6 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               </p>
             )}
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-black">
-              Subject
-            </label>
-            <input
-              type="text"
-              name="subject"
-              value={formData.subject || ''}
-              onChange={handleChange}
-              placeholder="Subject (e.g., Mathematics)"
-              className="mt-1 w-full rounded-md border p-2 text-black placeholder-gray-500"
-            />
-            {errors.subject && (
-              <p className="mt-1 text-xs text-red-500">{errors.subject}</p>
-            )}
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-black">
               Date of Birth
@@ -225,13 +206,13 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               name="dateOfBirth"
               value={formData.dateOfBirth || ''}
               onChange={handleChange}
-              className="mt-1 w-full rounded-md border p-2 text-black"
+              className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2 text-black"
+              disabled={isSubmitting}
             />
             {errors.dateOfBirth && (
               <p className="mt-1 text-xs text-red-500">{errors.dateOfBirth}</p>
             )}
           </div>
-
           <div>
             <label className="block text-sm font-medium text-black">
               Specialization
@@ -243,49 +224,22 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               onChange={handleChange}
               placeholder="Specialization"
               className="mt-1 w-full rounded-md border p-2 text-black placeholder-gray-500"
+              disabled={isSubmitting}
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-black">
-              Experience (Years)
-            </label>
-            <input
-              type="number"
-              name="experienceYears"
-              value={formData.experienceYears || ''}
-              onChange={handleChange}
-              placeholder="Experience Years"
-              className="mt-1 w-full rounded-md border p-2 text-black placeholder-gray-500"
-              min="0"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-black">
-              Qualification
-            </label>
-            <input
-              type="text"
-              name="qualification"
-              value={formData.qualification || ''}
-              onChange={handleChange}
-              placeholder="Qualification"
-              className="mt-1 w-full rounded-md border p-2 text-black placeholder-gray-500"
-            />
-          </div>
-
           <div className="col-span-2 mt-6 flex justify-end space-x-3 text-black">
             <button
               type="button"
               onClick={onClose}
               className="rounded-md bg-gray-300 px-4 py-2 text-sm font-medium text-black hover:bg-gray-400"
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <span className="mx-auto flex items-center gap-2">

@@ -16,11 +16,11 @@ export interface ITeacher {
   phoneNo: number;
   empId: string;
   assignedClass: string;
-  subject: string;
   dateOfBirth: string;
   profileImage?: string;
   specialization?: string;
-  experienceYears: number;
+  subject?: string;
+  experienceYears?: number;
   qualification?: string;
 }
 

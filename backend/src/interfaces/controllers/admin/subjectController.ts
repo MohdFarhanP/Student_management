@@ -34,12 +34,14 @@ export class SubjectController {
         notes,
       };
 
-      const createdMsg = await createSubjectUseCase.execute(grade, subjectData);
-      res.status(HttpStatus.CREATED).json({ message: createdMsg });
+      const newSubject = await createSubjectUseCase.execute(grade, subjectData);
+      res.status(HttpStatus.CREATED).json({ data: newSubject });
+      return;
     } catch (error: unknown) {
       if (error instanceof Error) {
         res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
       }
+      return;
     }
   }
   static async getClassSubjects(req: Request, res: Response) {
@@ -47,10 +49,12 @@ export class SubjectController {
       const { grade } = req.params;
       const subjects = await getSubjectsByClass.execute(grade);
       res.status(200).json(subjects);
+      return;
     } catch (error: unknown) {
       if (error instanceof Error) {
         res.status(400).json({ message: error.message });
       }
+      return;
     }
   }
   static async fetchSubjectsByClassId(req: Request, res: Response) {
@@ -58,10 +62,12 @@ export class SubjectController {
       const { classId } = req.params;
       const subjects = await fetchSubjectsByClassIdUseCase.execute(classId);
       res.status(200).json(subjects);
+      return;
     } catch (error: unknown) {
       if (error instanceof Error) {
         res.status(400).json({ message: error.message });
       }
+      return;
     }
   }
 }

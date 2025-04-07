@@ -8,18 +8,20 @@ export interface ISubjectData {
   teachers: string[];
   notes: File[] | null;
 }
+
 type Subject = {
   id: string;
   subjectName: string;
 };
+
 export const addSubject = async (cls: string, subjectData: ISubjectData) => {
   try {
     console.log('Notes being sent:', subjectData.notes);
 
     const uploadedNotes = subjectData.notes
       ? await Promise.all(
-          subjectData.notes.map((file) => uploadToCloudinary(file))
-        )
+        subjectData.notes.map((file) => uploadToCloudinary(file))
+      )
       : [];
 
     const validNotes = uploadedNotes.filter((url) => url !== null);
@@ -41,7 +43,8 @@ export const addSubject = async (cls: string, subjectData: ISubjectData) => {
     );
 
     console.log('Response:', response.data);
-    return;
+    toast.success('Subject added successfully');
+    return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
       toast.error(error.response?.data?.message || 'Error adding subject');
@@ -87,4 +90,23 @@ export const fetchSubjectsByClassId = async (
     }
     throw error;
   }
+};
+export const updateSubject = async (
+  classId: string,
+  subjectId: string,
+  subject: { subjectName: string; teachers: string[]; notes: File[] }
+) => {
+  const formData = new FormData();
+  formData.append('subjectName', subject.subjectName);
+  subject.teachers.forEach((teacher) => formData.append('teachers[]', teacher));
+  subject.notes.forEach((note) => formData.append('notes', note));
+
+  const response = await axios.put(`/api/classes/${classId}/subjects/${subjectId}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+export const deleteSubject = async (classId: string, subjectId: string) => {
+  const response = await axios.delete(`/api/classes/${classId}/subjects/${subjectId}`);
+  return response.data;
 };

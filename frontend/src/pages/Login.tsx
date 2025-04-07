@@ -15,7 +15,9 @@ interface LoginForm {
 
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user, loading, error } = useSelector((state: RootState) => state.auth);
+  const { user, loading, error } = useSelector(
+    (state: RootState) => state.auth
+  );
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -71,7 +73,7 @@ const Login: React.FC = () => {
             : '/teacher/profile';
       navigate(redirectPath);
     } catch (err) {
-      console.log(err)
+      console.log(err);
       toast.error('Failed to update password');
     }
   };
@@ -84,11 +86,17 @@ const Login: React.FC = () => {
         </div>
 
         <div className="flex w-full flex-col justify-center p-10 md:w-1/2">
-          <h1 className="pb-2 text-3xl font-bold text-black">Log in to your account</h1>
-          <p className="text-sm text-gray-500">Welcome back! Enter your credentials to log in.</p>
+          <h1 className="pb-2 text-3xl font-bold text-black">
+            Log in to your account
+          </h1>
+          <p className="text-sm text-gray-500">
+            Welcome back! Enter your credentials to log in.
+          </p>
 
           <div className="mt-6">
-            <h2 className="mb-3 text-center text-xl font-semibold text-black">Please Select Your Role</h2>
+            <h2 className="mb-3 text-center text-xl font-semibold text-black">
+              Please Select Your Role
+            </h2>
             <div className="flex justify-center gap-4">
               {['Admin', 'Student', 'Teacher'].map((role) => (
                 <button
@@ -96,7 +104,9 @@ const Login: React.FC = () => {
                   type="button"
                   onClick={() => setSelectedRole(role)}
                   className={`rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-black shadow-sm transition-all hover:bg-gray-100 hover:shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                    selectedRole === role ? 'border-blue-500 bg-gray-200' : 'bg-white'
+                    selectedRole === role
+                      ? 'border-blue-500 bg-gray-200'
+                      : 'bg-white'
                   }`}
                 >
                   {role}
@@ -120,7 +130,9 @@ const Login: React.FC = () => {
                   placeholder="Email"
                   className="w-full rounded-lg border border-gray-300 p-3 text-black focus:border-blue-500 focus:ring-blue-500"
                 />
-                {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
 
               <div className="mb-4">
@@ -137,7 +149,9 @@ const Login: React.FC = () => {
                   className="w-full rounded-lg border border-gray-300 p-3 text-black focus:border-blue-500 focus:ring-blue-500"
                 />
                 {errors.password && (
-                  <p className="text-sm text-red-500">{errors.password.message}</p>
+                  <p className="text-sm text-red-500">
+                    {errors.password.message}
+                  </p>
                 )}
               </div>
 
@@ -163,7 +177,9 @@ const Login: React.FC = () => {
             </form>
           ) : (
             <div className="mt-6">
-              <h2 className="mb-4 text-center text-xl font-semibold text-black">Reset Your Password</h2>
+              <h2 className="mb-4 text-center text-xl font-semibold text-black">
+                Reset Your Password
+              </h2>
               <p className="mb-4 text-center text-sm text-gray-500">
                 This is your first login. Please set a new password.
               </p>

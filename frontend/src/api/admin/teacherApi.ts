@@ -38,6 +38,7 @@ export const getTeachers = async (page: number, limit: number) => {
 };
 export const editTeacher = async (teacherId: string, data: ITeacher) => {
   try {
+    console.log('in editTeacher Api fucntion ');
     const response = await axios.put(
       `${ADMIN_API_URL}/teacher/teacherById/${teacherId}`,
       data,

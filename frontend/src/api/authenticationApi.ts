@@ -46,11 +46,15 @@ export const adminLogin = async (data: ICredentials) => {
 
 export const updateUserPassword = async (password: string) => {
   try {
-    const response = await axiosInstance.put('/auth/update-password', { password });
+    const response = await axiosInstance.put('/auth/update-password', {
+      password,
+    });
     return response.data.user;
   } catch (error) {
     if (error instanceof AxiosError) {
-      throw new Error(error.response?.data?.message || 'Password update failed');
+      throw new Error(
+        error.response?.data?.message || 'Password update failed'
+      );
     }
     throw new Error('An unexpected error occurred');
   }

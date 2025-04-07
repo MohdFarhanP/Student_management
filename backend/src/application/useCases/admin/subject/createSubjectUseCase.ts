@@ -19,15 +19,16 @@ export class CreateSubjectUseCase {
     }
 
     for (const classItem of classesInGrade) {
-      const existingSubject = await this.subjectRepository.findByName(
-        subjectData.subjectName
+      const subjectEntities = await this.subjectRepository.findByIds(
+        classItem.subjects
       );
-      if (
-        existingSubject &&
-        classItem.subjects.some((subjectId) =>
-          subjectId.equals(new Types.ObjectId(existingSubject.id as string))
-        )
-      ) {
+
+      const isDuplicate = subjectEntities.some(
+        (subject) =>
+          subject.subjectName.toLowerCase() ===
+          subjectData.subjectName.toLowerCase()
+      );
+      if (isDuplicate) {
         throw new Error(
           `Subject "${subjectData.subjectName}" already exists in grade ${grade}`
         );
@@ -54,6 +55,6 @@ export class CreateSubjectUseCase {
         subjects: classItem.subjects,
       });
     }
-    return 'New subject created successfully';
+    return newSubject;
   }
 }

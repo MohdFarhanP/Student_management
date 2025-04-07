@@ -101,7 +101,7 @@ const EditClassModal = ({ classData }: { classData: IClassData }) => {
   return (
     <>
       {/* Modal toggle button */}
-      <button className="btn btn-black btn-sm text-white" onClick={toggleModal}>
+      <button className="btn btn-sm bg-black text-white" onClick={toggleModal}>
         Edit Class
       </button>
 

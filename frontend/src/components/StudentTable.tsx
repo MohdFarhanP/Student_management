@@ -84,7 +84,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
                 </td>
                 <td className="flex justify-around px-5 py-4 text-center">
                   <button
-                    className="btn btn-black btn-sm w-1/2 text-white"
+                    className="btn btn-sm w-1/2 bg-black text-white"
                     onClick={() => handleEdit(student)}
                   >
                     Edit

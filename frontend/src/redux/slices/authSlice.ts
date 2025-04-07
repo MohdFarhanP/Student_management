@@ -31,7 +31,10 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials: { email: string; password: string; role: string }, { rejectWithValue }) => {
+  async (
+    credentials: { email: string; password: string; role: string },
+    { rejectWithValue }
+  ) => {
     try {
       const user = await adminLogin(credentials);
       return user;
@@ -116,10 +119,17 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updatePassword.fulfilled, (state, action: PayloadAction<User>) => {
-        state.loading = false;
-        state.user = { ...state.user!, ...action.payload, isInitialLogin: false };
-      })
+      .addCase(
+        updatePassword.fulfilled,
+        (state, action: PayloadAction<User>) => {
+          state.loading = false;
+          state.user = {
+            ...state.user!,
+            ...action.payload,
+            isInitialLogin: false,
+          };
+        }
+      )
       .addCase(updatePassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;

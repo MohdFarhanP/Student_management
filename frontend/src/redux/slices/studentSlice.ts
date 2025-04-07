@@ -1,5 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { studentsProfileFetch, updateProfileImg } from '../../api/student/studentApi'; 
+import {
+  studentsProfileFetch,
+  updateProfileImg,
+} from '../../api/student/studentApi';
 
 interface IStudent {
   name: string;
@@ -40,7 +43,7 @@ export const fetchStudentProfile = createAsyncThunk(
     try {
       const data = await studentsProfileFetch(email);
       return data;
-    }catch (error: unknown) {
+    } catch (error: unknown) {
       let errorMessage = 'Failed to fetch teacher profile';
 
       if (error instanceof Error) {
@@ -55,11 +58,14 @@ export const fetchStudentProfile = createAsyncThunk(
 
 export const updateStudentProfileImage = createAsyncThunk(
   'student/updateStudentProfileImage',
-  async ({ email, profileImage }: { email: string; profileImage: string }, { rejectWithValue }) => {
+  async (
+    { email, profileImage }: { email: string; profileImage: string },
+    { rejectWithValue }
+  ) => {
     try {
       const data = await updateProfileImg(profileImage, email);
       return data;
-    }catch (error: unknown) {
+    } catch (error: unknown) {
       let errorMessage = 'Failed to fetch teacher profile';
 
       if (error instanceof Error) {
@@ -82,10 +88,13 @@ const studentSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchStudentProfile.fulfilled, (state, action: PayloadAction<IStudent>) => {
-        state.loading = false;
-        state.profile = action.payload;
-      })
+      .addCase(
+        fetchStudentProfile.fulfilled,
+        (state, action: PayloadAction<IStudent>) => {
+          state.loading = false;
+          state.profile = action.payload;
+        }
+      )
       .addCase(fetchStudentProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -96,10 +105,13 @@ const studentSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updateStudentProfileImage.fulfilled, (state, action: PayloadAction<IStudent>) => {
-        state.loading = false;
-        state.profile = action.payload;
-      })
+      .addCase(
+        updateStudentProfileImage.fulfilled,
+        (state, action: PayloadAction<IStudent>) => {
+          state.loading = false;
+          state.profile = action.payload;
+        }
+      )
       .addCase(updateStudentProfileImage.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;

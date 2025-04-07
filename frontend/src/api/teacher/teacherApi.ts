@@ -44,12 +44,14 @@ export const teachersProfileFetch = async (
   }
 };
 
-export const updateTeacherProfileApi = async (profile: Partial<TeacherProfile>) => {
+export const updateTeacherProfileApi = async (
+  profile: Partial<TeacherProfile>
+) => {
   try {
-    const response = await axios.patch(`${TEACHER_API_URL}/profile`, profile,{
-      withCredentials:true
+    const response = await axios.patch(`${TEACHER_API_URL}/profile`, profile, {
+      withCredentials: true,
     });
-    console.log(response.data)
+    console.log(response.data);
     return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {

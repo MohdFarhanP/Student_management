@@ -3,10 +3,8 @@ import axios from 'axios';
 export const uploadToCloudinary = async (
   file: File
 ): Promise<string | null> => {
-
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-
 
   if (!uploadPreset || !cloudName) {
     console.error('Missing Cloudinary config in .env');
