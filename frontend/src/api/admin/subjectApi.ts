@@ -107,6 +107,6 @@ export const updateSubject = async (
   return response.data;
 };
 export const deleteSubject = async (classId: string, subjectId: string) => {
-  const response = await axios.delete(`/api/classes/${classId}/subjects/${subjectId}`);
+  const response = await axios.delete(`${ADMIN_API_URL}/classes/${classId}/subjects/${subjectId}`);
   return response.data;
 };

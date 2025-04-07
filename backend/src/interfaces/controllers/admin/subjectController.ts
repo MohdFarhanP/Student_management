@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { ClassRepository } from '../../../infrastructure/repositories/admin/classRepository.js';
 import { SubjectRepository } from '../../../infrastructure/repositories/admin/subjectRepository.js';
-import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/createSubjectUseCase.js';
+import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/CreateSubjectUseCase.js';
 import HttpStatus from '../../../utils/httpStatus.js';
-import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/getSubjectUseCase.js';
-import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/fetchSubjectsByClassIdUseCase.js';
+import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/GetSubjectUseCase.js';
+import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/FetchSubjectsByClassIdUseCase.js';
 
 const classRepository = new ClassRepository();
 const subjectRepository = new SubjectRepository();
@@ -68,6 +68,14 @@ export class SubjectController {
         res.status(400).json({ message: error.message });
       }
       return;
+    }
+  }
+  static async deleteSubject (req:Request, res: Response) {
+    try {
+      const { classId, subjectId } = req.params;
+      await this.deleteSubjectByidsUseCase.execute()
+    } catch (error) {
+      
     }
   }
 }

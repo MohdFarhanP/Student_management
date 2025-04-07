@@ -66,8 +66,8 @@ export class SubjectRepository {
   //   }
   // }
 
-  // async delete(id: string): Promise<boolean> {
-  //   const deleted = await SubjectModel.findByIdAndDelete(id);
-  //   return !!deleted;
-  // }
+  async delete(id: string): Promise<boolean> {
+    const deleted = await SubjectModel.findByIdAndDelete(id);
+    return !!deleted;
+  }
 }
