@@ -119,7 +119,7 @@ const TeacherProfile: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="mt-20 text-center">Loading...</div>;
+  if (loading) return <div className="mt-20 text-center bg-black/75">Loading...</div>;
   if (error)
     return <div className="mt-20 text-center text-red-500">{error}</div>;
 

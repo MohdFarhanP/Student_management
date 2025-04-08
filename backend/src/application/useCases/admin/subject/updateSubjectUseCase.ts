@@ -1,18 +1,31 @@
-// import { SubjectRepository } from '../../../infrastructure/repositories/subjectRepository.js';
-// import { ClassRepository } from '../../../infrastructure/repositories/classRepository.js';
+import { SubjectRepository } from '../../../../infrastructure/repositories/admin/subjectRepository.js';
+import { ClassRepository } from '../../../../infrastructure/repositories/admin/classRepository.js';
+import { SubjectEntity } from '../../../../domain/entities/subject.js';
 
-// export class UpdateSubjectUseCase {
-//   constructor(
-//     private subjectRepository: SubjectRepository,
-//     private classRepository: ClassRepository
-//   ) {}
+export class UpdateSubjectUseCase {
+  constructor(
+    private subjectRepository: SubjectRepository,
+    private classRepository: ClassRepository
+  ) {}
 
-//   async execute(classId: string, subjectId: string, updatedData: Partial<any>) {
-//     const existingClass = await this.classRepository.findById(classId);
-//     if (!existingClass || !existingClass.subjects.includes(subjectId)) {
-//       throw new Error('Subject not found in the specified class');
-//     }
+  async execute(
+    classGrade: string,
+    subjectId: string,
+    updatedData: Partial<SubjectEntity>
+  ) {
+    const existingClassList =
+      await this.classRepository.findByGrade(classGrade);
 
-//     return await this.subjectRepository.update(subjectId, updatedData);
-//   }
-// }
+    if (!existingClassList || existingClassList.length === 0) {
+      throw new Error('No classes found for the specified grade');
+    }
+    const subjectExistInAny = existingClassList.some((cls) =>
+      cls.subjects.some((id) => id.toString() === subjectId.toString())
+    );
+    if (!subjectExistInAny) {
+      throw new Error('Subject not found in the specified class');
+    }
+
+    return await this.subjectRepository.update(subjectId, updatedData);
+  }
+}

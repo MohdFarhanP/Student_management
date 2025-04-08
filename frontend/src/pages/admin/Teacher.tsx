@@ -40,7 +40,7 @@ const Teacher = () => {
       setTotalCount(totalCount);
     };
     fetch();
-  }, [page]);
+  }, [page,teachers]);
 
   const totalPages = Math.max(Math.ceil(totalCount / limit), 1);
 
@@ -48,6 +48,9 @@ const Teacher = () => {
     setTeachers((prevTeachers) => [newTeacher, ...prevTeachers]);
     setTotalCount((prevCount) => prevCount + 1);
   };
+  const handleEditTeacher = (updatedTeacher: ITeacher) => {
+    setTeachers((prev)=> [...prev,updatedTeacher]);
+  }
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -94,6 +97,7 @@ const Teacher = () => {
           <EditTeacherModal
             teacherData={selectedTeacher}
             onClose={() => setIsEditModalOpen(false)}
+            onEdit={handleEditTeacher}
           />
         )}
 

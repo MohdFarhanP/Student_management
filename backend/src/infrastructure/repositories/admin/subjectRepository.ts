@@ -49,22 +49,23 @@ export class SubjectRepository {
       _id: { $in: subjectIds.map((id) => id) },
     });
   }
-  // async update(
-  //   id: string,
-  //   subjectData: Partial<SubjectEntity>
-  // ): Promise<string> {
-  //   try {
-  //     await SubjectModel.findByIdAndUpdate(
-  //       id,
-  //       { $set: subjectData },
-  //       { new: true }
-  //     );
-  //     return 'Subject updated successfully';
-  //   } catch (error) {
-  //     console.error('Error updating subject:', error);
-  //     throw new Error('Failed to update subject');
-  //   }
-  // }
+
+  async update(
+    id: string,
+    subjectData: Partial<SubjectEntity>
+  ): Promise<ISubject | null> {
+    try {
+      const result = await SubjectModel.findByIdAndUpdate(
+        id,
+        { $set: subjectData },
+        { new: true }
+      );
+      return result;
+    } catch (error) {
+      console.error('Error updating subject:', error);
+      throw new Error('Failed to update subject');
+    }
+  }
 
   async delete(id: string): Promise<boolean> {
     const deleted = await SubjectModel.findByIdAndDelete(id);

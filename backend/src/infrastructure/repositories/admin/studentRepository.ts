@@ -93,12 +93,17 @@ export class StudentRepository implements IStudentRepository {
   }
 
   async create(data: Partial<IStudent>): Promise<Student> {
+    const existStudent = await studentModel.findOne({ email: data.email });
+    if (existStudent) {
+      throw Error('student already exist');
+    }
     if (data.class && typeof data.class === 'string') {
       const classDoc = await ClassModel.findOne({ name: data.class });
       if (!classDoc) throw new Error(`Class '${data.class}' not found`);
       data.class = classDoc._id;
     }
     const studentEntity = new Student(data);
+
     const newStudent = await studentModel.create(studentEntity);
     return new Student({
       ...newStudent.toObject(),

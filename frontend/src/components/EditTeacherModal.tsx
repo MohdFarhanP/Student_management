@@ -5,11 +5,13 @@ import { editTeacher } from '../api/admin/teacherApi';
 interface EditTeacherModalProps {
   teacherData: ITeacher;
   onClose: () => void;
+  onEdit: (updatedTeacher: ITeacher) => void; 
 }
 
 const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
   teacherData,
   onClose,
+  onEdit,
 }) => {
   const [formData, setFormData] = useState<ITeacher>({
     id: teacherData.id,
@@ -87,7 +89,9 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
     setIsSubmitting(true);
     try {
       const updatedTeacher = await editTeacher(teacherData.id, formData);
+      
       if (updatedTeacher) {
+        onEdit(updatedTeacher)  
         onClose();
       }
     } catch (error) {

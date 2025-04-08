@@ -7,21 +7,32 @@ export class DeleteSubjectUseCase {
     private classRepository: ClassRepository
   ) {}
 
-  async execute(classId: string, subjectId: string) {
-    const existingClass = await this.classRepository.findById(classId);
-    if (!existingClass || !existingClass.subjects.includes(subjectId)) {
+  async execute(classGrade: string, subjectId: string) {
+    const existingClassList =
+      await this.classRepository.findByGrade(classGrade);
+
+    if (!existingClassList || existingClassList.length === 0) {
+      throw new Error('No classes found for the specified grade');
+    }
+    const subjectExistInAny = existingClassList.some((cls) =>
+      cls.subjects.some((id) => id.toString() === subjectId.toString())
+    );
+    if (!subjectExistInAny) {
       throw new Error('Subject not found in the specified class');
     }
 
     await this.subjectRepository.delete(subjectId);
 
-    // Remove the subject reference from the class
-    existingClass.subjects = existingClass.subjects.filter(
-      (id) => id.toString() !== subjectId
+    await Promise.all(
+      existingClassList.map(async (cls) => {
+        const updateSubjects = await cls.subjects.filter(
+          (id) => id.toString() !== subjectId.toString()
+        );
+        await this.classRepository.update(cls.grade, {
+          subjects: updateSubjects,
+        });
+      })
     );
-    await this.classRepository.update(classId, {
-      subjects: existingClass.subjects,
-    });
 
     return { message: 'Subject deleted successfully' };
   }

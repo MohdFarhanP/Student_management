@@ -16,12 +16,10 @@ type Subject = {
 
 export const addSubject = async (cls: string, subjectData: ISubjectData) => {
   try {
-    console.log('Notes being sent:', subjectData.notes);
-
     const uploadedNotes = subjectData.notes
       ? await Promise.all(
-        subjectData.notes.map((file) => uploadToCloudinary(file))
-      )
+          subjectData.notes.map((file) => uploadToCloudinary(file))
+        )
       : [];
 
     const validNotes = uploadedNotes.filter((url) => url !== null);
@@ -92,21 +90,49 @@ export const fetchSubjectsByClassId = async (
   }
 };
 export const updateSubject = async (
-  classId: string,
+  classGrade: string,
   subjectId: string,
   subject: { subjectName: string; teachers: string[]; notes: File[] }
 ) => {
-  const formData = new FormData();
-  formData.append('subjectName', subject.subjectName);
-  subject.teachers.forEach((teacher) => formData.append('teachers[]', teacher));
-  subject.notes.forEach((note) => formData.append('notes', note));
+  try {
+    const uploadedNotes = subject.notes
+      ? await Promise.all(subject.notes.map((file) => uploadToCloudinary(file)))
+      : [];
 
-  const response = await axios.put(`/api/classes/${classId}/subjects/${subjectId}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return response.data;
+    const validNotes = uploadedNotes.filter((url) => url !== null);
+
+    const finalSubjectData = {
+      ...subject,
+      notes: validNotes,
+    };
+
+    const response = await axios.put(
+      `${ADMIN_API_URL}/classes/${classGrade}/subjects/${subjectId}`,
+      finalSubjectData,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true,
+      }
+    );
+    console.log('updated subject data', response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      toast.error(error.response?.data?.message || 'Error updating subject');
+    }
+    return null;
+  }
 };
-export const deleteSubject = async (classId: string, subjectId: string) => {
-  const response = await axios.delete(`${ADMIN_API_URL}/classes/${classId}/subjects/${subjectId}`);
-  return response.data;
+export const deleteSubject = async (classGrade: string, subjectId: string) => {
+  try {
+    const response = await axios.delete(
+      `${ADMIN_API_URL}/classes/${classGrade}/subjects/${subjectId}`,
+      {
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.log('this is the error from deldetsubject api ', error);
+  }
 };

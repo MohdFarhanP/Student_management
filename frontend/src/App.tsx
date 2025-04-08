@@ -7,17 +7,31 @@ import Login from './pages/Login.tsx';
 import AdminRoutes from './routes/AdminRoutes.tsx';
 import UserRoutes from './routes/StudentRoutes.tsx';
 import TeacherRoutes from './routes/TeacherRoutes.tsx';
+import { Unauthorized } from './pages/Unauthorized.tsx';
+import InitAuth from './components/InitAuth.tsx';
+import PrivateRoute from './routes/PrivateRoute.tsx';
+
 function App() {
   return (
     <>
       <Provider store={store}>
         <BrowserRouter>
+          <InitAuth />
           <ToastContainer theme="dark" />
+
           <Routes>
+            <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/admin/*" element={<AdminRoutes />} />
-            <Route path="/student/*" element={<UserRoutes />} />
-            <Route path="/teacher/*" element={<TeacherRoutes />} />
+
+            <Route element={<PrivateRoute allowedRoles={['Admin']} />}>
+              <Route path="/admin/*" element={<AdminRoutes />} />
+            </Route>
+            <Route element={<PrivateRoute allowedRoles={['Student']} />}>
+              <Route path="/student/*" element={<UserRoutes />} />
+            </Route>
+            <Route element={<PrivateRoute allowedRoles={['Teacher']} />}>
+              <Route path="/teacher/*" element={<TeacherRoutes />} />
+            </Route>
           </Routes>
         </BrowserRouter>
       </Provider>

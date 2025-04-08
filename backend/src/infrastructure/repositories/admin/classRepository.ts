@@ -139,6 +139,7 @@ export class ClassRepository {
         .findById(id)
         .populate('tutor', 'name')
         .lean();
+
       if (!classDoc) return null;
 
       const tutor = classDoc.tutor as unknown as { name: string };
@@ -177,7 +178,7 @@ export class ClassRepository {
           timetable: c.timetable,
           students: c.students,
           totalStudents: c.totalStudents,
-          tutor: c.tutor.name,
+          tutor: c.tutor ? c.tutor.name : '',
           roomNo: c.roomNo,
           subjects: c.subjects,
           grade: c.grade,
@@ -189,13 +190,13 @@ export class ClassRepository {
     }
   }
   async update(
-    id: string,
+    classGrade: string,
     classData: Partial<ClassEntity>
   ): Promise<ClassEntity> {
     try {
       const updatedClass = await this.classModel
-        .findByIdAndUpdate(
-          id,
+        .findOneAndUpdate(
+          { grade: classGrade },
           {
             $set: {
               ...classData,

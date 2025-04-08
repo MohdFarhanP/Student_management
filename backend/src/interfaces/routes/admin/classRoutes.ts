@@ -14,7 +14,11 @@ router.get('/classNames', ClassController.getAllClassNames);
 router.get('/classlist', ClassController.fetchClasses);
 router.post('/:grade/subjects', SubjectController.createSubject);
 router.get('/:grade/subjects', SubjectController.getClassSubjects);
-router.delete('/:classId/subjects/:subjectId', SubjectController.deleteSubject);
+router.delete(
+  '/:classGrade/subjects/:subjectId',
+  SubjectController.deleteSubject
+);
+router.put('/:classGrade/subjects/:subjectId', SubjectController.updateSubject);
 // router.put('/:classId/subjects/:subjectId', SubjectController.updateSubject);
 // router.delete('/:classId/subjects/:subjectId', SubjectController.deleteSubject);
 

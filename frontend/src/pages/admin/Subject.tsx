@@ -4,7 +4,12 @@ import AdminSideBar from '../../components/AdminSideBar';
 import ClassDropdown from '../../components/ClassDropdown';
 import AddSubjectModal from '../../components/AddSubjectModal';
 import EditSubjectModal from '../../components/EditSubjectModal';
-import { addSubject, getSubjectsByClass, updateSubject ,deleteSubject } from '../../api/admin/subjectApi';
+import {
+  addSubject,
+  getSubjectsByClass,
+  updateSubject,
+  deleteSubject,
+} from '../../api/admin/subjectApi';
 import { AxiosError } from 'axios';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
@@ -15,9 +20,12 @@ const Subject = () => {
   >([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedSubject, setSelectedSubject] = useState<
-    { _id: string; subjectName: string; teachers: string[]; notes: string[] } | null
-  >(null);
+  const [selectedSubject, setSelectedSubject] = useState<{
+    _id: string;
+    subjectName: string;
+    teachers: string[];
+    notes: string[];
+  } | null>(null);
 
   useEffect(() => {
     if (!selectedClass) return;
@@ -75,9 +83,13 @@ const Subject = () => {
     if (!selectedSubject || !selectedClass) return;
 
     try {
-      const result = await updateSubject(selectedClass, selectedSubject._id, updatedSubject); // Assume API call exists
+      const result = await updateSubject(
+        selectedClass,
+        selectedSubject._id,
+        updatedSubject
+      );
       setSubjects((prev) =>
-        prev.map((sub) => (sub._id === selectedSubject._id ? result : sub))
+        prev.map((sub) => (sub._id === selectedSubject._id ? result.data : sub))
       );
       setIsEditModalOpen(false);
       setSelectedSubject(null);
@@ -144,7 +156,9 @@ const Subject = () => {
               </div>
               <hr className="my-2 border-black" />
               <div className="mt-2">
-                <h3 className="text-sm font-semibold text-black underline">Notes</h3>
+                <h3 className="text-sm font-semibold text-black underline">
+                  Notes
+                </h3>
                 {Array.isArray(subject.notes) && subject.notes.length > 0 ? (
                   subject.notes.map((note, index) => (
                     <img
@@ -161,14 +175,17 @@ const Subject = () => {
               <div className="mt-3">
                 <h3 className="text-sm font-semibold text-black">Teachers</h3>
                 <ul className="mt-2 max-h-20 overflow-y-auto">
-                  {Array.isArray(subject.teachers) && subject.teachers.length > 0 ? (
+                  {Array.isArray(subject.teachers) &&
+                  subject.teachers.length > 0 ? (
                     subject.teachers.map((teacher, index) => (
                       <li key={index} className="truncate text-sm text-black">
                         {teacher}
                       </li>
                     ))
                   ) : (
-                    <p className="text-sm text-gray-600">No teachers assigned</p>
+                    <p className="text-sm text-gray-600">
+                      No teachers assigned
+                    </p>
                   )}
                 </ul>
               </div>

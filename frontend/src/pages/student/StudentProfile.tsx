@@ -61,7 +61,7 @@ const StudentProfile: React.FC = () => {
     setIsEditing(!isEditing);
   };
 
-  if (loading) return <div className="p-4 text-center">Loading...</div>;
+  if (loading) return <div className="p-4 text-center bg-black/75">Loading...</div>;
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
 
   return (

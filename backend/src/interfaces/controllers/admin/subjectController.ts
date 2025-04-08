@@ -5,6 +5,8 @@ import { CreateSubjectUseCase } from '../../../application/useCases/admin/subjec
 import HttpStatus from '../../../utils/httpStatus.js';
 import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/GetSubjectUseCase.js';
 import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/FetchSubjectsByClassIdUseCase.js';
+import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/DeleteSubjectUseCase.js';
+import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/UpdateSubjectUseCase.js';
 
 const classRepository = new ClassRepository();
 const subjectRepository = new SubjectRepository();
@@ -18,6 +20,14 @@ const fetchSubjectsByClassIdUseCase = new FetchSubjectsByClassIdUseCase(
   classRepository
 );
 const getSubjectsByClass = new GetSubjectsByClassUseCase(
+  subjectRepository,
+  classRepository
+);
+const deleteSubjectUseCase = new DeleteSubjectUseCase(
+  subjectRepository,
+  classRepository
+);
+const updateSubjectUseCase = new UpdateSubjectUseCase(
   subjectRepository,
   classRepository
 );
@@ -70,12 +80,45 @@ export class SubjectController {
       return;
     }
   }
-  static async deleteSubject (req:Request, res: Response) {
+  static async deleteSubject(req: Request, res: Response) {
     try {
-      const { classId, subjectId } = req.params;
-      await this.deleteSubjectByidsUseCase.execute()
-    } catch (error) {
-      
+      const { classGrade, subjectId } = req.params;
+      await deleteSubjectUseCase.execute(classGrade, subjectId);
+      res
+        .status(HttpStatus.OK)
+        .json({ message: 'successfully deleted the subject' });
+      return;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      }
+      return;
+    }
+  }
+  static async updateSubject(req: Request, res: Response) {
+    try {
+      const { classGrade, subjectId } = req.params;
+      const { subjectName, teachers, notes } = req.body;
+
+      const subjectData = {
+        subjectName,
+        teachers,
+        notes,
+      };
+      const result = await updateSubjectUseCase.execute(
+        classGrade,
+        subjectId,
+        subjectData
+      );
+      res
+        .status(HttpStatus.OK)
+        .json({ message: 'successfully deleted the subject', data: result });
+      return;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      }
+      return;
     }
   }
 }

@@ -155,11 +155,11 @@ const Login: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex justify-end">
+              {/* <div className="flex justify-end">
                 <a href="#" className="text-sm text-blue-500 hover:underline">
                   Forgot Password?
                 </a>
-              </div>
+              </div> */}
 
               <button
                 type="submit"

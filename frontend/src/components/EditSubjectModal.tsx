@@ -5,10 +5,19 @@ import { ImSpinner2 } from 'react-icons/im';
 import { getTeachersNames } from '../api/admin/teacherApi';
 
 interface EditSubjectModalProps {
-  subject: { _id: string; subjectName: string; teachers: string[]; notes: string[] };
+  subject: {
+    _id: string;
+    subjectName: string;
+    teachers: string[];
+    notes: string[];
+  };
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (subject: { subjectName: string; teachers: string[]; notes: File[] }) => void;
+  onSubmit: (subject: {
+    subjectName: string;
+    teachers: string[];
+    notes: File[];
+  }) => void;
 }
 
 interface Teacher {
@@ -23,7 +32,9 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
   onSubmit,
 }) => {
   const [subjectName, setSubjectName] = useState(subject.subjectName);
-  const [selectedTeachers, setSelectedTeachers] = useState<string[]>(subject.teachers);
+  const [selectedTeachers, setSelectedTeachers] = useState<string[]>(
+    subject.teachers
+  );
   const [existingNotes, setExistingNotes] = useState<string[]>(subject.notes); // Existing URLs
   const [newNotesFiles, setNewNotesFiles] = useState<File[]>([]); // New uploads
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -54,7 +65,9 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const invalidFiles = files.filter((file) => file.type !== 'application/pdf');
+    const invalidFiles = files.filter(
+      (file) => file.type !== 'application/pdf'
+    );
 
     if (invalidFiles.length > 0) {
       toast.error('Only PDF files are allowed.');
@@ -66,7 +79,9 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
 
   const handleTeacherSelection = (teacher: string) => {
     setSelectedTeachers((prev) =>
-      prev.includes(teacher) ? prev.filter((t) => t !== teacher) : [...prev, teacher]
+      prev.includes(teacher)
+        ? prev.filter((t) => t !== teacher)
+        : [...prev, teacher]
     );
   };
 
@@ -112,10 +127,14 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
         className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="mb-4 text-xl font-semibold text-gray-800">Edit Subject</h2>
+        <h2 className="mb-4 text-xl font-semibold text-gray-800">
+          Edit Subject
+        </h2>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Subject Name</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Subject Name
+          </label>
           <input
             type="text"
             value={subjectName}
@@ -127,7 +146,9 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Select Teachers</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Select Teachers
+          </label>
           <div className="mt-1 flex flex-wrap gap-2">
             {teachers.map((teacher) => (
               <button
@@ -148,7 +169,9 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Existing Notes</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Existing Notes
+          </label>
           {existingNotes.length > 0 ? (
             <ul className="mt-1 list-disc pl-5 text-sm text-gray-600">
               {existingNotes.map((note, index) => (
@@ -170,7 +193,9 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Upload New Notes (PDF)</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Upload New Notes (PDF)
+          </label>
           <input
             type="file"
             accept="application/pdf"
