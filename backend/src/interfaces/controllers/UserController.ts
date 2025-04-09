@@ -107,29 +107,41 @@ export class UserController {
     }
   }
 
-  async refreshToken(req: Request, res: Response) {
+  async refreshToken(req: Request, res: Response): Promise<void> {
     try {
       const refreshToken = req.cookies.refresh_token;
-      if (!refreshToken) throw new Error('No refresh token provided');
+      if (!refreshToken) {
+        res
+          .status(HttpStatus.UNAUTHORIZED)
+          .json({ message: 'No refresh token provided' });
+        return;
+      }
 
-      const { accessToken } =
-        await this.refreshTokenUseCase.execute(refreshToken);
+      const result = await this.refreshTokenUseCase.execute(refreshToken);
 
-      res.cookie('access_token', accessToken, {
+      res.cookie('access_token', result.accessToken, {
         ...cookieOptions,
         maxAge: ACCESS_TOKEN_MAX_AGE,
       });
 
-      res.status(HttpStatus.OK).json({ message: 'Token refreshed' });
+      res.status(HttpStatus.OK).json({
+        message: 'Token refreshed',
+        user: {
+          email: result.user.email,
+          role: result.user.role,
+        },
+      });
     } catch (error: unknown) {
       console.error('Refresh Token Error:', error);
-      if (error instanceof Error) {
-        res.status(HttpStatus.UNAUTHORIZED).json({ message: error.message });
-      } else {
-        res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Internal server error' });
-      }
+
+      const message =
+        error instanceof Error ? error.message : 'Internal server error';
+      const status =
+        error instanceof Error && error.message.includes('Invalid')
+          ? HttpStatus.UNAUTHORIZED
+          : HttpStatus.INTERNAL_SERVER_ERROR;
+
+      res.status(status).json({ message });
     }
   }
 }

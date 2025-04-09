@@ -32,7 +32,6 @@ export class AuthService implements ITokenService {
       role: string;
     };
   }
-
   verifyToken(token: string): { id: string; email: string; role: string } {
     return jwt.verify(token, this.jwtSecret) as {
       id: string;

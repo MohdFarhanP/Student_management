@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, updatePassword } from '../redux/slices/authSlice';
 import { RootState, AppDispatch } from '../redux/store';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import bannerImg from '../assets/hand-drawn-study-abroad-illustration.png';
 import { PiSpinnerBallFill } from 'react-icons/pi';
@@ -15,31 +14,23 @@ interface LoginForm {
 
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user, loading, error } = useSelector(
-    (state: RootState) => state.auth
-  );
-  const navigate = useNavigate();
+  const { user, loading, error } = useSelector((state: RootState) => state.auth);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => {
-    if (user) {
-      const redirectPath =
-        user.role === 'Admin'
-          ? '/admin/dashboard'
-          : user.role === 'Student'
-            ? '/student/profile'
-            : '/teacher/profile';
-      if (user.role !== 'Admin' && user.isInitialLogin) {        setShowResetPassword(true);
+    if (user && !loading) {
+      if (user.role !== 'Admin' && user.isInitialLogin) {
+        setShowResetPassword(true);
       } else {
-        navigate(redirectPath);
+        setShowResetPassword(false);
       }
     }
     if (error) {
       toast.error(error);
     }
-  }, [user, error, navigate]);
+  }, [user, loading, error]);
 
   const {
     register,
@@ -63,14 +54,8 @@ const Login: React.FC = () => {
     try {
       await dispatch(updatePassword(newPassword)).unwrap();
       toast.success('Password updated successfully');
-      setShowResetPassword(false);
-      const redirectPath =
-        user!.role === 'Admin'
-          ? '/admin/dashboard'
-          : user!.role === 'Student'
-            ? '/student/profile'
-            : '/teacher/profile';
-      navigate(redirectPath);
+      setShowResetPassword(false); // Hide reset form after success
+      // Removed navigate; let App.tsx handle redirection
     } catch (err) {
       console.log(err);
       toast.error('Failed to update password');
@@ -153,12 +138,6 @@ const Login: React.FC = () => {
                   </p>
                 )}
               </div>
-
-              {/* <div className="flex justify-end">
-                <a href="#" className="text-sm text-blue-500 hover:underline">
-                  Forgot Password?
-                </a>
-              </div> */}
 
               <button
                 type="submit"

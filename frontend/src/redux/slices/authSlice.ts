@@ -10,7 +10,7 @@ import {
 interface User {
   email: string;
   role: string;
-  isInitialLogin: boolean;
+  isInitialLogin?: boolean;
 }
 
 interface AuthState {
@@ -80,14 +80,35 @@ export const refreshToken = createAsyncThunk(
   'auth/refreshToken',
   async (_, { rejectWithValue }) => {
     try {
-      await refreshUserToken();
-      return true;
+      const response = await refreshUserToken(); // Ensure this returns { accessToken, user }
+      return response;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<ErrorResponse>;
       return rejectWithValue(
         axiosError.response?.data?.message || 'Token refresh failed'
       );
     }
+  }
+);
+
+export const checkAuthOnLoad = createAsyncThunk(
+  'auth/checkAuthOnLoad',
+  async (_, { dispatch, rejectWithValue }) => {
+    const accessToken = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('access_token='))
+      ?.split('=')[1];
+    if (accessToken) {
+      try {
+        // Verify token with backend
+        const response = await dispatch(refreshToken()).unwrap(); // Refresh token and get user data
+        return response.user; // Expect backend to return { user, accessToken }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        return rejectWithValue('Authentication check failed');
+      }
+    }
+    return null;
   }
 );
 
@@ -150,10 +171,26 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(refreshToken.fulfilled, (state) => {
+      .addCase(refreshToken.fulfilled, (state, action: PayloadAction<{ accessToken: string; user: User }>) => {
         state.loading = false;
+        state.user = action.payload.user;
       })
       .addCase(refreshToken.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.user = null;
+      })
+      .addCase(checkAuthOnLoad.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkAuthOnLoad.fulfilled, (state, action: PayloadAction<User | null>) => {
+        state.loading = false;
+        if (action.payload) {
+          state.user = action.payload;
+        }
+      })
+      .addCase(checkAuthOnLoad.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
         state.user = null;

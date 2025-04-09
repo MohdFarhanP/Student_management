@@ -24,7 +24,7 @@ export interface IStudent {
   address?: Adresss;
 }
 
-const ADMIN_STUDENT_API_URL = '/students';
+const ADMIN_STUDENT_API_URL = '/admin/students';
 
 interface StudentsResponse {
   students: IStudent[];

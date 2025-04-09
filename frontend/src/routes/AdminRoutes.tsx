@@ -9,12 +9,13 @@ import TimetableManagement from '../pages/admin/TimetableManagement';
 const AdminRoutes = () => {
   return (
     <Routes>
-      <Route path="/class" element={<Class />}></Route>
+      <Route path="/class" element={<Class />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/students" element={<Student />} />
       <Route path="/teachers" element={<Teacher />} />
       <Route path="/subject" element={<Subject />} />
       <Route path="/timetable" element={<TimetableManagement />} />
+      <Route index element={<Dashboard />} />
     </Routes>
   );
 };

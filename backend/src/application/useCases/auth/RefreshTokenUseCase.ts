@@ -7,7 +7,13 @@ export class RefreshTokenUseCase {
     private userRepository: IUserRepository
   ) {}
 
-  async execute(refreshToken: string): Promise<{ accessToken: string }> {
+  async execute(refreshToken: string): Promise<{
+    accessToken: string;
+    user: {
+      email: string;
+      role: string;
+    };
+  }> {
     const decoded = this.tokenService.verifyRefreshToken(refreshToken);
     const user = await this.userRepository.findByRefreshToken(
       refreshToken,
@@ -21,6 +27,12 @@ export class RefreshTokenUseCase {
       role: user.role,
     });
 
-    return { accessToken };
+    return {
+      accessToken,
+      user: {
+        email: user.email,
+        role: user.role,
+      },
+    };
   }
 }
