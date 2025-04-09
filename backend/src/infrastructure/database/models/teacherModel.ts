@@ -21,6 +21,7 @@ const TeacherSchema = new Schema<ITeacher>(
     refreshToken: { type: String },
     experienceYears: { type: Number, default: 0 },
     qualification: { type: String, default: '' },
+    isInitialLogin: { type: Boolean, default: true },
     availability: {
       type: Object,
       required: true,

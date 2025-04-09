@@ -2,7 +2,12 @@ export interface IUserRepository {
   findByEmailAndRole(
     email: string,
     role: string
-  ): Promise<{ id: string; email: string; password: string } | null>;
+  ): Promise<{
+    id: string;
+    email: string;
+    password: string;
+    isInitialLogin: boolean;
+  } | null>;
   findByRefreshToken(
     token: string,
     role: string

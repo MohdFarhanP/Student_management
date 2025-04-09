@@ -1,20 +1,34 @@
-import { TeacherRepository } from '../../../../infrastructure/repositories/admin/teacherRepository.js';
-import { SubjectModel } from '../../../../infrastructure/database/models/subjectModel.js';
-import { ClassModel } from '../../../../infrastructure/database/models/classModel.js';
+import { sendDefaultPasswordEmail } from '../../../../utils/emailService.js';
+import { ITokenService } from '../../../../domain/interface/ITokenService.js';
+import crypto from 'crypto';
 import { ITeacher } from '../../../../domain/interface/ITeacher.js';
-import { Teacher } from '../../../../domain/entities/teacher.js';
+import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository.js';
 
 export class AddTeacherUseCase {
-  constructor(private teacherRepository: TeacherRepository) {}
+  constructor(
+    private teacherRepository: ITeacherRepository,
+    private authService: ITokenService
+  ) {}
 
-  async execute(teacherData: Partial<ITeacher>): Promise<Teacher> {
-    try {
-      const newTeacher = await this.teacherRepository.create(teacherData);
-      return newTeacher;
-    } catch (error) {
-      throw error instanceof Error
-        ? error
-        : new Error('Unknown error adding teacher');
+  async execute(teacherData: Partial<ITeacher>, role: string = 'Teacher') {
+    const defaultPassword = crypto.randomBytes(8).toString('hex');
+    const hashedPassword = await this.authService.hashPassword(defaultPassword);
+
+    const existingTeacher = await this.teacherRepository.getByEmail(
+      teacherData.email!
+    );
+    if (existingTeacher) {
+      return { id: existingTeacher.id, email: existingTeacher.email, role };
     }
+
+    const fullTeacherData: Partial<ITeacher> = {
+      ...teacherData,
+      password: hashedPassword,
+      isInitialLogin: true,
+    };
+    const teacher = await this.teacherRepository.create(fullTeacherData);
+
+    await sendDefaultPasswordEmail(teacherData.email!, defaultPassword);
+    return teacher;
   }
 }

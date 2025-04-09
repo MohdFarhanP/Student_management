@@ -4,11 +4,7 @@ import { ITokenService } from '../../../domain/interface/ITokenService.js';
 export class LoginUseCase {
   constructor(
     private userRepository: IUserRepository,
-    private tokenService: ITokenService,
-    private defaultPasswords: { [key: string]: string } = {
-      Student: 'student123',
-      Teacher: 'teacher123',
-    }
+    private tokenService: ITokenService
   ) {}
 
   async execute(email: string, password: string, role: string) {
@@ -17,12 +13,7 @@ export class LoginUseCase {
       throw new Error('Invalid credentials');
     }
 
-    let isInitialLogin = false;
-    if (role !== 'Admin' && password === this.defaultPasswords[role]) {
-      isInitialLogin = true;
-    } else if (
-      !(await this.tokenService.comparePasswords(password, user.password))
-    ) {
+    if (!(await this.tokenService.comparePasswords(password, user.password))) {
       throw new Error('Invalid credentials');
     }
 
@@ -39,7 +30,7 @@ export class LoginUseCase {
     await this.userRepository.updateRefreshToken(user.id, refreshToken);
 
     return {
-      user: { email: user.email, role, isInitialLogin },
+      user: { email: user.email, role, isInitialLogin: user.isInitialLogin },
       token,
       refreshToken,
     };

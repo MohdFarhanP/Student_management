@@ -1,30 +1,6 @@
-import axios, { AxiosError } from 'axios';
-import { store } from '../redux/store';
-import { refreshToken, logout } from '../redux/slices/authSlice';
+import { apiRequest } from './apiClient';
 
-const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5000/api',
-  withCredentials: true,
-});
-
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      try {
-        await store.dispatch(refreshToken()).unwrap();
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        store.dispatch(logout());
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
-      }
-    }
-    return Promise.reject(error);
-  }
-);
+const AUTH_API_URL = '/auth';
 
 interface ICredentials {
   email: string;
@@ -32,53 +8,41 @@ interface ICredentials {
   role: string;
 }
 
-export const adminLogin = async (data: ICredentials) => {
-  try {
-    const response = await axiosInstance.post('/auth/login', data);
-    return response.data.user;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw new Error(error.response?.data?.message || 'Login failed');
-    }
-    throw new Error('An unexpected error occurred');
-  }
-};
+interface User {
+  email: string;
+  role: string;
+  isInitialLogin: boolean;
+}
 
-export const updateUserPassword = async (password: string) => {
-  try {
-    const response = await axiosInstance.put('/auth/update-password', {
-      password,
-    });
-    return response.data.user;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw new Error(
-        error.response?.data?.message || 'Password update failed'
-      );
-    }
-    throw new Error('An unexpected error occurred');
-  }
-};
+interface LoginResponse {
+  message: string;
+  user: User;
+}
 
-export const adminLogout = async () => {
-  try {
-    await axiosInstance.post('/auth/logout');
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw new Error(error.response?.data?.message || 'Logout failed');
-    }
-    throw new Error('An unexpected error occurred');
-  }
-};
+interface TokenResponse {
+  accessToken: string;
+  refreshToken?: string;
+}
 
-export const refreshUserToken = async () => {
-  try {
-    const response = await axiosInstance.post('/auth/refresh-token');
-    return response.data;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw new Error(error.response?.data?.message || 'Token refresh failed');
-    }
-    throw new Error('An unexpected error occurred');
-  }
-};
+interface UpdateUserPasswordParams {
+  password: string;
+}
+
+export const adminLogin = (data: ICredentials) =>
+  apiRequest<LoginResponse, ICredentials>(
+    'post',
+    `${AUTH_API_URL}/login`,
+    data
+  ).then((res) => res.user);
+
+export const updateUserPassword = (password: string) =>
+  apiRequest<LoginResponse, UpdateUserPasswordParams>(
+    'put',
+    `${AUTH_API_URL}/update-password`,
+    { password }
+  ).then((res) => res.user);
+
+export const adminLogout = () => apiRequest<void>('post', '/auth/logout');
+
+export const refreshUserToken = () =>
+  apiRequest<TokenResponse>('post', `${AUTH_API_URL}/refresh-token`);

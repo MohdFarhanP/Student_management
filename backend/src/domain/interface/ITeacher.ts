@@ -16,6 +16,7 @@ export interface ITeacher extends Document {
   experienceYears?: number;
   qualification?: string;
   refreshToken?: string;
+  isInitialLogin?: boolean;
   createdAt: Date;
   updatedAt: Date;
   availability: { [day: string]: number[] };

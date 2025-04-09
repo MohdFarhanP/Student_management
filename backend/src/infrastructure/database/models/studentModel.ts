@@ -22,6 +22,7 @@ const StudentSchema = new Schema<IStudent>(
       guardianContact: { type: String, default: null },
     },
     refreshToken: { type: String },
+    isInitialLogin: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

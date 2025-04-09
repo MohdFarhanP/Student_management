@@ -131,6 +131,7 @@ export class StudentRepository implements IStudentRepository {
     const result = await studentModel.findByIdAndDelete(id);
     if (!result) throw new Error('Student not found');
   }
+
   async getProfile(email: string): Promise<Student | null> {
     const rawStudent = await studentModel
       .findOne({ email })
@@ -161,5 +162,10 @@ export class StudentRepository implements IStudentRepository {
         guardianContact: studentData.address.guardianContact ?? null,
       },
     });
+  }
+
+  async findByEmail(email: string): Promise<Student | null> {
+    const student = await studentModel.findOne({ email });
+    return student ? new Student(student) : null;
   }
 }

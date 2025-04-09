@@ -25,9 +25,9 @@ const userController = new UserController(
   loginUseCase,
   updatePasswordUseCase,
   refreshTokenUseCase,
-  logoutUseCase,
-  authService,
-  userRepository
+  logoutUseCase
+  // authService,
+  // userRepository
 );
 
 router.post('/login', userController.login.bind(userController));

@@ -1,15 +1,14 @@
-// controllers/UserController.ts
 import { Request, Response } from 'express';
 import { LoginUseCase } from '../../application/useCases/auth/LoginUseCase.js';
 import { UpdatePasswordUseCase } from '../../application/useCases/auth/UpdatePasswordUseCase.js';
 import { RefreshTokenUseCase } from '../../application/useCases/auth/RefreshTokenUseCase.js';
 import { LogoutUseCase } from '../../application/useCases/auth/LogoutUseCase.js';
 import HttpStatus from '../../utils/httpStatus.js';
-import { ITokenService } from '../../domain/interfaces/ITokenService.js';
-import { IUserRepository } from '../../domain/interfaces/IUserRepository.js';
+// import { ITokenService } from '../../domain/interface/ITokenService.js';
+// import { IUserRepository } from '../../domain/interface/IUserTokenRepository.js';
 
-const ACCESS_TOKEN_MAX_AGE = 15 * 60 * 1000; // 15 minutes
-const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
+const ACCESS_TOKEN_MAX_AGE = 15 * 60 * 1000;
+const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 const cookieOptions = {
   httpOnly: true,
@@ -26,9 +25,9 @@ export class UserController {
     private loginUseCase: LoginUseCase,
     private updatePasswordUseCase: UpdatePasswordUseCase,
     private refreshTokenUseCase: RefreshTokenUseCase,
-    private logoutUseCase: LogoutUseCase,
-    private tokenService: ITokenService, // Kept for consistency, though not used directly
-    private userRepository: IUserRepository // Kept for consistency, though not used directly
+    private logoutUseCase: LogoutUseCase
+    // private tokenService: ITokenService, // Kept for consistency, though not used directly
+    // private userRepository: IUserRepository // Kept for consistency, though not used directly
   ) {}
 
   async login(req: Request, res: Response) {
@@ -88,7 +87,7 @@ export class UserController {
   async updatePassword(req: AuthenticatedRequest, res: Response) {
     try {
       const { password } = req.body;
-      const { email, role } = req.user!; // From auth middleware
+      const { email, role } = req.user!;
       const user = await this.updatePasswordUseCase.execute(
         email,
         password,

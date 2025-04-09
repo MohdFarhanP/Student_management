@@ -1,5 +1,5 @@
 import { TeacherModel } from '../../database/models/teacherModel.js';
-import { IRepository } from '../../../domain/interface/admin/IRepository.js';
+import { ITeacherRepository } from '../../../domain/interface/admin/ITeacherRepository.js';
 import { Teacher } from '../../../domain/entities/teacher.js';
 import { ClassModel } from '../../database/models/classModel.js';
 import { SubjectModel } from '../../database/models/subjectModel.js';
@@ -26,7 +26,7 @@ interface PopulatedTeacher {
   updatedAt: Date;
 }
 
-export class TeacherRepository implements IRepository<Teacher> {
+export class TeacherRepository implements ITeacherRepository {
   async insertMany(teachers: Teacher[]) {
     if (!teachers || teachers.length === 0) return;
 
@@ -230,5 +230,9 @@ export class TeacherRepository implements IRepository<Teacher> {
     if (!result) {
       throw new Error('Teacher not found or already deleted');
     }
+  }
+  async getByEmail(email: string): Promise<Teacher | null> {
+    const teacher = await TeacherModel.findOne({ email });
+    return teacher ? new Teacher(teacher) : null;
   }
 }

@@ -21,6 +21,7 @@ export interface IStudent extends Document {
     guardianContact?: string | null | undefined;
   };
   refreshToken?: string;
+  isInitialLogin?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

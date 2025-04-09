@@ -1,4 +1,4 @@
-import { IRepository } from '../../../../domain/interface/admin/IRepository.js';
+import { IRepository } from '../../../../domain/interface/admin/ITeacherRepository.js';
 import { Teacher } from '../../../../domain/entities/teacher.js';
 
 export class GetTeachersByLimitUseCase {

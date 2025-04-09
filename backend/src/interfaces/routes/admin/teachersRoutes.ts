@@ -6,15 +6,17 @@ import { TeacherRepository } from '../../../infrastructure/repositories/admin/te
 import { EditTeacherUseCase } from '../../../application/useCases/admin/teacher/editTeacherUseCase.js';
 import { AddTeacherUseCase } from '../../../application/useCases/admin/teacher/addTeacherUseCase.js';
 import { DeleteTeacherUseCase } from '../../../application/useCases/admin/teacher/deleteTeacherUseCase.js';
+import { AuthService } from '../../../application/services/authService.js';
 
 const router = express.Router();
 const teacherRepository = new TeacherRepository();
+const authService = new AuthService();
 const getTeachersByLimitUseCase = new GetTeachersByLimitUseCase(
   teacherRepository
 );
 const getAllTeachersUseCase = new GetAllTeachersUseCase(teacherRepository);
 const editTeacherUseCase = new EditTeacherUseCase(teacherRepository);
-const addTeacherUseCase = new AddTeacherUseCase(teacherRepository);
+const addTeacherUseCase = new AddTeacherUseCase(teacherRepository, authService);
 const deleteTeacherUseCase = new DeleteTeacherUseCase(teacherRepository);
 const teacherController = new TeacherController(
   getTeachersByLimitUseCase,

@@ -11,4 +11,5 @@ export interface IStudentRepository {
   create(data: Partial<IStudent>): Promise<Student>;
   delete(id: string): Promise<void>;
   getProfile(email: string): Promise<Student | null>;
+  findByEmail(email: string): Promise<Student | null>;
 }

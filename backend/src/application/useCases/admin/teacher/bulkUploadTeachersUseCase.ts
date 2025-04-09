@@ -1,10 +1,10 @@
 import { Teacher } from '../../../../domain/entities/teacher.js';
-import { IRepository } from '../../../../domain/interface/admin/IRepository.js';
+import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository.js';
 import { IExcelParser } from '../../../../domain/interface/admin/IExcelParser.js';
 
 export class BulkUploadTeacherUseCase {
   constructor(
-    private teacherRepo: IRepository<Teacher>,
+    private teacherRepo: ITeacherRepository,
     private teacherParser: IExcelParser<Teacher>
   ) {}
 

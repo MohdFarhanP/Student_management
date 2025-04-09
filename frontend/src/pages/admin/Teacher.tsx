@@ -28,7 +28,7 @@ const Teacher = () => {
   const [page, setPage] = useState<number>(1);
   const limit = 5;
   const [teachers, setTeachers] = useState<ITeacher[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [selectedTeacher, setSelectedTeacher] = useState<ITeacher | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
@@ -37,10 +37,10 @@ const Teacher = () => {
     const fetch = async () => {
       const { teachers, totalCount } = await getTeachers(page, limit);
       setTeachers(teachers);
-      setTotalCount(totalCount);
+      setTotalCount(totalCount ?? 0);
     };
     fetch();
-  }, [page,teachers]);
+  }, [page, teachers]);
 
   const totalPages = Math.max(Math.ceil(totalCount / limit), 1);
 
@@ -49,8 +49,8 @@ const Teacher = () => {
     setTotalCount((prevCount) => prevCount + 1);
   };
   const handleEditTeacher = (updatedTeacher: ITeacher) => {
-    setTeachers((prev)=> [...prev,updatedTeacher]);
-  }
+    setTeachers((prev) => [...prev, updatedTeacher]);
+  };
 
   return (
     <div className="flex min-h-screen bg-white">

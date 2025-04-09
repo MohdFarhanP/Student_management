@@ -8,7 +8,6 @@ import AdminRoutes from './routes/AdminRoutes.tsx';
 import UserRoutes from './routes/StudentRoutes.tsx';
 import TeacherRoutes from './routes/TeacherRoutes.tsx';
 import { Unauthorized } from './pages/Unauthorized.tsx';
-import InitAuth from './components/InitAuth.tsx';
 import PrivateRoute from './routes/PrivateRoute.tsx';
 
 function App() {
@@ -16,7 +15,6 @@ function App() {
     <>
       <Provider store={store}>
         <BrowserRouter>
-          <InitAuth />
           <ToastContainer theme="dark" />
 
           <Routes>

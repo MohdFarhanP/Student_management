@@ -6,11 +6,13 @@ import { AddStudentUseCase } from '../../../application/useCases/admin/student/a
 import { EditStudentUseCase } from '../../../application/useCases/admin/student/editStudentUseCase.js';
 import { DeleteStudentUseCase } from '../../../application/useCases/admin/student/deleteStudentUseCase.js';
 import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase.js';
+import { AuthService } from '../../../application/services/authService.js';
 
 const router = express.Router();
 const studentRepository = new StudentRepository();
+const authService = new AuthService();
 const getAllStudentsUseCase = new GetAllStudentsUseCase(studentRepository);
-const addStudentUseCase = new AddStudentUseCase(studentRepository);
+const addStudentUseCase = new AddStudentUseCase(studentRepository, authService);
 const editStudentUseCase = new EditStudentUseCase(studentRepository);
 const deleteStudentUseCase = new DeleteStudentUseCase(studentRepository);
 const getStudentProfileUseCase = new GetStudentProfileUseCase(

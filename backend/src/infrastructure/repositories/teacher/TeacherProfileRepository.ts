@@ -29,6 +29,7 @@ interface PopulatedSubject {
   _id: string | mongoose.Types.ObjectId;
   subjectName: string;
 }
+
 function isPopulatedClass(value: unknown): value is PopulatedClass {
   return typeof value === 'object' && value !== null && 'name' in value;
 }

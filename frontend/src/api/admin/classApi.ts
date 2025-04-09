@@ -1,6 +1,5 @@
-import axios, { AxiosError } from 'axios';
-import { ADMIN_API_URL } from './bulkUploadApi';
 import { toast } from 'react-toastify';
+import { apiRequest } from '../apiClient';
 
 export interface IClassData {
   name: string;
@@ -12,84 +11,36 @@ export interface IClassData {
   id?: string;
 }
 
-export const addClass = async (data: IClassData) => {
-  try {
-    const response = await axios.post(`${ADMIN_API_URL}/classes/class`, data, {
-      withCredentials: true,
-    });
-    toast.success(response.data?.message);
-    return;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      toast.error(error.response?.data?.message);
-    }
-    return;
-  }
-};
-export const getClasses = async (
-  page: number,
-  limit: number
-): Promise<{ classes: IClassData[]; totalCount: number } | null> => {
-  try {
-    const response = await axios.get(`${ADMIN_API_URL}/classes/classdata`, {
-      params: {
-        page,
-        limit,
-      },
-      withCredentials: true,
-    });
-    console.log(response);
-    return response.data;
-  } catch (error) {
-    if (error instanceof AxiosError)
-      toast.error('this is the error ', error.response?.data?.message);
-    return null;
-  }
-};
-export const getClassNames = async () => {
-  try {
-    const response = await axios.get(`${ADMIN_API_URL}/classes/classNames`, {
-      withCredentials: true,
-    });
-    console.log(response);
-    return response.data;
-  } catch (error) {
-    if (error instanceof AxiosError)
-      toast.error('this is the error ', error.response?.data?.message);
-    return null;
-  }
-};
-export const updateClass = async (data: IClassData) => {
-  try {
-    const response = await axios.put(
-      `${ADMIN_API_URL}/classes/update/${data.id}`,
-      data,
-      {
-        withCredentials: true,
-      }
-    );
-    console.log('response from the update class', response);
-    toast.success(response.data?.message);
-    return;
-  } catch (error) {
-    if (error instanceof AxiosError)
-      toast.error('this is the error ', error.response?.data?.message);
+export const addClass = (data: IClassData) =>
+  apiRequest<{ message: string }, IClassData>(
+    'post',
+    '/classes/class',
+    data
+  ).then((res) => {
+    toast.success(res.message);
+    return res;
+  });
 
-    return;
-  }
-};
-export const fetchClasses = async () => {
-  try {
-    const response = await axios.get(`${ADMIN_API_URL}/classes/classlist`, {
-      withCredentials: true,
-    });
-    return response.data;
-  } catch (error: unknown) {
-    if (error instanceof AxiosError) {
-      const message = error.response?.data?.message || 'Error fetching classes';
-      toast.error(message);
-      throw new Error(message);
-    }
-    throw error;
-  }
-};
+export const getClasses = (page: number, limit: number) =>
+  apiRequest<{ classes: IClassData[]; totalCount: number }>(
+    'get',
+    '/classes/classdata',
+    undefined,
+    { params: { page, limit } }
+  );
+
+export const getClassNames = () =>
+  apiRequest<{ classNames: string[] }>('get', '/classes/classNames');
+
+export const updateClass = (data: IClassData) =>
+  apiRequest<{ message: string }, IClassData>(
+    'put',
+    `/classes/update/${data.id}`,
+    data
+  ).then((res) => {
+    toast.success(res.message);
+    return res;
+  });
+
+export const fetchClasses = () =>
+  apiRequest<IClassData[]>('get', '/classes/classlist');

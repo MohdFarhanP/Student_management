@@ -31,8 +31,7 @@ const Login: React.FC = () => {
           : user.role === 'Student'
             ? '/student/profile'
             : '/teacher/profile';
-      if (user.isInitialLogin) {
-        setShowResetPassword(true);
+      if (user.role !== 'Admin' && user.isInitialLogin) {        setShowResetPassword(true);
       } else {
         navigate(redirectPath);
       }
