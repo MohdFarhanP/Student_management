@@ -168,4 +168,31 @@ export class StudentRepository implements IStudentRepository {
     const student = await studentModel.findOne({ email });
     return student ? new Student(student) : null;
   }
+  async getStudentsByClass(classId: string): Promise<Student[]> {
+    const students = await studentModel.find({ class: classId }).exec();
+    return students.map(
+      (student) =>
+        new Student({
+          id: student._id.toString(),
+          name: student.name,
+          email: student.email,
+          roleNumber: student.roleNumber,
+          dob: student.dob,
+          gender: student.gender,
+          age: student.age,
+          class: student.class,
+          password: student.password,
+          profileImage: student.profileImage,
+          address: {
+            houseName: student.address.houseName,
+            place: student.address.place,
+            district: student.address.district,
+            pincode: student.address.pincode,
+            phoneNo: student.address.phoneNo,
+            guardianName: student.address.guardianName,
+            guardianContact: student.address.guardianContact,
+          },
+        })
+    );
+  }
 }

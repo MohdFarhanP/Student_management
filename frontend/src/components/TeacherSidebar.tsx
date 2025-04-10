@@ -49,10 +49,10 @@ const TeacherSidebar: React.FC = () => {
       {/* Sidebar Navigation */}
       <nav className="space-y-2">
         <Link
-          to="/teacher/classes"
+          to="/teacher/Attendance"
           className="block rounded p-2 hover:bg-white hover:font-medium hover:text-black"
         >
-          Classes
+          Attendance
         </Link>
         <Link
           to="/teacher/schedule"

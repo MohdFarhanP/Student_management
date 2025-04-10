@@ -19,33 +19,41 @@ const AppContent: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Run checkAuthOnLoad only once on mount
   useEffect(() => {
     dispatch(checkAuthOnLoad());
   }, [dispatch]);
 
-  // Handle initial redirection after authentication
   useEffect(() => {
     if (!loading && user) {
-      const redirectPath =
-        user.role === 'Admin'
-          ? '/admin/dashboard'
-          : user.role === 'Student'
-            ? '/student/profile'
-            : user.role === 'Teacher'
-              ? '/teacher/profile'
-              : '/login';
-      const shouldRedirectToLogin = user.role !== 'Admin' && user.isInitialLogin;
-
-      // Navigate only if not already on the target path
-      if (shouldRedirectToLogin && location.pathname !== '/login') {
-        navigate('/login', { replace: true });
-      } else if (!shouldRedirectToLogin && location.pathname !== redirectPath) {
-        navigate(redirectPath, { replace: true });
+      const currentPath = location.pathname;
+  
+      if (
+        currentPath === '/' ||
+        currentPath === '/login' ||
+        currentPath === '/admin' ||
+        currentPath === '/student' ||
+        currentPath === '/teacher'
+      ) {
+        const redirectPath =
+          user.role === 'Admin'
+            ? '/admin/dashboard'
+            : user.role === 'Student'
+              ? '/student/profile'
+              : user.role === 'Teacher'
+                ? '/teacher/profile'
+                : '/login';
+  
+        const shouldRedirectToLogin = user.role !== 'Admin' && user.isInitialLogin;
+  
+        if (shouldRedirectToLogin) {
+          navigate('/login', { replace: true });
+        } else {
+          navigate(redirectPath, { replace: true });
+        }
       }
     }
   }, [user, loading, navigate, location.pathname]);
-
+  
   if (loading) {
     return <div>Loading...</div>; // Optional: Show a loading indicator
   }

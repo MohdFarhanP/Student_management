@@ -1,5 +1,4 @@
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { MdDashboard, MdPeople, MdSchool, MdLogout } from 'react-icons/md';
 import { GiNotebook } from 'react-icons/gi';
 import { FaSchool } from 'react-icons/fa';
@@ -10,15 +9,15 @@ import { toast } from 'react-toastify';
 import { AppDispatch } from '../redux/store';
 
 const AdminSideBar = () => {
-  const [active, setActive] = useState<string>('');
-  const navigate = useNavigate();
+
+  const navigate = useNavigate(); 
   const dispatch = useDispatch<AppDispatch>();
 
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
-      navigate('/login');
       toast.success('Logged out successfully');
+      navigate('/login');
     } catch (err) {
       console.log(err);
       toast.error('Logout failed');
@@ -56,21 +55,18 @@ const AdminSideBar = () => {
         <div className="divider"></div>
         <ul className="mt-4 space-y-2 px-4">
           {menuItems.map((item) => (
-            <li
+            <NavLink
               key={item.name}
-              onClick={() => {
-                navigate(item.path);
-                setActive(item.path);
-              }}
-              className={`flex cursor-pointer items-center space-x-3 rounded-md px-4 py-3 transition ${
-                active === item.path
-                  ? 'bg-white text-black'
-                  : 'hover:bg-white hover:text-black'
-              }`}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center space-x-3 rounded-md px-4 py-3 transition ${
+                  isActive ? 'bg-white text-black' : 'hover:bg-white hover:text-black'
+                }`
+              }
             >
               {item.icon}
               <span className="text-sm font-medium">{item.name}</span>
-            </li>
+            </NavLink>
           ))}
         </ul>
       </div>

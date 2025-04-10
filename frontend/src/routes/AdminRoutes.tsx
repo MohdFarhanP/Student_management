@@ -15,7 +15,6 @@ const AdminRoutes = () => {
       <Route path="/teachers" element={<Teacher />} />
       <Route path="/subject" element={<Subject />} />
       <Route path="/timetable" element={<TimetableManagement />} />
-      <Route index element={<Dashboard />} />
     </Routes>
   );
 };

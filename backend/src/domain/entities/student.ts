@@ -9,7 +9,6 @@ export class Student {
   gender: 'Male' | 'Female';
   age: number;
   class?: string | mongoose.Types.ObjectId | null;
-  subjectIds?: (string | mongoose.Types.ObjectId)[];
   password?: string;
   profileImage?: string;
   address: {
@@ -31,7 +30,6 @@ export class Student {
     this.gender = data.gender || 'Male';
     this.age = data.age || 0;
     this.class = data.class || null;
-    this.subjectIds = data.subjectIds || [];
     this.password = data.password;
     this.profileImage = data.profileImage || '';
     this.address = {

@@ -15,7 +15,7 @@ export interface Teacher {
   name: string;
   email: string;
   gender: 'Male' | 'Female';
-  phoneNo: number;
+  phoneNo: string;
   empId: string;
   assignedClass: string | null;
   subject: string | null;

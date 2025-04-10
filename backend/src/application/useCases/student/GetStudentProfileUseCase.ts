@@ -1,8 +1,8 @@
 import { Student } from '../../../domain/entities/student.js';
-import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository.js';
+import { IStudentProfileRepository } from '../../../domain/interface/student/IStudentProfileRepository.js';
 
 export class GetStudentProfileUseCase {
-  constructor(private studentRepository: IStudentRepository) {}
+  constructor(private studentRepository: IStudentProfileRepository) {}
 
   async execute(email: string): Promise<Student> {
     const profile = await this.studentRepository.getProfile(email);

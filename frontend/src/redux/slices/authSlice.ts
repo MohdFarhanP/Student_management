@@ -37,6 +37,7 @@ export const loginUser = createAsyncThunk(
   ) => {
     try {
       const user = await adminLogin(credentials);
+      console.log('userdata after calling login ',user);
       return user;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<ErrorResponse>;
@@ -80,7 +81,8 @@ export const refreshToken = createAsyncThunk(
   'auth/refreshToken',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await refreshUserToken(); // Ensure this returns { accessToken, user }
+      const response = await refreshUserToken();
+      console.log("the response from the refresh Tocken",response)
       return response;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<ErrorResponse>;

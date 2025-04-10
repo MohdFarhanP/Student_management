@@ -1,5 +1,8 @@
 import nodemailer from 'nodemailer';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
   throw new Error('Email credentials are missing in environment variables');
 }

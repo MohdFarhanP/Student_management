@@ -7,15 +7,21 @@ import { EditStudentUseCase } from '../../../application/useCases/admin/student/
 import { DeleteStudentUseCase } from '../../../application/useCases/admin/student/deleteStudentUseCase.js';
 import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase.js';
 import { AuthService } from '../../../application/services/authService.js';
+import { StudentProfileRepository } from '../../../infrastructure/repositories/student/StudentProfileRepository.js';
+import { GetStudentsByClassUseCase } from '../../../application/useCases/admin/student/getStudentsByClass.js';
 
 const router = express.Router();
 const studentRepository = new StudentRepository();
+const studentProfileRepository = new StudentProfileRepository();
 const authService = new AuthService();
 const getAllStudentsUseCase = new GetAllStudentsUseCase(studentRepository);
 const addStudentUseCase = new AddStudentUseCase(studentRepository, authService);
 const editStudentUseCase = new EditStudentUseCase(studentRepository);
 const deleteStudentUseCase = new DeleteStudentUseCase(studentRepository);
 const getStudentProfileUseCase = new GetStudentProfileUseCase(
+  studentProfileRepository
+);
+const getStudentsByClassUseCase = new GetStudentsByClassUseCase(
   studentRepository
 );
 const studentController = new StudentController(
@@ -23,7 +29,8 @@ const studentController = new StudentController(
   addStudentUseCase,
   editStudentUseCase,
   deleteStudentUseCase,
-  getStudentProfileUseCase
+  getStudentProfileUseCase,
+  getStudentsByClassUseCase
 );
 
 router.get('/students', studentController.getStudents.bind(studentController));

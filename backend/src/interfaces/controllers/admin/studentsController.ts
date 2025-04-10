@@ -6,6 +6,7 @@ import { EditStudentUseCase } from '../../../application/useCases/admin/student/
 import { DeleteStudentUseCase } from '../../../application/useCases/admin/student/deleteStudentUseCase.js';
 import { IStudent } from '../../../domain/interface/IStudent.js';
 import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase.js';
+import { Student } from '../../../domain/entities/student.js';
 
 export class StudentController {
   constructor(
@@ -13,7 +14,8 @@ export class StudentController {
     private addStudentUseCase: AddStudentUseCase,
     private editStudentUseCase: EditStudentUseCase,
     private deleteStudentUseCase: DeleteStudentUseCase,
-    private getStudentProfileUseCase: GetStudentProfileUseCase
+    private getStudentProfileUseCase: GetStudentProfileUseCase,
+    private getStudentsByClassUseCase: GetStudentsByClassUseCase
   ) {}
 
   async getStudents(req: Request, res: Response) {
@@ -89,6 +91,16 @@ export class StudentController {
       res
         .status(HttpStatus.OK)
         .json({ message: 'Student deleted successfully' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({ message });
+    }
+  }
+  async getStudentByClass(req: Request,res: Response):Promise<Student[]>{
+    try {
+      const { classId } = req.params;
+      const students = await this.getStudentsByClassUseCase.execute(classId);
+      res.status(200).json(students);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(HttpStatus.BAD_REQUEST).json({ message });

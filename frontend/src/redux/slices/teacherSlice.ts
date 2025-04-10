@@ -4,7 +4,15 @@ import {
   updateTeacherProfileApi,
 } from '../../api/teacher/teacherApi';
 
-interface TeacherProfile {
+type Availability = {
+  Monday: number[];
+  Tuesday: number[];
+  Wednesday: number[];
+  Thursday: number[];
+  Friday: number[];
+};
+
+export interface TeacherProfile {
   id?: string;
   name: string;
   email: string;
@@ -19,7 +27,7 @@ interface TeacherProfile {
   specialization?: string;
   experienceYears?: number;
   qualification?: string;
-  availability: { [day: string]: number[] };
+  availability: Availability;
 }
 
 interface TeacherState {
