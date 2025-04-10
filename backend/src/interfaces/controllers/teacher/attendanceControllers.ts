@@ -76,9 +76,11 @@ export class AttendanceController {
       res
         .status(HttpStatus.OK)
         .json({ message: 'Attendance marked successfully' });
+      return;
     } catch (error: unknown) {
       if (error instanceof Error) {
         res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+        return;
       }
     }
   }

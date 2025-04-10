@@ -28,7 +28,7 @@ const ADMIN_STUDENT_API_URL = '/admin/students';
 
 interface StudentsResponse {
   students: IStudent[];
-  totalCount: number;
+  totalCount?: number;
 }
 
 export const getStudents = (page: number, limit: number) =>

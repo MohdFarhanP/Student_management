@@ -1,6 +1,8 @@
 import { toast } from 'react-toastify';
 import { apiRequest } from '../apiClient';
 
+const ADMIN_CLASS_API_URL = `/admin/classes`;
+
 export interface IClassData {
   name: string;
   grade: string;
@@ -11,10 +13,16 @@ export interface IClassData {
   id?: string;
 }
 
+interface Student {
+  id: string;
+  name: string;
+}
+
+
 export const addClass = (data: IClassData) =>
   apiRequest<{ message: string }, IClassData>(
     'post',
-    '/classes/class',
+    `${ADMIN_CLASS_API_URL}/class`,
     data
   ).then((res) => {
     toast.success(res.message);
@@ -24,10 +32,19 @@ export const addClass = (data: IClassData) =>
 export const getClasses = (page: number, limit: number) =>
   apiRequest<{ classes: IClassData[]; totalCount: number }>(
     'get',
-    '/classes/classdata',
+    `${ADMIN_CLASS_API_URL}/classdata`,
     undefined,
     { params: { page, limit } }
   );
+export const getStudentsByClass = (classId:string) =>{
+  console.log('classId checking in from getStudentsByClass', classId);
+  apiRequest<Student[]>(
+    'get',
+    `${ADMIN_CLASS_API_URL}/${classId}/students`,
+    undefined,
+  );
+}
+  
 
 export const getClassNames = () =>
   apiRequest<{ classNames: string[] }>('get', '/classes/classNames');
@@ -35,7 +52,7 @@ export const getClassNames = () =>
 export const updateClass = (data: IClassData) =>
   apiRequest<{ message: string }, IClassData>(
     'put',
-    `/classes/update/${data.id}`,
+    `${ADMIN_CLASS_API_URL}/update/${data.id}`,
     data
   ).then((res) => {
     toast.success(res.message);
@@ -43,4 +60,4 @@ export const updateClass = (data: IClassData) =>
   });
 
 export const fetchClasses = () =>
-  apiRequest<IClassData[]>('get', '/classes/classlist');
+  apiRequest<IClassData[]>('get', `${ADMIN_CLASS_API_URL}/classlist`);

@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../redux/store';
-import { fetchTeacherProfile } from '../../redux/slices/teacherSlice'; // Adjust path
+import { fetchTeacherProfile } from '../../redux/slices/teacherSlice';
 import { markAttendance } from '../../api/teacher/attendenceApi';
+import { getStudentsByClass } from '../../api/admin/classApi';
 import { fetchTimetable } from '../../api/admin/timeTableApi';
 import TeacherSidebar from '../../components/TeacherSidebar';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorMessage from '../../components/ErrorMessage';
-
-// Import your existing types
-import { TimetableData, TimetableSlot } from '../../types/timetable'; // Adjust path
+import { TimetableData, TimetableSlot } from '../../types/timetable';
 
 interface Student {
   id: string;
@@ -47,8 +46,7 @@ const TeacherAttendanceManagement: React.FC = () => {
           await dispatch(fetchTeacherProfile(user.email)).unwrap();
         }
         const [studentsData, timetableData] = await Promise.all([
-          // Placeholder: Replace with fetchStudents API
-          fetch(`${process.env.REACT_APP_API_URL}/classes/${classId}/students`).then((res) => res.json() as Promise<Student[]>),
+          getStudentsByClass(classId!), // Updated to use getStudentsByClass
           fetchTimetable(classId!),
         ]);
         setStudents(studentsData);
@@ -83,19 +81,15 @@ const TeacherAttendanceManagement: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       <TeacherSidebar />
-
-      {/* Main Content */}
       <div className="flex flex-1 items-start justify-center bg-[#E6F0FA] p-6">
         <div className="max-w-5xl space-y-6">
           <div className="flex gap-6">
-            {/* Attendance Management Card */}
             <div className="flex-1 rounded-lg bg-white p-6 shadow-md">
               <div className="mb-4 flex items-center justify-between pb-5">
                 <h2 className="text-lg font-semibold text-gray-800">
                   Mark Attendance
                 </h2>
               </div>
-
               <form onSubmit={(e) => {
                 e.preventDefault();
                 const formData: AttendanceForm = {

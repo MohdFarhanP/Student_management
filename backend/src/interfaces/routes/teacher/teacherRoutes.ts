@@ -32,7 +32,7 @@ router.patch(
 );
 
 router.post(
-  '/classes/:classId/attendance',
+  '/:classId/attendance',
   attendanceController.markAttendance.bind(attendanceController)
 );
 
