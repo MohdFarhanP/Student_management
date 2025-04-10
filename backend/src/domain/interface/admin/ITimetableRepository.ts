@@ -1,11 +1,12 @@
-import { ObjectId } from '../../../types/index.js';
+// src/domain/interface/admin/ITimetableRepository.js
+import { Types } from 'mongoose';
 import Timetable from '../../entities/timetable.js';
 
 export interface ITimetableRepository {
-  getByClassId(classId: ObjectId): Promise<Timetable>;
+  getByClassId(classId: Types.ObjectId): Promise<Timetable>;
   save(timetable: Timetable): Promise<void>;
   findConflict(
-    teacherId: ObjectId,
+    teacherId: Types.ObjectId,
     day: string,
     period: number
   ): Promise<Timetable | null>;
