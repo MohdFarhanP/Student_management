@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { AxiosError } from 'axios';
 import {
   adminLogin,
@@ -8,6 +8,7 @@ import {
 } from '../../api/authenticationApi';
 
 interface User {
+  id: string;
   email: string;
   role: string;
   isInitialLogin?: boolean;
@@ -37,7 +38,7 @@ export const loginUser = createAsyncThunk(
   ) => {
     try {
       const user = await adminLogin(credentials);
-      console.log('userdata after calling login ',user);
+      console.log('userdata after calling login ', user);
       return user;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<ErrorResponse>;
@@ -53,6 +54,7 @@ export const updatePassword = createAsyncThunk(
   async (password: string, { rejectWithValue }) => {
     try {
       const user = await updateUserPassword(password);
+      console.log('API response:', user);
       return user;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<ErrorResponse>;
@@ -82,7 +84,7 @@ export const refreshToken = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await refreshUserToken();
-      console.log("the response from the refresh Tocken",response)
+      console.log('the response from the refresh Tocken', response);
       return response;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<ErrorResponse>;
@@ -102,9 +104,8 @@ export const checkAuthOnLoad = createAsyncThunk(
       ?.split('=')[1];
     if (accessToken) {
       try {
-        // Verify token with backend
-        const response = await dispatch(refreshToken()).unwrap(); // Refresh token and get user data
-        return response.user; // Expect backend to return { user, accessToken }
+        const response = await dispatch(refreshToken()).unwrap();
+        return response.user;
       } catch (error) {
         console.error('Auth check failed:', error);
         return rejectWithValue('Authentication check failed');
@@ -130,7 +131,7 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
+      .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
       })
@@ -142,17 +143,14 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        updatePassword.fulfilled,
-        (state, action: PayloadAction<User>) => {
-          state.loading = false;
-          state.user = {
-            ...state.user!,
-            ...action.payload,
-            isInitialLogin: false,
-          };
-        }
-      )
+      .addCase(updatePassword.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = {
+          ...state.user!,
+          ...action.payload,
+          isInitialLogin: false,
+        };
+      })
       .addCase(updatePassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -173,7 +171,7 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(refreshToken.fulfilled, (state, action: PayloadAction<{ accessToken: string; user: User }>) => {
+      .addCase(refreshToken.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
       })
@@ -186,7 +184,7 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(checkAuthOnLoad.fulfilled, (state, action: PayloadAction<User | null>) => {
+      .addCase(checkAuthOnLoad.fulfilled, (state, action) => {
         state.loading = false;
         if (action.payload) {
           state.user = action.payload;
@@ -199,6 +197,5 @@ const authSlice = createSlice({
       });
   },
 });
-
 export const { logout } = authSlice.actions;
 export default authSlice.reducer;

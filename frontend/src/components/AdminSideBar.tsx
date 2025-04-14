@@ -9,8 +9,7 @@ import { toast } from 'react-toastify';
 import { AppDispatch } from '../redux/store';
 
 const AdminSideBar = () => {
-
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
   const handleLogout = async () => {
@@ -60,7 +59,9 @@ const AdminSideBar = () => {
               to={item.path}
               className={({ isActive }) =>
                 `flex items-center space-x-3 rounded-md px-4 py-3 transition ${
-                  isActive ? 'bg-white text-black' : 'hover:bg-white hover:text-black'
+                  isActive
+                    ? 'bg-white text-black'
+                    : 'hover:bg-white hover:text-black'
                 }`
               }
             >

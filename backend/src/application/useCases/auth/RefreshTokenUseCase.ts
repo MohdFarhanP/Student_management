@@ -10,6 +10,7 @@ export class RefreshTokenUseCase {
   async execute(refreshToken: string): Promise<{
     accessToken: string;
     user: {
+      id: string;
       email: string;
       role: string;
     };
@@ -30,6 +31,7 @@ export class RefreshTokenUseCase {
     return {
       accessToken,
       user: {
+        id: user.id,
         email: user.email,
         role: user.role,
       },

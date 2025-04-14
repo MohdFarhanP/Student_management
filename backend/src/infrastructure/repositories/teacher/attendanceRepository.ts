@@ -1,44 +1,53 @@
 import mongoose from 'mongoose';
 import { IAttendanceRepository } from '../../../domain/interface/IAttendanceRepository.js';
 import { Attendance } from '../../../domain/entities/attendance.js';
+import { IAttendance } from '../../../domain/interface/IAttendance.js';
+import { AttendanceModel } from '../../database/models/attendanceModel.js';
+import { Types } from 'mongoose';
 
-const attendanceSchema = new mongoose.Schema({
-  classId: { type: mongoose.Types.ObjectId, required: true },
-  studentId: { type: mongoose.Types.ObjectId, required: true },
-  date: { type: Date, required: true },
-  period: { type: Number, required: true, min: 1, max: 6 },
-  status: { type: String, enum: ['present', 'absent'], required: true },
-  createdBy: { type: mongoose.Types.ObjectId, required: true },
-});
-
-const AttendanceModel = mongoose.model('Attendance', attendanceSchema);
+type LeanAttendance = Omit<IAttendance, 'id'> & {
+  _id: mongoose.Types.ObjectId;
+};
 
 export class AttendanceRepository implements IAttendanceRepository {
   async save(attendance: Attendance): Promise<void> {
-    const doc = new AttendanceModel({
-      classId: attendance.classId,
-      studentId: attendance.studentId,
-      date: attendance.date,
-      period: attendance.period,
-      status: attendance.status,
-      createdBy: attendance.createdBy,
-    });
-    await doc.save();
+    const { classId, studentId, date, period, status, day, createdBy } =
+      attendance;
+    const result = await AttendanceModel.findOneAndUpdate(
+      {
+        classId: new Types.ObjectId(classId as string),
+        studentId: new Types.ObjectId(studentId as string),
+        date: new Date(date),
+        period,
+        day,
+      },
+      {
+        $setOnInsert: {
+          status,
+          createdBy: new Types.ObjectId(createdBy as string),
+        },
+      },
+      { upsert: true, new: true, runValidators: true }
+    );
+    if (!result) {
+      throw new Error('Failed to save attendance');
+    }
   }
 
-  async findByClassDatePeriod(
+  async findByStudentClassDatePeriod(
     classId: string,
+    studentId: string,
     date: Date,
-    period: number
+    period: number,
+    day: string
   ): Promise<Attendance | null> {
     const doc = await AttendanceModel.findOne({
-      classId,
-      date: {
-        $gte: new Date(date.setHours(0, 0, 0, 0)),
-        $lt: new Date(date.setHours(23, 59, 59, 999)),
-      },
+      classId: new Types.ObjectId(classId),
+      studentId: new Types.ObjectId(studentId),
+      date: new Date(date.setHours(0, 0, 0, 0)),
       period,
-    }).lean();
+      day,
+    }).lean<LeanAttendance>();
     return doc
       ? Attendance.create({
           id: doc._id.toString(),
@@ -47,8 +56,29 @@ export class AttendanceRepository implements IAttendanceRepository {
           date: doc.date,
           period: doc.period,
           status: doc.status,
+          day: doc.day,
           createdBy: doc.createdBy.toString(),
         })
       : null;
+  }
+
+  async findByStudentId(studentId: string): Promise<Attendance[]> {
+    const docs = await AttendanceModel.find({
+      studentId: new Types.ObjectId(studentId),
+    })
+      .lean<LeanAttendance[]>()
+      .exec();
+    return docs.map((doc) =>
+      Attendance.create({
+        id: doc._id.toString(),
+        classId: doc.classId.toString(),
+        studentId: doc.studentId.toString(),
+        date: doc.date,
+        period: doc.period,
+        status: doc.status,
+        day: doc.day,
+        createdBy: doc.createdBy.toString(),
+      })
+    );
   }
 }

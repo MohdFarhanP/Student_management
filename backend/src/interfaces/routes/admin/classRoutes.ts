@@ -10,12 +10,12 @@ import { UpdateClassUseCase } from '../../../application/useCases/admin/class/up
 import { GetClassNameUseCase } from '../../../application/useCases/admin/class/getClassNames.js';
 import { GetStudentsByClassUseCase } from '../../../application/useCases/admin/class/getStudentsByClass.js';
 import { StudentRepository } from '../../../infrastructure/repositories/admin/studentRepository.js';
-import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/createSubjectUseCase.js';
-import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/fetchSubjectsByClassIdUseCase.js';
+import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/CreateSubjectUseCase.js';
+import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/FetchSubjectsByClassIdUseCase.js';
 import { SubjectRepository } from '../../../infrastructure/repositories/admin/subjectRepository.js';
-import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/getSubjectUseCase.js';
-import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/deleteSubjectUseCase.js';
-import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/updateSubjectUseCase.js';
+import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/GetSubjectUseCase.js';
+import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/DeleteSubjectUseCase.js';
+import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/UpdateSubjectUseCase.js';
 
 const classRepository = new ClassRepository();
 const studentRepository = new StudentRepository();
@@ -78,7 +78,7 @@ router.get(
 );
 
 router.get(
-  '/classNames',
+  '/classnames',
   classController.getAllClassNames.bind(classController)
 );
 router.get('/classlist', classController.fetchClasses.bind(classController));

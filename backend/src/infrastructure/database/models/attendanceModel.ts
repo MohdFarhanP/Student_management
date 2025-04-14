@@ -1,14 +1,15 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+import { IAttendance } from '../../../domain/interface/IAttendance.js';
 
-const attendanceSchema = new mongoose.Schema(
+const attendanceSchema = new Schema<IAttendance>(
   {
     classId: {
-      type: mongoose.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Class',
       required: true,
     },
     studentId: {
-      type: mongoose.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Student',
       required: true,
     },
@@ -29,8 +30,13 @@ const attendanceSchema = new mongoose.Schema(
       required: true,
       default: 'present',
     },
+    day: {
+      type: String,
+      enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      required: true,
+    },
     createdBy: {
-      type: mongoose.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Teacher',
       required: true,
     },
@@ -40,4 +46,12 @@ const attendanceSchema = new mongoose.Schema(
   }
 );
 
-export const AttendanceModel = mongoose.model('Attendance', attendanceSchema);
+attendanceSchema.index(
+  { classId: 1, studentId: 1, date: 1, period: 1, day: 1 },
+  { unique: true }
+);
+
+export const AttendanceModel = mongoose.model<IAttendance>(
+  'Attendance',
+  attendanceSchema
+);

@@ -21,7 +21,6 @@ export class MarkAttendanceUseCase {
     const classIdObj = new Types.ObjectId(classId);
     const teacherIdObj = new Types.ObjectId(teacherId);
 
-    // Use validateTeacherAssignment for reliable validation
     const isAssigned = await this.manageTimetable.validateTeacherAssignment(
       classIdObj,
       day,
@@ -32,15 +31,18 @@ export class MarkAttendanceUseCase {
       throw new Error('You are not assigned to this period');
     }
 
-    // Check for existing attendance for the same period
-    const existingAttendance =
-      await this.attendanceRepository.findByClassDatePeriod(
+    const existingAttendanceStd =
+      await this.attendanceRepository.findByStudentClassDatePeriod(
         classId,
+        studentId,
         date,
-        period
+        period,
+        day
       );
-    if (existingAttendance) {
-      throw new Error('Attendance already marked for this period');
+    if (existingAttendanceStd) {
+      throw new Error(
+        'Attendance already marked for this student in this period'
+      );
     }
 
     const attendance = Attendance.create({
@@ -49,6 +51,7 @@ export class MarkAttendanceUseCase {
       date,
       period,
       status,
+      day,
       createdBy: teacherId,
     });
     await this.attendanceRepository.save(attendance);

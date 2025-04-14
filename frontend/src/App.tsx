@@ -2,7 +2,13 @@ import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store } from './redux/store.ts';
 import './App.css';
 import { ToastContainer } from 'react-toastify';
-import { BrowserRouter, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
 import Login from './pages/Login.tsx';
 import AdminRoutes from './routes/AdminRoutes.tsx';
 import UserRoutes from './routes/StudentRoutes.tsx';
@@ -26,7 +32,7 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     if (!loading && user) {
       const currentPath = location.pathname;
-  
+
       if (
         currentPath === '/' ||
         currentPath === '/login' ||
@@ -42,9 +48,10 @@ const AppContent: React.FC = () => {
               : user.role === 'Teacher'
                 ? '/teacher/profile'
                 : '/login';
-  
-        const shouldRedirectToLogin = user.role !== 'Admin' && user.isInitialLogin;
-  
+
+        const shouldRedirectToLogin =
+          user.role !== 'Admin' && user.isInitialLogin;
+
         if (shouldRedirectToLogin) {
           navigate('/login', { replace: true });
         } else {
@@ -53,7 +60,7 @@ const AppContent: React.FC = () => {
       }
     }
   }, [user, loading, navigate, location.pathname]);
-  
+
   if (loading) {
     return <div>Loading...</div>; // Optional: Show a loading indicator
   }

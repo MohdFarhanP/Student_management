@@ -14,7 +14,9 @@ interface LoginForm {
 
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user, loading, error } = useSelector((state: RootState) => state.auth);
+  const { user, loading, error } = useSelector(
+    (state: RootState) => state.auth
+  );
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');

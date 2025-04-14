@@ -10,14 +10,18 @@ export interface IClassData {
   roomNo: string;
   tutor: string;
   totalStudents?: string;
-  id?: string;
+  _id?: string;
 }
 
 interface Student {
   id: string;
   name: string;
+  studentId: string;
+  email: string;
+  class: string;
+  gender: 'Male' | 'Female';
+  profileImage: string;
 }
-
 
 export const addClass = (data: IClassData) =>
   apiRequest<{ message: string }, IClassData>(
@@ -36,23 +40,25 @@ export const getClasses = (page: number, limit: number) =>
     undefined,
     { params: { page, limit } }
   );
-export const getStudentsByClass = (classId:string) =>{
+export const getStudentsByClass = (classId: string) => {
   console.log('classId checking in from getStudentsByClass', classId);
-  apiRequest<Student[]>(
+  return apiRequest<Student[]>(
     'get',
     `${ADMIN_CLASS_API_URL}/${classId}/students`,
-    undefined,
+    undefined
   );
-}
-  
+};
 
 export const getClassNames = () =>
-  apiRequest<{ classNames: string[] }>('get', '/classes/classNames');
+  apiRequest<{ classNames: string[] }>(
+    'get',
+    `${ADMIN_CLASS_API_URL}/classNames`
+  );
 
 export const updateClass = (data: IClassData) =>
   apiRequest<{ message: string }, IClassData>(
     'put',
-    `${ADMIN_CLASS_API_URL}/update/${data.id}`,
+    `${ADMIN_CLASS_API_URL}/update/${data._id}`,
     data
   ).then((res) => {
     toast.success(res.message);

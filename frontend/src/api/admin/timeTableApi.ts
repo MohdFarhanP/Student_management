@@ -2,6 +2,8 @@ import { apiRequest } from '../apiClient';
 import { TimetableData } from '../../types/timetable';
 import { toast } from 'react-toastify';
 
+const ADMIN_TIMETABLE_API = `/admin/timetable`;
+
 export type AssignTeacherFormData = {
   day: string;
   period: number;
@@ -15,7 +17,7 @@ type DeleteSlotData = {
 };
 
 export const fetchTimetable = (classId: string) =>
-  apiRequest<TimetableData>('get', `/timetable/${classId}`);
+  apiRequest<TimetableData>('get', `${ADMIN_TIMETABLE_API}/${classId}`);
 
 export const updateTimetableSlot = (
   classId: string,
@@ -23,7 +25,7 @@ export const updateTimetableSlot = (
 ) =>
   apiRequest<TimetableData, AssignTeacherFormData>(
     'put',
-    `/timetable/${classId}/update`,
+    `${ADMIN_TIMETABLE_API}/${classId}/update`,
     data
   ).then((res) => {
     toast.success('Timetable slot updated successfully!');
@@ -33,7 +35,7 @@ export const updateTimetableSlot = (
 export const deleteTimetableSlot = (classId: string, data: DeleteSlotData) =>
   apiRequest<TimetableData, DeleteSlotData>(
     'delete',
-    `/timetable/${classId}/slot`,
+    `${ADMIN_TIMETABLE_API}/${classId}/slot`,
     data
   ).then((res) => {
     toast.success('Timetable slot deleted successfully!');
@@ -46,7 +48,7 @@ export const assignTeacherToClass = (
 ) =>
   apiRequest<TimetableData, AssignTeacherFormData>(
     'put',
-    `/timetable/${classId}/assign`,
+    `${ADMIN_TIMETABLE_API}/${classId}/assign`,
     data
   ).then((res) => {
     toast.success('Teacher assigned successfully!');

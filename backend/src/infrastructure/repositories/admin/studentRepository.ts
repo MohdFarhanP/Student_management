@@ -170,13 +170,21 @@ export class StudentRepository implements IStudentRepository {
   }
 
   async getStudentsByClass(classId: string): Promise<Student[]> {
-    const students = await studentModel.find({ class: classId }).exec();
-    return students.map(
-      (student) =>
-        new Student({
-          id: student._id.toString(),
-          name: student.name,
-        })
-    );
+    const students = await studentModel
+      .find({ class: classId })
+      .populate('class', 'name')
+      .exec();
+
+    return students.map((student) => {
+      const populatedClass = student.class as { name: string } | null;
+
+      return new Student({
+        id: student._id.toString(),
+        name: student.name,
+        class: populatedClass?.name ?? null,
+        email: student.email,
+        profileImage: student?.profileImage,
+      });
+    });
   }
 }

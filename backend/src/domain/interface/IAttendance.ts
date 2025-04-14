@@ -6,6 +6,7 @@ export interface IAttendance {
   date: Date;
   period: number;
   status: 'present' | 'absent';
+  day: string;
   createdBy: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;

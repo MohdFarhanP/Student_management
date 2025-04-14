@@ -30,7 +30,12 @@ export class LoginUseCase {
     await this.userRepository.updateRefreshToken(user.id, refreshToken);
 
     return {
-      user: { email: user.email, role, isInitialLogin: user.isInitialLogin },
+      user: {
+        id: user.id,
+        email: user.email,
+        role,
+        isInitialLogin: user.isInitialLogin,
+      },
       token,
       refreshToken,
     };

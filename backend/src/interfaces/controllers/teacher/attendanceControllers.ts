@@ -6,6 +6,7 @@ import ManageTimetable from '../../../infrastructure/services/ManageTimetable.js
 import TimetableRepository from '../../../infrastructure/repositories/admin/timeTableRepository.js';
 import { TeacherRepository } from '../../../infrastructure/repositories/admin/teacherRepository.js';
 import mongoose from 'mongoose';
+import { ViewAttendanceUseCase } from '../../../application/useCases/student/ViewAttendanceUseCase.js';
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -15,6 +16,7 @@ interface AuthenticatedRequest extends Request {
 
 export class AttendanceController {
   private markAttendanceUseCase: MarkAttendanceUseCase;
+  private viewAttendanceUseCase: ViewAttendanceUseCase;
 
   constructor() {
     const attendanceRepository = new AttendanceRepository();
@@ -27,6 +29,9 @@ export class AttendanceController {
     this.markAttendanceUseCase = new MarkAttendanceUseCase(
       attendanceRepository,
       manageTimetable
+    );
+    this.viewAttendanceUseCase = new ViewAttendanceUseCase(
+      attendanceRepository
     );
   }
 
@@ -80,7 +85,36 @@ export class AttendanceController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-        return;
+      } else {
+        res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: 'An unexpected error occurred' });
+      }
+      return;
+    }
+  }
+
+  async viewAttendance(
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<void> {
+    const { studentId } = req.params;
+
+    try {
+      if (!mongoose.Types.ObjectId.isValid(studentId)) {
+        throw new Error('Invalid studentId format');
+      }
+
+      const attendanceRecords =
+        await this.viewAttendanceUseCase.execute(studentId);
+      res.status(HttpStatus.OK).json(attendanceRecords);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+      } else {
+        res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: 'An unexpected error occurred' });
       }
     }
   }

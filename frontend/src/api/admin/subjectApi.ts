@@ -1,6 +1,8 @@
 import { apiRequest } from '../apiClient';
 import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
 
+const ADMIN_SUBJECT_API = `/admin/classes`;
+
 export interface ISubjectData {
   subjectName: string;
   teachers: string[];
@@ -23,14 +25,14 @@ interface FinalSubjectData {
 export const addSubject = async (cls: string, subjectData: ISubjectData) => {
   const uploadedNotes = subjectData.notes
     ? await Promise.all(
-      subjectData.notes.map((file) => uploadToCloudinary(file))
-    )
+        subjectData.notes.map((file) => uploadToCloudinary(file))
+      )
     : [];
   const validNotes = uploadedNotes.filter((url) => url !== null);
   const finalSubjectData = { ...subjectData, notes: validNotes };
   return apiRequest<Subject, FinalSubjectData>(
     'post',
-    `/classes/${cls}/subjects`,
+    `${ADMIN_SUBJECT_API}/${cls}/subjects`,
     finalSubjectData,
     {
       headers: { 'Content-Type': 'application/json' },
@@ -39,10 +41,10 @@ export const addSubject = async (cls: string, subjectData: ISubjectData) => {
 };
 
 export const getSubjectsByClass = (cls: string) =>
-  apiRequest<Subject[]>('get', `/classes/${cls}/subjects`);
+  apiRequest<Subject[]>('get', `${ADMIN_SUBJECT_API}/${cls}/subjects`);
 
 export const fetchSubjectsByClassId = (classId: string) =>
-  apiRequest<Subject[]>('get', `/classes/${classId}/subject`);
+  apiRequest<Subject[]>('get', `${ADMIN_SUBJECT_API}/${classId}/subject`);
 
 export const updateSubject = async (
   classGrade: string,
@@ -56,7 +58,7 @@ export const updateSubject = async (
   const finalSubjectData = { ...subject, notes: validNotes };
   return apiRequest<Subject, FinalSubjectData>(
     'put',
-    `/classes/${classGrade}/subjects/${subjectId}`,
+    `${ADMIN_SUBJECT_API}/${classGrade}/subjects/${subjectId}`,
     finalSubjectData,
     {
       headers: { 'Content-Type': 'application/json' },
@@ -67,5 +69,5 @@ export const updateSubject = async (
 export const deleteSubject = (classGrade: string, subjectId: string) =>
   apiRequest<{ message: string }>(
     'delete',
-    `/classes/${classGrade}/subjects/${subjectId}`
+    `${ADMIN_SUBJECT_API}/${classGrade}/subjects/${subjectId}`
   );

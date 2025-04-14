@@ -7,8 +7,8 @@ import HttpStatus from '../../utils/httpStatus.js';
 // import { ITokenService } from '../../domain/interface/ITokenService.js';
 // import { IUserRepository } from '../../domain/interface/IUserTokenRepository.js';
 
-const ACCESS_TOKEN_MAX_AGE = 15 * 1000;
-const REFRESH_TOKEN_MAX_AGE = 60 * 1000;
+const ACCESS_TOKEN_MAX_AGE = 15 * 60 * 1000; // 15 minutes
+const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 const cookieOptions = {
   httpOnly: true,
@@ -127,6 +127,7 @@ export class UserController {
       res.status(HttpStatus.OK).json({
         message: 'Token refreshed',
         user: {
+          id: result.user.id,
           email: result.user.email,
           role: result.user.role,
         },

@@ -1,13 +1,13 @@
 import { Route, Routes } from 'react-router-dom';
 import TeacherProfile from '../pages/teacher/TeacherProfile';
-import TeacherAttendanceManagement from '../pages/teacher/TeacherAttendanceManagement';
+import TeacherAttendanceDashboard from '../pages/teacher/TeacherAttendanceDashboard';
 
 const TeacherRoutes = () => {
   return (
     <div>
       <Routes>
         <Route path="/profile" element={<TeacherProfile />} />
-        <Route path="/Attendance" element={<TeacherAttendanceManagement />} />
+        <Route path="/attendance" element={<TeacherAttendanceDashboard />} />
       </Routes>
     </div>
   );

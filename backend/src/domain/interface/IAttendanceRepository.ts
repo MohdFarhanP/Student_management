@@ -2,9 +2,12 @@ import { Attendance } from '../entities/attendance.js';
 
 export interface IAttendanceRepository {
   save(attendance: Attendance): Promise<void>;
-  findByClassDatePeriod(
+  findByStudentClassDatePeriod(
     classId: string,
+    studentId: string,
     date: Date,
-    period: number
+    period: number,
+    day: string
   ): Promise<Attendance | null>;
+  findByStudentId(studentId: string): Promise<Attendance[]>;
 }

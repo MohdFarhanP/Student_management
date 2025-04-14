@@ -4,22 +4,27 @@ import { apiRequest } from '../apiClient';
 const Teacher_API_URL = '/teacher';
 
 interface MarkAttendanceParams {
-  studentId: string,
-  date: string,
-  period: number,
-  status: 'present' | 'absent'
+  studentId: string;
+  date: string;
+  period: number;
+  status: 'present' | 'absent';
+  day: string;
+  teacherId?: string;
 }
 
-export const markAttendance = async (
+export const markAttendanceStd = async (
   classId: string,
   studentId: string,
   date: string,
   period: number,
-  status: 'present' | 'absent'
-) =>
-  apiRequest<{message: string}, MarkAttendanceParams>(
+  status: 'present' | 'absent',
+  day: string,
+  teacherId: string
+) => {
+  const response = await apiRequest<{ message: string }, MarkAttendanceParams>(
     'post',
-    `${Teacher_API_URL}/${classId}/attendance`,{studentId,date,period,status}
-  ).then((res) => {
-    toast.success(res.message);
-  });
+    `${Teacher_API_URL}/attendance/${classId}/mark`,
+    { studentId, date, period, status, day, teacherId }
+  );
+  toast.success(response.message);
+};

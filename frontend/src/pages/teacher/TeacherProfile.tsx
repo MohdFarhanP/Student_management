@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import TeacherSidebar from '../../components/TeacherSidebar';
 import { IoCameraOutline } from 'react-icons/io5';
 import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
+import defaultImg from '../../assets/profile.jpg';
 
 interface TeacherProfile {
   id?: string;
@@ -38,9 +39,6 @@ const TeacherProfile: React.FC = () => {
   const [editedProfile, setEditedProfile] =
     useState<Partial<TeacherProfile> | null>(null);
   const [formErrors, setFormErrors] = useState<Partial<TeacherProfile>>({});
-
-  const defaultImage =
-    'https://images.unsplash.com/photo-1575936123452-b67c3203c357?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D';
 
   useEffect(() => {
     if (!user || user.role !== 'Teacher') {
@@ -120,12 +118,18 @@ const TeacherProfile: React.FC = () => {
   };
 
   if (loading)
-    return <div className="mt-20 bg-black/75 text-center">Loading...</div>;
+    return (
+      <div className="mt-20 bg-black/75 text-center text-white">Loading...</div>
+    );
   if (error)
-    return <div className="mt-20 text-center text-red-500">{error}</div>;
+    return (
+      <div className="mt-20 text-center text-red-500 dark:text-red-400">
+        {error}
+      </div>
+    );
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
       <TeacherSidebar />
 
       {/* Main Content */}
@@ -134,7 +138,7 @@ const TeacherProfile: React.FC = () => {
           {/* Profile and General Information Row */}
           <div className="flex gap-6">
             {/* Profile Picture and Name Card */}
-            <div className="flex max-h-min w-64 flex-col items-center rounded-lg bg-white p-6 shadow-md">
+            <div className="flex max-h-min w-64 flex-col items-center rounded-lg bg-white p-6 shadow-md dark:bg-gray-700">
               <label
                 htmlFor="profileImageInput"
                 className="relative cursor-pointer"
@@ -143,15 +147,15 @@ const TeacherProfile: React.FC = () => {
                   src={
                     editedProfile?.profileImage ||
                     profile?.profileImage ||
-                    defaultImage
+                    defaultImg
                   }
                   alt="Profile"
-                  className={`mb-4 h-24 w-24 rounded-full border-4 border-gray-200 object-cover shadow-md ${
+                  className={`mb-4 h-24 w-24 rounded-full border-4 border-gray-200 object-cover shadow-md dark:border-gray-600 ${
                     isEditing ? 'transition hover:opacity-80' : 'cursor-default'
                   }`}
                 />
                 {isEditing && (
-                  <div className="absolute right-2 bottom-2 rounded-full bg-white p-1 text-black shadow">
+                  <div className="absolute right-2 bottom-2 rounded-full bg-white p-1 text-black shadow dark:bg-gray-700 dark:text-gray-200">
                     <IoCameraOutline />
                   </div>
                 )}
@@ -167,68 +171,70 @@ const TeacherProfile: React.FC = () => {
                 />
               )}
 
-              <h1 className="text-center text-xl font-bold text-gray-800">
+              <h1 className="text-center text-xl font-bold text-gray-800 dark:text-gray-200">
                 {profile?.name ?? user?.email?.split('@')[0] ?? 'Unknown'}
               </h1>
-              <p className="mt-1 text-sm text-gray-500">Teacher</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Teacher
+              </p>
 
               <button
                 onClick={handleEditToggle}
-                className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
               >
                 {isEditing ? 'Cancel Edit' : 'Edit Profile'}
               </button>
             </div>
 
             {/* General Information */}
-            <div className="flex-1 rounded-lg bg-white p-6 shadow-md">
+            <div className="flex-1 rounded-lg bg-white p-6 shadow-md dark:bg-gray-700">
               <div className="mb-4 flex items-center justify-between pb-5">
-                <h2 className="text-lg font-semibold text-gray-800">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                   General Information
                 </h2>
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     <strong className="font-medium">Name:</strong>{' '}
                     {profile?.name ?? 'N/A'}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     <strong className="font-medium">Email:</strong>{' '}
                     {user?.email ?? 'N/A'}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     <strong className="font-medium">Gender:</strong>{' '}
                     {profile?.gender ?? 'N/A'}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     <strong className="font-medium">Phone:</strong>{' '}
                     {profile?.phoneNo?.toString() ?? 'N/A'}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     <strong className="font-medium">Employee ID:</strong>{' '}
                     {profile?.empId ?? 'N/A'}
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     <strong className="font-medium">Date of Birth:</strong>{' '}
                     {profile?.dateOfBirth ?? 'N/A'}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     <strong className="font-medium">Specialization:</strong>{' '}
                     {profile?.specialization || 'N/A'}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     <strong className="font-medium">Experience:</strong>{' '}
                     {`${profile?.experienceYears ?? 0} years`}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     <strong className="font-medium">Qualification:</strong>{' '}
                     {profile?.qualification || 'N/A'}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     <strong className="font-medium">Assigned Class:</strong>{' '}
                     {profile?.assignedClass ?? 'N/A'}
                   </p>
@@ -240,14 +246,14 @@ const TeacherProfile: React.FC = () => {
           {/* Edit Profile Section (Appears Below When Editing) */}
           {isEditing && editedProfile && (
             <div className="flex justify-center">
-              <div className="w-full max-w-5xl rounded-lg bg-white p-4 shadow-md">
-                <h2 className="mb-3 text-lg font-semibold text-gray-800">
+              <div className="w-full max-w-5xl rounded-lg bg-white p-4 shadow-md dark:bg-gray-700">
+                <h2 className="mb-3 text-lg font-semibold text-gray-800 dark:text-gray-200">
                   Edit Profile
                 </h2>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <div className="space-y-3">
                     <div>
-                      <label className="mb-1 block font-medium text-gray-700">
+                      <label className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
                         Name
                       </label>
                       <input
@@ -255,10 +261,10 @@ const TeacherProfile: React.FC = () => {
                         name="name"
                         value={editedProfile.name || ''}
                         onChange={handleInputChange}
-                        className="w-full rounded-lg border border-gray-300 p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full rounded-lg border border-gray-300 bg-white p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:focus:ring-blue-700"
                       />
                       {formErrors.name && (
-                        <p className="text-sm text-red-500">
+                        <p className="text-sm text-red-500 dark:text-red-400">
                           {formErrors.name}
                         </p>
                       )}
@@ -269,13 +275,13 @@ const TeacherProfile: React.FC = () => {
                         name="email"
                         value={editedProfile.email || ''}
                         onChange={handleInputChange}
-                        className="w-full cursor-not-allowed rounded-lg border border-gray-300 bg-gray-100 p-2"
+                        className="w-full cursor-not-allowed rounded-lg border border-gray-300 bg-gray-100 p-2 dark:border-gray-600 dark:bg-gray-500"
                         disabled
                         hidden
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block font-medium text-gray-700">
+                      <label className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
                         Phone
                       </label>
                       <input
@@ -283,23 +289,23 @@ const TeacherProfile: React.FC = () => {
                         name="phoneNo"
                         value={editedProfile.phoneNo || ''}
                         onChange={handleInputChange}
-                        className="w-full rounded-lg border border-gray-300 p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full rounded-lg border border-gray-300 bg-white p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:focus:ring-blue-700"
                       />
                       {formErrors.phoneNo && (
-                        <p className="text-sm text-red-500">
+                        <p className="text-sm text-red-500 dark:text-red-400">
                           {formErrors.phoneNo}
                         </p>
                       )}
                     </div>
                     <div>
-                      <label className="mb-1 block font-medium text-gray-700">
+                      <label className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
                         Qualification
                       </label>
                       <select
                         name="qualification"
                         value={editedProfile.qualification || ''}
                         onChange={handleInputChange}
-                        className="w-full rounded-lg border border-gray-300 p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full rounded-lg border border-gray-300 bg-white p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:focus:ring-blue-700"
                       >
                         <option value="">Select qualification</option>
                         <option value="D.El.Ed">
@@ -324,7 +330,7 @@ const TeacherProfile: React.FC = () => {
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <label className="mb-1 block font-medium text-gray-700">
+                      <label className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
                         Date of Birth
                       </label>
                       <input
@@ -332,11 +338,11 @@ const TeacherProfile: React.FC = () => {
                         name="dateOfBirth"
                         value={editedProfile.dateOfBirth || ''}
                         onChange={handleInputChange}
-                        className="w-full rounded-lg border border-gray-300 p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full rounded-lg border border-gray-300 bg-white p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:focus:ring-blue-700"
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block font-medium text-gray-700">
+                      <label className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
                         Specialization
                       </label>
                       <input
@@ -344,11 +350,11 @@ const TeacherProfile: React.FC = () => {
                         name="specialization"
                         value={editedProfile.specialization || ''}
                         onChange={handleInputChange}
-                        className="w-full rounded-lg border border-gray-300 p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full rounded-lg border border-gray-300 bg-white p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:focus:ring-blue-700"
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block font-medium text-gray-700">
+                      <label className="mb-1 block font-medium text-gray-700 dark:text-gray-300">
                         Experience (years)
                       </label>
                       <input
@@ -356,19 +362,19 @@ const TeacherProfile: React.FC = () => {
                         name="experienceYears"
                         value={editedProfile.experienceYears || 0}
                         onChange={handleInputChange}
-                        className="w-full rounded-lg border border-gray-300 p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        className="w-full rounded-lg border border-gray-300 bg-white p-2 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:focus:ring-blue-700"
                       />
                     </div>
                     <div className="mt-4 mr-2 flex justify-end gap-2">
                       <button
                         onClick={handleEditToggle}
-                        className="rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
+                        className="rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-800"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSave}
-                        className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                        className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
                       >
                         Save Changes
                       </button>

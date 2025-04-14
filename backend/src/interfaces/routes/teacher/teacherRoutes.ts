@@ -5,7 +5,6 @@ import { GetTeacherProfileUseCase } from '../../../application/useCases/teacher/
 import { authenticateUser } from '../../middleware/authenticateUser.js';
 import { UpdateTeacherProfileUseCase } from '../../../application/useCases/teacher/updateTeacherProfileUseCase.js';
 import { AttendanceController } from '../../controllers/teacher/attendanceControllers.js';
-
 const router = Router();
 const teacherRepository = new TeacherProfileRepository();
 const getTeacherProfileUseCase = new GetTeacherProfileUseCase(
@@ -32,7 +31,8 @@ router.patch(
 );
 
 router.post(
-  '/:classId/attendance',
+  '/attendance/:classId/mark',
+  authenticateUser,
   attendanceController.markAttendance.bind(attendanceController)
 );
 

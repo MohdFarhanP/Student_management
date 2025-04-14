@@ -5,15 +5,13 @@ import { AppDispatch, RootState } from '../redux/store';
 import { MdLogout } from 'react-icons/md';
 import { logoutUser } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
+import defaultImage from '../assets/profile.jpg';
 
 const StudentSidebar: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const profile =
     useSelector((state: RootState) => state.student.profile) ?? null;
-
-  const defaultImage =
-    'https://media.istockphoto.com/id/814423752/photo/eye-of-model-with-colorful-art-make-up-close-up.jpg?s=612x612&w=0&k=20&c=l15OdMWjgCKycMMShP8UK94ELVlEGvt7GmB_esHWPYE=';
 
   const handleLogout = async () => {
     try {
@@ -43,10 +41,10 @@ const StudentSidebar: React.FC = () => {
       <div className="mb-4 border-t border-gray-600"></div>
       <nav className="space-y-2">
         <Link
-          to="/student/classes"
+          to="/student/attendance"
           className="block rounded p-2 hover:bg-white hover:font-medium hover:text-black"
         >
-          Classes
+          Attendence
         </Link>
         <Link
           to="/student/schedule"
@@ -55,7 +53,7 @@ const StudentSidebar: React.FC = () => {
           Schedule
         </Link>
         <Link
-          to="/student/settings"
+          to="#"
           className="block rounded p-2 hover:bg-white hover:font-medium hover:text-black"
         >
           Settings

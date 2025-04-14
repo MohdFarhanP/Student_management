@@ -19,11 +19,11 @@ export class AuthService implements ITokenService {
   }
 
   generateToken(payload: { id: string; email: string; role: string }): string {
-    return jwt.sign(payload, this.jwtSecret, { expiresIn: '15s' });
+    return jwt.sign(payload, this.jwtSecret, { expiresIn: '15m' });
   }
 
   generateRefreshToken(payload: { email: string; role: string }): string {
-    return jwt.sign(payload, this.refreshSecret, { expiresIn: '60s' });
+    return jwt.sign(payload, this.refreshSecret, { expiresIn: '7d' });
   }
 
   verifyRefreshToken(token: string): { email: string; role: string } {

@@ -4,6 +4,7 @@ import { StudentProfileRepository } from '../../../infrastructure/repositories/s
 import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase.js';
 import { UpdateStudentProfileImageUseCase } from '../../../application/useCases/student/UpdateStudentProfileImageUseCase.js';
 import { authenticateUser } from '../../middleware/authenticateUser.js';
+import { AttendanceController } from '../../controllers/teacher/attendanceControllers.js';
 
 const router = Router();
 
@@ -18,6 +19,7 @@ const studentController = new StudentController(
   getStudentProfileUseCase,
   updateStudentProfileImageUseCase
 );
+const controller = new AttendanceController();
 
 router.get(
   '/profile/:email',
@@ -29,5 +31,8 @@ router.patch(
   authenticateUser,
   studentController.updateProfileImage.bind(studentController)
 );
-
+router.get(
+  '/attendance/:studentId',
+  controller.viewAttendance.bind(controller)
+);
 export default router;

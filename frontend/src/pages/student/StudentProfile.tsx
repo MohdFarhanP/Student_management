@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import StudentSidebar from '../../components/StudentSidebar';
 import { RiImageEditLine } from 'react-icons/ri';
 import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
+import defaultImage from '../../assets/profile.jpg';
 
 const StudentProfile: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,7 +22,6 @@ const StudentProfile: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string>('');
-  const defaultImage = '/default-avatar.png';
 
   useEffect(() => {
     if (!user || user.role !== 'Student') {

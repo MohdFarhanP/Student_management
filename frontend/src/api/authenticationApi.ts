@@ -9,6 +9,7 @@ interface ICredentials {
 }
 
 interface User {
+  id: string;
   email: string;
   role: string;
   isInitialLogin?: boolean;
@@ -21,7 +22,7 @@ interface LoginResponse {
 
 interface TokenResponse {
   accessToken: string;
-  user: User
+  user: User;
 }
 
 interface UpdateUserPasswordParams {
@@ -42,7 +43,8 @@ export const updateUserPassword = (password: string) =>
     { password }
   ).then((res) => res.user);
 
-export const adminLogout = () => apiRequest<void>('post', `${AUTH_API_URL}/logout`);
+export const adminLogout = () =>
+  apiRequest<void>('post', `${AUTH_API_URL}/logout`);
 
 export const refreshUserToken = () =>
   apiRequest<TokenResponse>('post', `${AUTH_API_URL}/refresh-token`);
