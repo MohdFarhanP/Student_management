@@ -1,11 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { AxiosError } from 'axios';
-import {
-  adminLogin,
-  updateUserPassword,
-  adminLogout,
-  refreshUserToken,
-} from '../../api/authenticationApi';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { adminLogin, refreshUserToken, adminLogout, updateUserPassword } from '../../api/authenticationApi';
 
 interface User {
   id: string;
@@ -20,10 +14,6 @@ interface AuthState {
   error: string | null;
 }
 
-interface ErrorResponse {
-  message: string;
-}
-
 const initialState: AuthState = {
   user: null,
   loading: false,
@@ -32,19 +22,13 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (
-    credentials: { email: string; password: string; role: string },
-    { rejectWithValue }
-  ) => {
+  async (credentials: { email: string; password: string; role: string }, { rejectWithValue }) => {
     try {
-      const user = await adminLogin(credentials);
-      console.log('userdata after calling login ', user);
-      return user;
+      const response = await adminLogin(credentials);
+      return response;
     } catch (error: unknown) {
-      const axiosError = error as AxiosError<ErrorResponse>;
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Login failed'
-      );
+      const message = error instanceof Error ? error.message : 'Login failed';
+      return rejectWithValue(message);
     }
   }
 );
@@ -53,28 +37,11 @@ export const updatePassword = createAsyncThunk(
   'auth/updatePassword',
   async (password: string, { rejectWithValue }) => {
     try {
-      const user = await updateUserPassword(password);
-      console.log('API response:', user);
-      return user;
+      const response = await updateUserPassword(password);
+      return response;
     } catch (error: unknown) {
-      const axiosError = error as AxiosError<ErrorResponse>;
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Password update failed'
-      );
-    }
-  }
-);
-
-export const logoutUser = createAsyncThunk(
-  'auth/logoutUser',
-  async (_, { rejectWithValue }) => {
-    try {
-      await adminLogout();
-    } catch (error: unknown) {
-      const axiosError = error as AxiosError<ErrorResponse>;
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Logout failed'
-      );
+      const message = error instanceof Error ? error.message : 'Password update failed';
+      return rejectWithValue(message);
     }
   }
 );
@@ -84,13 +51,12 @@ export const refreshToken = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await refreshUserToken();
-      console.log('the response from the refresh Tocken', response);
+      console.log('refreshToken: response=', response);
       return response;
     } catch (error: unknown) {
-      const axiosError = error as AxiosError<ErrorResponse>;
-      return rejectWithValue(
-        axiosError.response?.data?.message || 'Token refresh failed'
-      );
+      console.error('refreshToken: error=', error);
+      const message = error instanceof Error ? error.message : 'Token refresh failed';
+      return rejectWithValue(message);
     }
   }
 );
@@ -98,72 +64,57 @@ export const refreshToken = createAsyncThunk(
 export const checkAuthOnLoad = createAsyncThunk(
   'auth/checkAuthOnLoad',
   async (_, { dispatch, rejectWithValue }) => {
-    const accessToken = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('access_token='))
-      ?.split('=')[1];
-    if (accessToken) {
-      try {
-        const response = await dispatch(refreshToken()).unwrap();
-        return response.user;
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        return rejectWithValue('Authentication check failed');
-      }
+    try {
+      const response = await dispatch(refreshToken()).unwrap();
+      console.log('checkAuthOnLoad: refreshToken response=', response);
+      return response;
+    } catch (error) {
+      console.error('checkAuthOnLoad: refreshToken failed:', error);
+      return rejectWithValue('Authentication check failed');
     }
-    return null;
+  }
+);
+
+export const logoutUser = createAsyncThunk(
+  'auth/logout',
+  async (_, { rejectWithValue }) => {
+    try {
+      await adminLogout();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Logout failed';
+      return rejectWithValue(message);
+    }
   }
 );
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {
-    logout: (state) => {
-      state.user = null;
-      state.loading = false;
-      state.error = null;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state, action) => {
+      .addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
         state.user = action.payload;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.user = null;
       })
       .addCase(updatePassword.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(updatePassword.fulfilled, (state, action) => {
+      .addCase(updatePassword.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
-        state.user = {
-          ...state.user!,
-          ...action.payload,
-          isInitialLogin: false,
-        };
+        state.user = action.payload;
       })
       .addCase(updatePassword.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      .addCase(logoutUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.loading = false;
-        state.user = null;
-      })
-      .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
@@ -171,9 +122,9 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(refreshToken.fulfilled, (state, action) => {
+      .addCase(refreshToken.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
-        state.user = action.payload.user;
+        state.user = action.payload;
       })
       .addCase(refreshToken.rejected, (state, action) => {
         state.loading = false;
@@ -184,18 +135,21 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(checkAuthOnLoad.fulfilled, (state, action) => {
+      .addCase(checkAuthOnLoad.fulfilled, (state, action: PayloadAction<User | null>) => {
         state.loading = false;
-        if (action.payload) {
-          state.user = action.payload;
-        }
+        state.user = action.payload;
       })
       .addCase(checkAuthOnLoad.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
         state.user = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.error = null;
+        state.loading = false;
       });
   },
 });
-export const { logout } = authSlice.actions;
+
 export default authSlice.reducer;

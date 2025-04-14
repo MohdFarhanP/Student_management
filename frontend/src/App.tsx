@@ -1,5 +1,5 @@
 import { Provider, useDispatch, useSelector } from 'react-redux';
-import { store } from './redux/store.ts';
+import { store, RootState, AppDispatch } from './redux/store';
 import './App.css';
 import { ToastContainer } from 'react-toastify';
 import {
@@ -9,15 +9,14 @@ import {
   useNavigate,
   useLocation,
 } from 'react-router-dom';
-import Login from './pages/Login.tsx';
-import AdminRoutes from './routes/AdminRoutes.tsx';
-import UserRoutes from './routes/StudentRoutes.tsx';
-import TeacherRoutes from './routes/TeacherRoutes.tsx';
-import { Unauthorized } from './pages/Unauthorized.tsx';
-import PrivateRoute from './routes/PrivateRoute.tsx';
+import Login from './pages/Login';
+import AdminRoutes from './routes/AdminRoutes';
+import UserRoutes from './routes/StudentRoutes';
+import TeacherRoutes from './routes/TeacherRoutes';
+import { Unauthorized } from './pages/Unauthorized';
+import PrivateRoute from './routes/PrivateRoute';
 import { useEffect } from 'react';
 import { checkAuthOnLoad } from './redux/slices/authSlice';
-import { RootState, AppDispatch } from './redux/store';
 
 const AppContent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -30,9 +29,9 @@ const AppContent: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (loading) return; // Wait for auth check
+    if (user) {
       const currentPath = location.pathname;
-
       if (
         currentPath === '/' ||
         currentPath === '/login' ||
@@ -48,21 +47,26 @@ const AppContent: React.FC = () => {
               : user.role === 'Teacher'
                 ? '/teacher/profile'
                 : '/login';
-
         const shouldRedirectToLogin =
           user.role !== 'Admin' && user.isInitialLogin;
-
         if (shouldRedirectToLogin) {
           navigate('/login', { replace: true });
         } else {
           navigate(redirectPath, { replace: true });
         }
       }
+    } else if (
+      !['/login', '/unauthorized'].includes(location.pathname) &&
+      !location.pathname.startsWith('/admin') &&
+      !location.pathname.startsWith('/student') &&
+      !location.pathname.startsWith('/teacher')
+    ) {
+      navigate('/login', { replace: true });
     }
   }, [user, loading, navigate, location.pathname]);
 
   if (loading) {
-    return <div>Loading...</div>; // Optional: Show a loading indicator
+    return <div>Loading...</div>;
   }
 
   return (

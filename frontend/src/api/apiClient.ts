@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { toast } from 'react-toastify';
 import { store } from '../redux/store';
-import { refreshToken, logout } from '../redux/slices/authSlice';
+import { refreshToken, logoutUser } from '../redux/slices/authSlice';
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:5000/api',
@@ -19,7 +19,7 @@ axiosInstance.interceptors.response.use(
         await store.dispatch(refreshToken()).unwrap();
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        store.dispatch(logout());
+        store.dispatch(logoutUser());
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

@@ -2,13 +2,13 @@ import axios from 'axios';
 
 export const uploadToCloudinary = async (
   file: File
-): Promise<string | null> => {
+): Promise<string | undefined> => {
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 
   if (!uploadPreset || !cloudName) {
     console.error('Missing Cloudinary config in .env');
-    return null;
+    return undefined;
   }
 
   const formData = new FormData();
@@ -32,6 +32,6 @@ export const uploadToCloudinary = async (
     } else {
       console.error('Unexpected error:', error);
     }
-    return null;
+    return undefined;
   }
 };

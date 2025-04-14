@@ -2,6 +2,8 @@ import { apiRequest } from './apiClient';
 
 const AUTH_API_URL = '/auth';
 
+type UserRole = "Student" | "Teacher" | "Admin";
+
 interface ICredentials {
   email: string;
   password: string;
@@ -11,7 +13,7 @@ interface ICredentials {
 interface User {
   id: string;
   email: string;
-  role: string;
+  role: UserRole;
   isInitialLogin?: boolean;
 }
 
@@ -21,7 +23,7 @@ interface LoginResponse {
 }
 
 interface TokenResponse {
-  accessToken: string;
+  message: string;
   user: User;
 }
 
@@ -47,4 +49,6 @@ export const adminLogout = () =>
   apiRequest<void>('post', `${AUTH_API_URL}/logout`);
 
 export const refreshUserToken = () =>
-  apiRequest<TokenResponse>('post', `${AUTH_API_URL}/refresh-token`);
+  apiRequest<TokenResponse>('post', `${AUTH_API_URL}/refresh-token`).then(
+    (res) => res.user
+  );

@@ -6,7 +6,7 @@ import { addMessage, setError } from '../../redux/slices/chatSlice';
 import { Message } from '../../types/message';
 import { socket } from '../../socket';
 
-const TeacherChat: React.FC = () => {
+const StudentChat: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { messages, error } = useSelector((state: RootState) => state.chat);
   const user = useSelector((state: RootState) => state.auth.user);
@@ -33,7 +33,7 @@ const TeacherChat: React.FC = () => {
     });
 
     return () => {
-      socket.off('connect');
+      socket.off('connect');    
       socket.off('initialMessages');
       socket.off('message');
       socket.off('error');
@@ -57,15 +57,15 @@ const TeacherChat: React.FC = () => {
 
   return (
     <div className='p-4'>
-      <h1 className='text-2xl mb-4'>Teacher Chat</h1>
+      <h1 className='text-2xl mb-4'>Student Chat</h1>
       <ChatWindow
         messages={messages}
         sendMessage={sendMessage}
         chatRoomId='class-123'
-        isTeacher={true}
+        isTeacher={false}
       />
     </div>
   );
 };
 
-export default TeacherChat;
+export default StudentChat;
