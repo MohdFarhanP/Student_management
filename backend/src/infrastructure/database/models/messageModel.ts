@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+import { IMessage } from '../../../domain/interface/IMessage.js';
 
-const messageSchema = new mongoose.Schema({
+const messageSchema = new mongoose.Schema<IMessage>({
   chatRoomId: { type: String, required: true },
   senderId: { type: String, required: true },
   senderRole: { type: String, enum: ['Student', 'Teacher'], required: true },

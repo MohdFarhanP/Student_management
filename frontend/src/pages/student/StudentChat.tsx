@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ChatWindow from '../../components/ChatWindow';
 import { RootState, AppDispatch } from '../../redux/store';
-import { addMessage } from '../../redux/slices/chatSlice';
+import { addMessage, setMessages, setError } from '../../redux/slices/chatSlice';
 import { Message } from '../../types/message';
 import { socket } from '../../socket';
 
@@ -13,34 +13,38 @@ const StudentChat: React.FC = () => {
 
   useEffect(() => {
     if (!user) return;
-    let loaded = false;
+
+    socket.io.opts.query = {userId :user.id};;
+    socket.connect();
+
     socket.on('connect', () => {
       console.log('Connected to Socket.IO server');
       socket.emit('joinRoom', 'class-123', () => {
         console.log('Joined room class-123');
+        socket.emit('loadMessages', 'class-123');
       });
-      socket.emit('loadMessages', 'class-123');
-      loaded = true;
     });
+
     socket.on('initialMessages', (messages: Message[]) => {
       console.log('Received initialMessages:', messages);
-      messages.forEach((msg) => dispatch(addMessage(msg)));
+      dispatch(setMessages(messages));
     });
+
     socket.on('message', (message: Message) => {
       console.log('Received new message:', message);
       dispatch(addMessage(message));
     });
-    // Handle reconnect
-    socket.on('reconnect', () => {
-      if (!loaded) {
-        socket.emit('loadMessages', 'class-123');
-      }
+
+    socket.on('error', (err: string) => {
+      dispatch(setError(err));
     });
+
     return () => {
       socket.off('connect');
       socket.off('initialMessages');
       socket.off('message');
-      socket.off('reconnect');
+      socket.off('error');
+      socket.disconnect();
     };
   }, [dispatch, user]);
 
@@ -61,11 +65,11 @@ const StudentChat: React.FC = () => {
   };
 
   if (!user) return <div>Please log in to access the chat.</div>;
-  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="p-4">
       <h1 className="mb-4 text-2xl">Student Chat</h1>
+      {error && <div className="mb-4 text-red-500">Error: {error}</div>}
       <ChatWindow
         messages={messages}
         sendMessage={sendMessage}

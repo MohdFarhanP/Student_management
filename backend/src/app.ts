@@ -43,4 +43,4 @@ app.use('/api/chat', chatRoutes);
 const socketServer = new SocketServer(io);
 socketServer.initialize();
 
-export { app, server };
+export { server };

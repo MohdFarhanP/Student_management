@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ChatWindow from '../../components/ChatWindow';
 import { RootState, AppDispatch } from '../../redux/store';
-import { addMessage, setError } from '../../redux/slices/chatSlice';
+import { addMessage, setMessages, setError } from '../../redux/slices/chatSlice';
 import { Message } from '../../types/message';
 import { socket } from '../../socket';
 
@@ -14,14 +14,19 @@ const TeacherChat: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
+    // Update socket query with userId
+    socket.io.opts.query = {userId :user.id};
+    socket.connect();
+
     socket.on('connect', () => {
       console.log('Connected to Socket.IO server');
-      socket.emit('joinRoom', 'class-123');
-      socket.emit('loadMessages', 'class-123');
+      socket.emit('joinRoom', 'class-123', () => {
+        socket.emit('loadMessages', 'class-123');
+      });
     });
 
     socket.on('initialMessages', (messages: Message[]) => {
-      messages.forEach((msg) => dispatch(addMessage(msg)));
+      dispatch(setMessages(messages));
     });
 
     socket.on('message', (message: Message) => {
@@ -37,6 +42,7 @@ const TeacherChat: React.FC = () => {
       socket.off('initialMessages');
       socket.off('message');
       socket.off('error');
+      socket.disconnect();
     };
   }, [dispatch, user]);
 
@@ -57,11 +63,11 @@ const TeacherChat: React.FC = () => {
   };
 
   if (!user) return <div>Please log in to access the chat.</div>;
-  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="p-4">
       <h1 className="mb-4 text-2xl">Teacher Chat</h1>
+      {error && <div className="mb-4 text-red-500">Error: {error}</div>}
       <ChatWindow
         messages={messages}
         sendMessage={sendMessage}

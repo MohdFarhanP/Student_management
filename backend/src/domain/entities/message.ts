@@ -4,7 +4,7 @@ export class MessageEntity implements IMessage {
   id: string;
   chatRoomId: string;
   senderId: string;
-  senderRole: 'student' | 'teacher';
+  senderRole: 'Student' | 'Teacher';
   content?: string;
   mediaUrl?: string;
   mediaType?: 'image' | 'document';

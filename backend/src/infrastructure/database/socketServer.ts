@@ -5,7 +5,7 @@ import { MessageRepository } from '../repositories/message/messageRepository.js'
 export interface SendMessageDTO {
   chatRoomId: string;
   senderId: string;
-  senderRole: 'student' | 'teacher';
+  senderRole: 'Student' | 'Teacher';
   content?: string;
   mediaUrl?: string;
   mediaType?: 'image' | 'document';
@@ -18,8 +18,18 @@ export class SocketServer {
     const sendMessageUseCase = new SendMessage(new MessageRepository());
     const messageRepository = new MessageRepository();
 
+    // Socket authentication middleware
+    this.io.use((socket, next) => {
+      const userId = socket.handshake.query.userId as string;
+      if (!userId) {
+        return next(new Error('Authentication error: userId required'));
+      }
+      socket.data.userId = userId;
+      next();
+    });
+
     this.io.on('connection', (socket: Socket) => {
-      console.log('User connected:', socket.id);
+      console.log('User connected:', socket.id, 'userId:', socket.data.userId);
 
       socket.on('joinRoom', (chatRoomId: string, callback) => {
         if (!chatRoomId) {
@@ -27,14 +37,13 @@ export class SocketServer {
           return;
         }
         socket.join(chatRoomId);
-        console.log(`User ${socket.id} joined room ${chatRoomId}`);
+        console.log(`User ${socket.data.userId} joined room ${chatRoomId}`);
         if (callback) callback();
       });
 
       socket.on('loadMessages', async (chatRoomId: string) => {
         try {
           const messages = await messageRepository.findByChatRoomId(chatRoomId);
-          console.log('this is the message sent from the backend ', messages);
           socket.emit('initialMessages', messages);
         } catch (error) {
           socket.emit('error', 'Failed to load messages');
@@ -43,23 +52,25 @@ export class SocketServer {
 
       socket.on('sendMessage', async (message: SendMessageDTO) => {
         try {
-          if (!message.chatRoomId || !message.senderId || !message.senderRole) {
-            socket.emit('error', 'Missing required message fields');
+          if (
+            !message.chatRoomId ||
+            !message.senderId ||
+            !message.senderRole ||
+            message.senderId !== socket.data.userId
+          ) {
+            socket.emit('error', 'Unauthorized or missing message fields');
             return;
           }
           const savedMessage = await sendMessageUseCase.execute(message);
-          console.log(
-            'this is the message form sendMessage lisener',
-            savedMessage
-          );
+          // Broadcast to room, excluding sender
+          socket.to(message.chatRoomId).emit('message', savedMessage);
+          // Confirm to sender
           socket.emit('message', savedMessage);
-          this.io.to(message.chatRoomId).emit('message', savedMessage);
         } catch (error) {
-          if (error instanceof Error) {
-            socket.emit('error', error.message);
-          } else {
-            socket.emit('error', 'An unknown error occurred');
-          }
+          socket.emit(
+            'error',
+            error instanceof Error ? error.message : 'An unknown error occurred'
+          );
         }
       });
 

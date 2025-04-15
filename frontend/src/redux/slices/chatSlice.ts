@@ -18,7 +18,6 @@ const chatSlice = createSlice({
   initialState,
   reducers: {
     addMessage: (state, action: PayloadAction<Message>) => {
-      console.log('Adding message to Redux:', action.payload);
       state.messages.push(action.payload);
     },
     setMessages: (state, action: PayloadAction<Message[]>) => {
@@ -33,6 +32,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const { addMessage, setMessages, setLoading, setError } =
-  chatSlice.actions;
+export const { addMessage, setMessages, setLoading, setError } = chatSlice.actions;
 export default chatSlice.reducer;
