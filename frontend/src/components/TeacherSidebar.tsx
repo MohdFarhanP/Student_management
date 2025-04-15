@@ -6,6 +6,7 @@ import { logoutUser } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
 import { MdLogout } from 'react-icons/md';
 import defaultImage from '../assets/profile.jpg';
+import SendNotificationModal from './SendNotificationModal';
 
 const TeacherSidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -56,8 +57,15 @@ const TeacherSidebar: React.FC = () => {
           to="/teacher/chat"
           className="block rounded p-2 hover:bg-white hover:font-medium hover:text-black"
         >
-          chat
+          Chat
         </Link>
+        <SendNotificationModal
+          trigger={
+            <button className="block w-full text-left rounded p-2 hover:bg-white hover:font-medium hover:text-black">
+              Send Notification
+            </button>
+          }
+        />
         <Link
           to="/teacher/settings"
           className="block rounded p-2 hover:bg-white hover:font-medium hover:text-black"

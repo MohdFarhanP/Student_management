@@ -32,5 +32,6 @@ const chatSlice = createSlice({
   },
 });
 
-export const { addMessage, setMessages, setLoading, setError } = chatSlice.actions;
+export const { addMessage, setMessages, setLoading, setError } =
+  chatSlice.actions;
 export default chatSlice.reducer;

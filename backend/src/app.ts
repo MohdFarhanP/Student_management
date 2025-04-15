@@ -10,6 +10,7 @@ import cookieParser from 'cookie-parser';
 import authenticationRoutes from './interfaces/routes/authenticationRoutes.js';
 import studentRoutes from './interfaces/routes/student/studentRoutes.js';
 import teacherRoutes from './interfaces/routes/teacher/teacherRoutes.js';
+import notificationRoutes from './interfaces/routes/notification/notificationRoutes.js';
 
 const app = express();
 const server = new Server(app);
@@ -39,6 +40,7 @@ app.use('/api/auth', authenticationRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 const socketServer = new SocketServer(io);
 socketServer.initialize();

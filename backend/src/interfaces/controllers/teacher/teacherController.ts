@@ -3,16 +3,13 @@ import HttpStatus from '../../../utils/httpStatus.js';
 import { GetTeacherProfileUseCase } from '../../../application/useCases/teacher/getTeacherProfileUseCase.js';
 import { UpdateTeacherProfileUseCase } from '../../../application/useCases/teacher/updateTeacherProfileUseCase.js';
 
-interface AuthenticatedRequest extends Request {
-  user?: { email: string };
-}
 export class TeacherController {
   constructor(
     private getTeacherProfileUseCase: GetTeacherProfileUseCase,
     private updateTeacherProfileUseCase: UpdateTeacherProfileUseCase
   ) {}
 
-  async getProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async getProfile(req: Request, res: Response): Promise<void> {
     try {
       const email = (req.user as { email: string })?.email;
       if (!email) throw new Error('Unauthorized');

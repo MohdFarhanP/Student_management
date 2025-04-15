@@ -1,6 +1,8 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
-import { SendMessage } from '../../application/useCases/message/sendMessage.js';
 import { MessageRepository } from '../repositories/message/messageRepository.js';
+import { SendMessage } from '../../application/useCases/message/sendMessage.js';
+import { NotificationRepository } from '../repositories/notification/notificationReopository.js';
+import { SendNotification } from '../../application/useCases/notification/SendNotificationUseCase.js';
 
 export interface SendMessageDTO {
   chatRoomId: string;
@@ -11,17 +13,30 @@ export interface SendMessageDTO {
   mediaType?: 'image' | 'document';
 }
 
+export interface SendNotificationDTO {
+  title: string;
+  message: string;
+  recipientType: 'global' | 'role' | 'Student';
+  recipientIds?: string[];
+  senderId: string;
+  senderRole: 'Admin' | 'Teacher';
+}
+
 export class SocketServer {
   constructor(private io: SocketIOServer) {}
 
   initialize() {
-    const sendMessageUseCase = new SendMessage(new MessageRepository());
     const messageRepository = new MessageRepository();
+    const sendMessageUseCase = new SendMessage(messageRepository);
+    const notificationRepository = new NotificationRepository();
+    const sendNotificationUseCase = new SendNotification(
+      notificationRepository
+    );
 
-    // Socket authentication middleware
     this.io.use((socket, next) => {
       const userId = socket.handshake.query.userId as string;
       if (!userId) {
+        console.error('Socket authentication failed: No userId provided');
         return next(new Error('Authentication error: userId required'));
       }
       socket.data.userId = userId;
@@ -39,6 +54,11 @@ export class SocketServer {
         socket.join(chatRoomId);
         console.log(`User ${socket.data.userId} joined room ${chatRoomId}`);
         if (callback) callback();
+      });
+
+      socket.on('joinNotification', () => {
+        socket.join(`user-${socket.data.userId}`);
+        console.log(`User ${socket.data.userId} joined notification room`);
       });
 
       socket.on('loadMessages', async (chatRoomId: string) => {
@@ -62,9 +82,7 @@ export class SocketServer {
             return;
           }
           const savedMessage = await sendMessageUseCase.execute(message);
-          // Broadcast to room, excluding sender
           socket.to(message.chatRoomId).emit('message', savedMessage);
-          // Confirm to sender
           socket.emit('message', savedMessage);
         } catch (error) {
           socket.emit(
@@ -73,6 +91,70 @@ export class SocketServer {
           );
         }
       });
+
+      socket.on(
+        'sendNotification',
+        async (notification: SendNotificationDTO) => {
+          try {
+            console.log('Received notification:', notification);
+
+            if (!notification.title) {
+              socket.emit('error', 'Notification title is required');
+              return;
+            }
+            if (!notification.message) {
+              socket.emit('error', 'Notification message is required');
+              return;
+            }
+            if (!notification.senderId) {
+              socket.emit('error', 'Sender ID is required');
+              return;
+            }
+            if (!notification.senderRole) {
+              socket.emit('error', 'Sender role is required');
+              return;
+            }
+            if (notification.senderId !== socket.data.userId) {
+              socket.emit(
+                'error',
+                'Unauthorized: Sender ID does not match socket user'
+              );
+              return;
+            }
+            if (!['Admin', 'Teacher'].includes(notification.senderRole)) {
+              socket.emit('error', 'Unauthorized: Invalid sender role');
+              return;
+            }
+
+            const savedNotification =
+              await sendNotificationUseCase.execute(notification);
+            if (notification.recipientType === 'global') {
+              this.io.emit('notification', savedNotification);
+            } else if (notification.recipientType === 'role') {
+              notification.recipientIds?.forEach((role) => {
+                this.io
+                  .to(`role-${role}`)
+                  .emit('notification', savedNotification);
+              });
+            } else if (notification.recipientType === 'Student') {
+              notification.recipientIds?.forEach((userId) => {
+                this.io
+                  .to(`user-${userId}`)
+                  .emit('notification', savedNotification);
+              });
+            }
+            socket.emit('notification', savedNotification);
+          } catch (error) {
+            console.error('Error processing notification:', error);
+            socket.emit(
+              'error',
+              error instanceof Error
+                ? error.message
+                : 'Failed to send notification'
+            );
+          }
+        }
+      );
 
       socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);

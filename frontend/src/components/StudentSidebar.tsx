@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
-import { MdLogout } from 'react-icons/md';
 import { logoutUser } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
+import { MdLogout, MdEventAvailable, MdChat, MdSettings } from 'react-icons/md';
 import defaultImage from '../assets/profile.jpg';
 
 const StudentSidebar: React.FC = () => {
@@ -23,42 +23,54 @@ const StudentSidebar: React.FC = () => {
       toast.error('Logout failed');
     }
   };
+
+  const menuItems = [
+    {
+      name: 'Attendance',
+      icon: <MdEventAvailable size={22} />,
+      path: '/student/attendance',
+    },
+    {
+      name: 'Chat',
+      icon: <MdChat size={22} />,
+      path: '/student/schedule', // Matches your original link to chat
+    },
+    {
+      name: 'Settings',
+      icon: <MdSettings size={22} />,
+      path: '/student/settings',
+    },
+  ];
+
   return (
-    <div className="fixed top-0 left-0 h-full w-64 items-stretch bg-black p-4 text-white shadow-lg">
-      <div
-        className="mb-6 flex cursor-pointer items-center"
-        onClick={() => navigate('/student/profile')}
-      >
-        <img
-          src={profile?.profileImage || defaultImage}
-          alt="Profile"
-          className="mb-2 h-12 w-12 rounded-full border-1 border-white object-cover"
-        />
-        <h2 className="ml-6 pb-5 text-lg font-semibold">
-          {profile?.name || 'Student'}
-        </h2>
+    <div className="fixed top-0 left-0 flex h-screen w-64 flex-col justify-between bg-black text-white shadow-lg">
+      <div>
+        <div className="flex items-center justify-center py-6">
+          <img
+            src={profile?.profileImage || defaultImage}
+            alt="Profile"
+            className="h-12 w-12 rounded-full border border-white object-cover"
+          />
+          <p className="ml-2 text-lg font-semibold">{profile?.name || 'Student'}</p>
+        </div>
+        <div className="divider"></div>
+        <ul className="mt-4 space-y-2 px-4">
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center space-x-3 rounded-md px-4 py-3 transition ${
+                  isActive ? 'bg-white text-black' : 'hover:bg-white hover:text-black'
+                }`
+              }
+            >
+              {item.icon}
+              <span className="text-sm font-medium">{item.name}</span>
+            </NavLink>
+          ))}
+        </ul>
       </div>
-      <div className="mb-4 border-t border-gray-600"></div>
-      <nav className="space-y-2">
-        <Link
-          to="/student/attendance"
-          className="block rounded p-2 hover:bg-white hover:font-medium hover:text-black"
-        >
-          Attendence
-        </Link>
-        <Link
-          to="/student/chat"
-          className="block rounded p-2 hover:bg-white hover:font-medium hover:text-black"
-        >
-          chat
-        </Link>
-        <Link
-          to="#"
-          className="block rounded p-2 hover:bg-white hover:font-medium hover:text-black"
-        >
-          Settings
-        </Link>
-      </nav>
       <div className="p-4">
         <button
           onClick={handleLogout}

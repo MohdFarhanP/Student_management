@@ -6,6 +6,7 @@ export const socket = io(PORT, {
   reconnection: true,
   reconnectionAttempts: 3,
   reconnectionDelay: 1000,
+  autoConnect: false,
   query: {},
 });
 

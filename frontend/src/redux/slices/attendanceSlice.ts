@@ -51,8 +51,10 @@ export const fetchAttendance = createAsyncThunk(
         updatedAt: record.updatedAt ? new Date(record.updatedAt) : undefined,
       }));
       return transformedData;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch attendance');
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch attendance';
+      return rejectWithValue(message);
     }
   }
 );

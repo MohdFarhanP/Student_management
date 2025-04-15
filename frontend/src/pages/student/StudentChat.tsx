@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ChatWindow from '../../components/ChatWindow';
+import NotificationBell from '../../components/NotificationBell';
+import StudentSidebar from '../../components/StudentSidebar';
 import { RootState, AppDispatch } from '../../redux/store';
 import { addMessage, setMessages, setError } from '../../redux/slices/chatSlice';
 import { Message } from '../../types/message';
@@ -14,7 +16,7 @@ const StudentChat: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
-    socket.io.opts.query = {userId :user.id};;
+    socket.io.opts.query = { userId: user.id };
     socket.connect();
 
     socket.on('connect', () => {
@@ -67,15 +69,23 @@ const StudentChat: React.FC = () => {
   if (!user) return <div>Please log in to access the chat.</div>;
 
   return (
-    <div className="p-4">
-      <h1 className="mb-4 text-2xl">Student Chat</h1>
-      {error && <div className="mb-4 text-red-500">Error: {error}</div>}
-      <ChatWindow
-        messages={messages}
-        sendMessage={sendMessage}
-        chatRoomId="class-123"
-        isTeacher={false}
-      />
+    <div className="flex min-h-screen bg-gray-100">
+      <StudentSidebar />
+      <div className="ml-70 flex-1 p-4 sm:p-6">
+        <div className="mb-4 flex items-center justify-between sm:mb-6">
+          <h1 className="text-xl font-semibold text-gray-800 sm:text-2xl">
+            Student Chat
+          </h1>
+          <NotificationBell />
+        </div>
+        {error && <div className="mb-4 text-red-500 sm:mb-6">Error: {error}</div>}
+        <ChatWindow
+          messages={messages}
+          sendMessage={sendMessage}
+          chatRoomId="class-123"
+          isTeacher={false}
+        />
+      </div>
     </div>
   );
 };

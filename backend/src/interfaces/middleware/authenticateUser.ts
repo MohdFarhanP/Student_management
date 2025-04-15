@@ -3,14 +3,10 @@ import { ITokenService } from '../../domain/interface/ITokenService.js';
 import { AuthService } from '../../application/services/authService.js';
 import HttpStatus from '../../utils/httpStatus.js';
 
-interface AuthenticatedRequest extends Request {
-  user?: { id: string; email: string; role: string };
-}
-
 const tokenService: ITokenService = new AuthService();
 
 export const authenticateUser = (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {

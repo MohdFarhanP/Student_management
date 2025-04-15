@@ -3,17 +3,13 @@ import HttpStatus from '../../../utils/httpStatus.js';
 import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase.js';
 import { UpdateStudentProfileImageUseCase } from '../../../application/useCases/student/UpdateStudentProfileImageUseCase.js';
 
-interface AuthenticatedRequest extends Request {
-  user?: { email: string };
-}
-
 export class StudentController {
   constructor(
     private getStudentProfileUseCase: GetStudentProfileUseCase,
     private updateStudentProfileImageUseCase: UpdateStudentProfileImageUseCase
   ) {}
 
-  async getProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
+  async getProfile(req: Request, res: Response): Promise<void> {
     try {
       const email = req.params.email;
       if (!email) throw new Error('Email parameter is required');
@@ -27,10 +23,7 @@ export class StudentController {
     }
   }
 
-  async updateProfileImage(
-    req: AuthenticatedRequest,
-    res: Response
-  ): Promise<void> {
+  async updateProfileImage(req: Request, res: Response): Promise<void> {
     try {
       const { email, profileImage } = req.body;
       if (!email || !profileImage)

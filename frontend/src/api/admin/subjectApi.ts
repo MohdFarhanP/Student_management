@@ -9,14 +9,14 @@ export interface ISubjectData {
   notes: File[] | null;
 }
 
-interface Subject {
-  id: string;
+export interface Subject {
+  _id: string;
   subjectName: string;
   teachers: string[];
   notes: string[];
 }
 
-interface FinalSubjectData {
+export interface FinalSubjectData {
   subjectName: string;
   teachers: string[];
   notes: string[];
@@ -25,11 +25,16 @@ interface FinalSubjectData {
 export const addSubject = async (cls: string, subjectData: ISubjectData) => {
   const uploadedNotes = subjectData.notes
     ? await Promise.all(
-        subjectData.notes.map((file) => uploadToCloudinary(file))
-      )
+      subjectData.notes.map((file) => uploadToCloudinary(file))
+    )
     : [];
-  const validNotes = uploadedNotes.filter((url) => url !== null);
-  const finalSubjectData = { ...subjectData, notes: validNotes };
+  const validNotes = uploadedNotes.filter(
+    (url): url is string => typeof url === 'string'
+  );
+  const finalSubjectData: FinalSubjectData = {
+    ...subjectData,
+    notes: validNotes,
+  };
   return apiRequest<Subject, FinalSubjectData>(
     'post',
     `${ADMIN_SUBJECT_API}/${cls}/subjects`,
@@ -54,7 +59,9 @@ export const updateSubject = async (
   const uploadedNotes = subject.notes
     ? await Promise.all(subject.notes.map((file) => uploadToCloudinary(file)))
     : [];
-  const validNotes = uploadedNotes.filter((url) => url !== null);
+  const validNotes = uploadedNotes.filter(
+    (url): url is string => typeof url === 'string'
+  );
   const finalSubjectData = { ...subject, notes: validNotes };
   return apiRequest<Subject, FinalSubjectData>(
     'put',

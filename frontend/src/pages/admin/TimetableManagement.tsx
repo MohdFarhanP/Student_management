@@ -7,7 +7,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import AdminSideBar from '../../components/AdminSideBar';
 import { AxiosError } from 'axios';
 
-type Class = {
+export type Class = {
   _id: string;
   name: string;
 };

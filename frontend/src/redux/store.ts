@@ -5,6 +5,7 @@ import studentReducer from './slices/studentSlice';
 import teacherReducer from './slices/teacherSlice';
 import attendanceReducer from './slices/attendanceSlice';
 import chatReducer from './slices/chatSlice';
+import notificationReducer from './slices/notificationSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     teacher: teacherReducer,
     attendance: attendanceReducer,
     chat: chatReducer,
+    notification: notificationReducer,
   },
 });
 

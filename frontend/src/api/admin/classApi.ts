@@ -23,6 +23,16 @@ interface Student {
   profileImage: string;
 }
 
+interface Class {
+  name: string;
+  grade: string;
+  section: string;
+  roomNo: string;
+  tutor: string;
+  totalStudents?: string;
+  _id?: string;
+}
+
 export const addClass = (data: IClassData) =>
   apiRequest<{ message: string }, IClassData>(
     'post',
@@ -66,4 +76,4 @@ export const updateClass = (data: IClassData) =>
   });
 
 export const fetchClasses = () =>
-  apiRequest<IClassData[]>('get', `${ADMIN_CLASS_API_URL}/classlist`);
+  apiRequest<Class[]>('get', `${ADMIN_CLASS_API_URL}/classlist`);

@@ -8,12 +8,6 @@ import { TeacherRepository } from '../../../infrastructure/repositories/admin/te
 import mongoose from 'mongoose';
 import { ViewAttendanceUseCase } from '../../../application/useCases/student/ViewAttendanceUseCase.js';
 
-interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-  };
-}
-
 export class AttendanceController {
   private markAttendanceUseCase: MarkAttendanceUseCase;
   private viewAttendanceUseCase: ViewAttendanceUseCase;
@@ -35,10 +29,7 @@ export class AttendanceController {
     );
   }
 
-  async markAttendance(
-    req: AuthenticatedRequest,
-    res: Response
-  ): Promise<void> {
+  async markAttendance(req: Request, res: Response): Promise<void> {
     const { classId } = req.params;
     const { studentId, date, period, status, day } = req.body;
     const teacherId = (req.user as { id: string }).id;
@@ -94,10 +85,7 @@ export class AttendanceController {
     }
   }
 
-  async viewAttendance(
-    req: AuthenticatedRequest,
-    res: Response
-  ): Promise<void> {
+  async viewAttendance(req: Request, res: Response): Promise<void> {
     const { studentId } = req.params;
 
     try {
