@@ -53,10 +53,10 @@ const TeacherSidebar: React.FC = () => {
           Attendance
         </Link>
         <Link
-          to="/teacher/schedule"
+          to="/teacher/chat"
           className="block rounded p-2 hover:bg-white hover:font-medium hover:text-black"
         >
-          Schedule
+          chat
         </Link>
         <Link
           to="/teacher/settings"

@@ -47,10 +47,10 @@ const StudentSidebar: React.FC = () => {
           Attendence
         </Link>
         <Link
-          to="/student/schedule"
+          to="/student/chat"
           className="block rounded p-2 hover:bg-white hover:font-medium hover:text-black"
         >
-          Schedule
+          chat
         </Link>
         <Link
           to="#"

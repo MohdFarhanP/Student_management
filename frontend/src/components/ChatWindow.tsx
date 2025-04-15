@@ -7,12 +7,20 @@ import { uploadToCloudinary } from '../utils/cloudinaryUpload';
 
 interface ChatWindowProps {
   messages: Message[];
-  sendMessage: (content: string, mediaUrl?: string, mediaType?: 'image' | 'document') => void;
+  sendMessage: (
+    content: string,
+    mediaUrl?: string,
+    mediaType?: 'image' | 'document'
+  ) => void;
   chatRoomId: string;
   isTeacher: boolean;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ messages, sendMessage, isTeacher }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({
+  messages,
+  sendMessage,
+  isTeacher,
+}) => {
   const [content, setContent] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -40,21 +48,25 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, sendMessage, isTeache
         setFile(null);
         setUploadError(null);
       } catch (error) {
-        setUploadError('Failed to upload file: ' + (error instanceof Error ? error.message : 'Unknown error'));
+        setUploadError(
+          'Failed to upload file: ' +
+            (error instanceof Error ? error.message : 'Unknown error')
+        );
         return;
       }
     }
 
     sendMessage(content.trim(), mediaUrl, mediaType);
     setContent('');
+    setFile(null);
   };
 
   if (!user) return <div>Please log in to access the chat.</div>;
 
   return (
-    <div className='flex flex-col h-[80vh] bg-white p-4'>
-      {uploadError && <div className='text-red-500 mb-2'>{uploadError}</div>}
-      <div className='flex-1 overflow-y-auto space-y-2'>
+    <div className="flex h-[80vh] flex-col bg-amber-300 p-4">
+      {uploadError && <div className="mb-2 text-red-500">{uploadError}</div>}
+      <div className="flex-1 space-y-2 overflow-y-auto">
         {messages.map((msg) => (
           <MessageBubble
             key={msg.id}
@@ -64,23 +76,23 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, sendMessage, isTeache
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <div className='mt-4'>
+      <div className="mt-4">
         {isTeacher && (
           <input
-            type='file'
-            accept='image/*,application/pdf'
+            type="file"
+            accept="image/*,application/pdf"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className='mb-2'
+            className="mb-2"
           />
         )}
-        <div className='flex gap-2'>
+        <div className="flex gap-2">
           <input
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder='Type a message...'
-            className='flex-1 p-2 border'
+            placeholder="Type a message..."
+            className="flex-1 border p-2"
           />
-          <button onClick={handleSend} className='p-2 bg-blue-500 text-white'>
+          <button onClick={handleSend} className="bg-blue-500 p-2 text-white">
             Send
           </button>
         </div>

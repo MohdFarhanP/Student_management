@@ -2,7 +2,7 @@ import { apiRequest } from './apiClient';
 
 const AUTH_API_URL = '/auth';
 
-type UserRole = "Student" | "Teacher" | "Admin";
+type UserRole = 'Student' | 'Teacher' | 'Admin';
 
 interface ICredentials {
   email: string;

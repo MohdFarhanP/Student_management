@@ -1,5 +1,10 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { adminLogin, refreshUserToken, adminLogout, updateUserPassword } from '../../api/authenticationApi';
+import {
+  adminLogin,
+  refreshUserToken,
+  adminLogout,
+  updateUserPassword,
+} from '../../api/authenticationApi';
 
 interface User {
   id: string;
@@ -22,7 +27,10 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials: { email: string; password: string; role: string }, { rejectWithValue }) => {
+  async (
+    credentials: { email: string; password: string; role: string },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await adminLogin(credentials);
       return response;
@@ -40,7 +48,8 @@ export const updatePassword = createAsyncThunk(
       const response = await updateUserPassword(password);
       return response;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Password update failed';
+      const message =
+        error instanceof Error ? error.message : 'Password update failed';
       return rejectWithValue(message);
     }
   }
@@ -51,11 +60,11 @@ export const refreshToken = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await refreshUserToken();
-      console.log('refreshToken: response=', response);
       return response;
     } catch (error: unknown) {
       console.error('refreshToken: error=', error);
-      const message = error instanceof Error ? error.message : 'Token refresh failed';
+      const message =
+        error instanceof Error ? error.message : 'Token refresh failed';
       return rejectWithValue(message);
     }
   }
@@ -66,7 +75,6 @@ export const checkAuthOnLoad = createAsyncThunk(
   async (_, { dispatch, rejectWithValue }) => {
     try {
       const response = await dispatch(refreshToken()).unwrap();
-      console.log('checkAuthOnLoad: refreshToken response=', response);
       return response;
     } catch (error) {
       console.error('checkAuthOnLoad: refreshToken failed:', error);
@@ -110,10 +118,13 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updatePassword.fulfilled, (state, action: PayloadAction<User>) => {
-        state.loading = false;
-        state.user = action.payload;
-      })
+      .addCase(
+        updatePassword.fulfilled,
+        (state, action: PayloadAction<User>) => {
+          state.loading = false;
+          state.user = action.payload;
+        }
+      )
       .addCase(updatePassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -135,10 +146,13 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(checkAuthOnLoad.fulfilled, (state, action: PayloadAction<User | null>) => {
-        state.loading = false;
-        state.user = action.payload;
-      })
+      .addCase(
+        checkAuthOnLoad.fulfilled,
+        (state, action: PayloadAction<User | null>) => {
+          state.loading = false;
+          state.user = action.payload;
+        }
+      )
       .addCase(checkAuthOnLoad.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;

@@ -13,7 +13,7 @@ export const store = configureStore({
     student: studentReducer,
     teacher: teacherReducer,
     attendance: attendanceReducer,
-    chat: chatReducer
+    chat: chatReducer,
   },
 });
 

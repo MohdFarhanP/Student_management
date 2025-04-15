@@ -1,5 +1,5 @@
-import axios from "axios";
-import { Message } from "../types/Message";
+import axios from 'axios';
+import { Message } from '../types/Message';
 
 export class ApiAdapter {
   private apiUrl: string;
@@ -9,7 +9,9 @@ export class ApiAdapter {
   }
 
   async getMessages(chatRoomId: string): Promise<Message[]> {
-    const response = await axios.get(`${this.apiUrl}/chat/messages/${chatRoomId}`);
+    const response = await axios.get(
+      `${this.apiUrl}/chat/messages/${chatRoomId}`
+    );
     return response.data;
   }
 }

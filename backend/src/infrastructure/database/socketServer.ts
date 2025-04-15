@@ -21,18 +21,20 @@ export class SocketServer {
     this.io.on('connection', (socket: Socket) => {
       console.log('User connected:', socket.id);
 
-      socket.on('joinRoom', (chatRoomId: string) => {
+      socket.on('joinRoom', (chatRoomId: string, callback) => {
         if (!chatRoomId) {
           socket.emit('error', 'Invalid chatRoomId');
           return;
         }
         socket.join(chatRoomId);
         console.log(`User ${socket.id} joined room ${chatRoomId}`);
+        if (callback) callback();
       });
 
       socket.on('loadMessages', async (chatRoomId: string) => {
         try {
           const messages = await messageRepository.findByChatRoomId(chatRoomId);
+          console.log('this is the message sent from the backend ', messages);
           socket.emit('initialMessages', messages);
         } catch (error) {
           socket.emit('error', 'Failed to load messages');
@@ -46,6 +48,11 @@ export class SocketServer {
             return;
           }
           const savedMessage = await sendMessageUseCase.execute(message);
+          console.log(
+            'this is the message form sendMessage lisener',
+            savedMessage
+          );
+          socket.emit('message', savedMessage);
           this.io.to(message.chatRoomId).emit('message', savedMessage);
         } catch (error) {
           if (error instanceof Error) {

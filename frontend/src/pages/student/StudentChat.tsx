@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ChatWindow from '../../components/ChatWindow';
 import { RootState, AppDispatch } from '../../redux/store';
-import { addMessage, setError } from '../../redux/slices/chatSlice';
+import { addMessage } from '../../redux/slices/chatSlice';
 import { Message } from '../../types/message';
 import { socket } from '../../socket';
 
@@ -13,34 +13,42 @@ const StudentChat: React.FC = () => {
 
   useEffect(() => {
     if (!user) return;
-
+    let loaded = false;
     socket.on('connect', () => {
       console.log('Connected to Socket.IO server');
-      socket.emit('joinRoom', 'class-123');
+      socket.emit('joinRoom', 'class-123', () => {
+        console.log('Joined room class-123');
+      });
       socket.emit('loadMessages', 'class-123');
+      loaded = true;
     });
-
     socket.on('initialMessages', (messages: Message[]) => {
+      console.log('Received initialMessages:', messages);
       messages.forEach((msg) => dispatch(addMessage(msg)));
     });
-
     socket.on('message', (message: Message) => {
+      console.log('Received new message:', message);
       dispatch(addMessage(message));
     });
-
-    socket.on('error', (err: string) => {
-      dispatch(setError(err));
+    // Handle reconnect
+    socket.on('reconnect', () => {
+      if (!loaded) {
+        socket.emit('loadMessages', 'class-123');
+      }
     });
-
     return () => {
-      socket.off('connect');    
+      socket.off('connect');
       socket.off('initialMessages');
       socket.off('message');
-      socket.off('error');
+      socket.off('reconnect');
     };
   }, [dispatch, user]);
 
-  const sendMessage = (content: string, mediaUrl?: string, mediaType?: string) => {
+  const sendMessage = (
+    content: string,
+    mediaUrl?: string,
+    mediaType?: string
+  ) => {
     if (!user) return;
     socket.emit('sendMessage', {
       chatRoomId: 'class-123',
@@ -56,12 +64,12 @@ const StudentChat: React.FC = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className='p-4'>
-      <h1 className='text-2xl mb-4'>Student Chat</h1>
+    <div className="p-4">
+      <h1 className="mb-4 text-2xl">Student Chat</h1>
       <ChatWindow
         messages={messages}
         sendMessage={sendMessage}
-        chatRoomId='class-123'
+        chatRoomId="class-123"
         isTeacher={false}
       />
     </div>

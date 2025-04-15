@@ -15,7 +15,7 @@ import UserRoutes from './routes/StudentRoutes';
 import TeacherRoutes from './routes/TeacherRoutes';
 import { Unauthorized } from './pages/Unauthorized';
 import PrivateRoute from './routes/PrivateRoute';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { checkAuthOnLoad } from './redux/slices/authSlice';
 
 const AppContent: React.FC = () => {
@@ -23,22 +23,20 @@ const AppContent: React.FC = () => {
   const { user, loading } = useSelector((state: RootState) => state.auth);
   const navigate = useNavigate();
   const location = useLocation();
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
   useEffect(() => {
-    dispatch(checkAuthOnLoad());
-  }, [dispatch]);
+    if (!hasCheckedAuth && !user) {
+      dispatch(checkAuthOnLoad()).finally(() => {
+        setHasCheckedAuth(true);
+      });
+    }
+  }, [dispatch, hasCheckedAuth, user]);
 
   useEffect(() => {
-    if (loading) return; // Wait for auth check
+    if (loading || !hasCheckedAuth) return;
     if (user) {
-      const currentPath = location.pathname;
-      if (
-        currentPath === '/' ||
-        currentPath === '/login' ||
-        currentPath === '/admin' ||
-        currentPath === '/student' ||
-        currentPath === '/teacher'
-      ) {
+      if (location.pathname === '/' || location.pathname === '/login') {
         const redirectPath =
           user.role === 'Admin'
             ? '/admin/dashboard'
@@ -55,17 +53,12 @@ const AppContent: React.FC = () => {
           navigate(redirectPath, { replace: true });
         }
       }
-    } else if (
-      !['/login', '/unauthorized'].includes(location.pathname) &&
-      !location.pathname.startsWith('/admin') &&
-      !location.pathname.startsWith('/student') &&
-      !location.pathname.startsWith('/teacher')
-    ) {
+    } else if (!['/login', '/unauthorized'].includes(location.pathname)) {
       navigate('/login', { replace: true });
     }
-  }, [user, loading, navigate, location.pathname]);
+  }, [user, loading, navigate, location.pathname, hasCheckedAuth]);
 
-  if (loading) {
+  if (loading || !hasCheckedAuth) {
     return <div>Loading...</div>;
   }
 

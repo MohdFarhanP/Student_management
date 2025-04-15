@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const messageSchema = new mongoose.Schema({
   chatRoomId: { type: String, required: true },
   senderId: { type: String, required: true },
-  senderRole: { type: String, enum: ['student', 'teacher'], required: true },
+  senderRole: { type: String, enum: ['Student', 'Teacher'], required: true },
   content: { type: String },
   mediaUrl: { type: String },
   mediaType: { type: String, enum: ['image', 'document'] },

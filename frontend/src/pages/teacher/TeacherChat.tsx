@@ -40,7 +40,11 @@ const TeacherChat: React.FC = () => {
     };
   }, [dispatch, user]);
 
-  const sendMessage = (content: string, mediaUrl?: string, mediaType?: string) => {
+  const sendMessage = (
+    content: string,
+    mediaUrl?: string,
+    mediaType?: string
+  ) => {
     if (!user) return;
     socket.emit('sendMessage', {
       chatRoomId: 'class-123',
@@ -56,12 +60,12 @@ const TeacherChat: React.FC = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className='p-4'>
-      <h1 className='text-2xl mb-4'>Teacher Chat</h1>
+    <div className="p-4">
+      <h1 className="mb-4 text-2xl">Teacher Chat</h1>
       <ChatWindow
         messages={messages}
         sendMessage={sendMessage}
-        chatRoomId='class-123'
+        chatRoomId="class-123"
         isTeacher={true}
       />
     </div>

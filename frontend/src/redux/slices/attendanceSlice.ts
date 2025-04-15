@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchAttendance as fetchAttendanceAPI  } from '../../api/student/studentApi';
+import { fetchAttendance as fetchAttendanceAPI } from '../../api/student/studentApi';
 
 interface Attendance {
   classId: string;
