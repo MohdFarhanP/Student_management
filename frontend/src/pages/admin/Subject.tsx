@@ -177,16 +177,16 @@ const Subject = () => {
                 <ul className="mt-2 max-h-20 overflow-y-auto">
                   {Array.isArray(subject.teachers) &&
                   subject.teachers.length > 0 ? (
-                      subject.teachers.map((teacher, index) => (
-                        <li key={index} className="truncate text-sm text-black">
-                          {teacher}
-                        </li>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-600">
+                    subject.teachers.map((teacher, index) => (
+                      <li key={index} className="truncate text-sm text-black">
+                        {teacher}
+                      </li>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-600">
                       No teachers assigned
-                      </p>
-                    )}
+                    </p>
+                  )}
                 </ul>
               </div>
             </div>

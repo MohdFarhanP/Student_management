@@ -1,5 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { FetchNotifications, MarkNotificationAsRead } from '../../api/notification';
+import {
+  FetchNotifications,
+  MarkNotificationAsRead,
+} from '../../api/notification';
 
 export interface Notification {
   id: string;
@@ -87,11 +90,11 @@ const notificationSlice = createSlice({
           // Remove duplicates by id
           const uniqueNotifications = Array.isArray(action.payload)
             ? action.payload.reduce((acc: Notification[], curr) => {
-              if (!acc.some((n) => n.id === curr.id)) {
-                acc.push(curr);
-              }
-              return acc;
-            }, [])
+                if (!acc.some((n) => n.id === curr.id)) {
+                  acc.push(curr);
+                }
+                return acc;
+              }, [])
             : [];
           state.notifications = uniqueNotifications;
         }

@@ -58,7 +58,7 @@ const SendNotification: React.FC = () => {
   };
 
   return (
-    <div className="rounded-lg bg-gray-100 text-gray-800 p-4">
+    <div className="rounded-lg bg-gray-100 p-4 text-gray-800">
       <h2 className="mb-4 text-xl">Send Notification</h2>
       {error && <div className="mb-4 text-red-500">{error}</div>}
       <input

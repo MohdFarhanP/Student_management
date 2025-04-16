@@ -33,7 +33,7 @@ const StudentSidebar: React.FC = () => {
     {
       name: 'Chat',
       icon: <MdChat size={22} />,
-      path: '/student/schedule', // Matches your original link to chat
+      path: '/student/chat',
     },
     {
       name: 'Settings',
@@ -51,7 +51,9 @@ const StudentSidebar: React.FC = () => {
             alt="Profile"
             className="h-12 w-12 rounded-full border border-white object-cover"
           />
-          <p className="ml-2 text-lg font-semibold">{profile?.name || 'Student'}</p>
+          <p className="ml-2 text-lg font-semibold">
+            {profile?.name || 'Student'}
+          </p>
         </div>
         <div className="divider"></div>
         <ul className="mt-4 space-y-2 px-4">
@@ -61,7 +63,9 @@ const StudentSidebar: React.FC = () => {
               to={item.path}
               className={({ isActive }) =>
                 `flex items-center space-x-3 rounded-md px-4 py-3 transition ${
-                  isActive ? 'bg-white text-black' : 'hover:bg-white hover:text-black'
+                  isActive
+                    ? 'bg-white text-black'
+                    : 'hover:bg-white hover:text-black'
                 }`
               }
             >

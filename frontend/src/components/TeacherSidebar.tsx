@@ -61,7 +61,7 @@ const TeacherSidebar: React.FC = () => {
         </Link>
         <SendNotificationModal
           trigger={
-            <button className="block w-full text-left rounded p-2 hover:bg-white hover:font-medium hover:text-black">
+            <button className="block w-full rounded p-2 text-left hover:bg-white hover:font-medium hover:text-black">
               Send Notification
             </button>
           }

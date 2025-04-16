@@ -4,7 +4,11 @@ import ChatWindow from '../../components/ChatWindow';
 import NotificationBell from '../../components/NotificationBell';
 import StudentSidebar from '../../components/StudentSidebar';
 import { RootState, AppDispatch } from '../../redux/store';
-import { addMessage, setMessages, setError } from '../../redux/slices/chatSlice';
+import {
+  addMessage,
+  setMessages,
+  setError,
+} from '../../redux/slices/chatSlice';
 import { Message } from '../../types/message';
 import { socket } from '../../socket';
 
@@ -78,7 +82,9 @@ const StudentChat: React.FC = () => {
           </h1>
           <NotificationBell />
         </div>
-        {error && <div className="mb-4 text-red-500 sm:mb-6">Error: {error}</div>}
+        {error && (
+          <div className="mb-4 text-red-500 sm:mb-6">Error: {error}</div>
+        )}
         <ChatWindow
           messages={messages}
           sendMessage={sendMessage}

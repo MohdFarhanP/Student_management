@@ -25,8 +25,8 @@ export interface FinalSubjectData {
 export const addSubject = async (cls: string, subjectData: ISubjectData) => {
   const uploadedNotes = subjectData.notes
     ? await Promise.all(
-      subjectData.notes.map((file) => uploadToCloudinary(file))
-    )
+        subjectData.notes.map((file) => uploadToCloudinary(file))
+      )
     : [];
   const validNotes = uploadedNotes.filter(
     (url): url is string => typeof url === 'string'

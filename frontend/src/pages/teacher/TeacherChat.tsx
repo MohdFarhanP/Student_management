@@ -79,7 +79,9 @@ const TeacherChat: React.FC = () => {
           </h1>
           <NotificationBell />
         </div>
-        {error && <div className="mb-4 text-red-500 sm:mb-6">Error: {error}</div>}
+        {error && (
+          <div className="mb-4 text-red-500 sm:mb-6">Error: {error}</div>
+        )}
         <ChatWindow
           messages={messages}
           sendMessage={sendMessage}
