@@ -6,6 +6,7 @@ import teacherReducer from './slices/teacherSlice';
 import attendanceReducer from './slices/attendanceSlice';
 import chatReducer from './slices/chatSlice';
 import notificationReducer from './slices/notificationSlice';
+import noteReducer from '../redux/slices/noteSlice'
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     attendance: attendanceReducer,
     chat: chatReducer,
     notification: notificationReducer,
+    notes: noteReducer,
   },
 });
 
