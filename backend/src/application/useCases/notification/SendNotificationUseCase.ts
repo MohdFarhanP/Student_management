@@ -1,6 +1,6 @@
-import { INotification } from '../../../domain/interface/INotification.js';
-import { INotificationRepository } from '../../../domain/interface/INotificationRepository.js';
-import { SendNotificationDTO } from '../../../infrastructure/database/socketServer.js';
+import { INotification } from '../../../domain/interface/INotification';
+import { INotificationRepository } from '../../../domain/interface/INotificationRepository';
+import { SendNotificationDTO } from '../../../infrastructure/database/socketServer';
 
 export class SendNotification {
   constructor(private notificationRepository: INotificationRepository) {}

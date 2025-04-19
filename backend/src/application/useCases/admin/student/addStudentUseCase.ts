@@ -1,7 +1,7 @@
-import { IStudentRepository } from '../../../../domain/interface/admin/IStudentRepository.js';
-import { IStudent } from '../../../../domain/interface/IStudent.js';
-import { ITokenService } from '../../../../domain/interface/ITokenService.js';
-import { sendDefaultPasswordEmail } from '../../../../utils/emailService.js';
+import { IStudentRepository } from '../../../../domain/interface/admin/IStudentRepository';
+import { IStudent } from '../../../../domain/interface/IStudent';
+import { ITokenService } from '../../../../domain/interface/ITokenService';
+import { sendDefaultPasswordEmail } from '../../../../utils/emailService';
 import crypto from 'crypto';
 
 export class AddStudentUseCase {

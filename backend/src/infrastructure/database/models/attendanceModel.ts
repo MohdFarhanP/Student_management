@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IAttendance } from '../../../domain/interface/IAttendance.js';
+import { IAttendance } from '../../../domain/interface/IAttendance';
 
 const attendanceSchema = new Schema<IAttendance>(
   {

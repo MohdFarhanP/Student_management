@@ -1,9 +1,9 @@
 import express from 'express';
-import { INotificationRepository } from '../../../domain/interface/INotificationRepository.js';
-import { NotificationRepository } from '../../../infrastructure/repositories/notification/notificationReopository.js';
-import { MarkNotificationAsRead } from '../../../application/useCases/notification/MarkNotificationAsReadUseCase.js';
-import { NotificationController } from '../../controllers/notification/notificationController.js';
-import { authenticateUser } from '../../middleware/authenticateUser.js';
+import { INotificationRepository } from '../../../domain/interface/INotificationRepository';
+import { NotificationRepository } from '../../../infrastructure/repositories/notification/notificationReopository';
+import { MarkNotificationAsRead } from '../../../application/useCases/notification/MarkNotificationAsReadUseCase';
+import { NotificationController } from '../../controllers/notification/notificationController';
+import { authenticateUser } from '../../middleware/authenticateUser';
 
 const router = express.Router();
 

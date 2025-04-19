@@ -1,8 +1,8 @@
 import express, { Router } from 'express';
-import TimetableController from '../../controllers/admin/timeTableController.js';
-import TimetableRepository from '../../../infrastructure/repositories/admin/timeTableRepository.js';
-import { TeacherRepository } from '../../../infrastructure/repositories/admin/teacherRepository.js';
-import ManageTimetable from '../../../application/useCases/admin/timeTable/timetableUseCase.js';
+import TimetableController from '../../controllers/admin/timeTableController';
+import TimetableRepository from '../../../infrastructure/repositories/admin/timeTableRepository';
+import { TeacherRepository } from '../../../infrastructure/repositories/admin/teacherRepository';
+import ManageTimetable from '../../../application/useCases/admin/timeTable/timetableUseCase';
 
 const router: Router = express.Router();
 const timetableRepo = new TimetableRepository();

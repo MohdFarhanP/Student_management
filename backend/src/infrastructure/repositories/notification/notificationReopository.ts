@@ -1,8 +1,8 @@
-import { INotification } from '../../../domain/interface/INotification.js';
-import { NotificationEntity } from '../../../domain/entities/Notification.js';
-import { INotificationRepository } from '../../../domain/interface/INotificationRepository.js';
-import { NotificationModel } from '../../database/models/notificationModel.js';
-import { SendNotificationDTO } from '../../database/socketServer.js';
+import { INotification } from '../../../domain/interface/INotification';
+import { NotificationEntity } from '../../../domain/entities/Notification';
+import { INotificationRepository } from '../../../domain/interface/INotificationRepository';
+import { NotificationModel } from '../../database/models/notificationModel';
+import { SendNotificationDTO } from '../../database/socketServer';
 
 export class NotificationRepository implements INotificationRepository {
   async save(notification: SendNotificationDTO): Promise<INotification> {

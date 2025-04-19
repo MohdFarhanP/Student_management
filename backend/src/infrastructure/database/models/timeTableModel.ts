@@ -1,5 +1,5 @@
 import mongoose, { Model } from 'mongoose';
-import { TimetableData } from '../../../types/index.js';
+import { TimetableData } from '../../../types/index';
 
 const timetableSchema = new mongoose.Schema<TimetableData>({
   classId: {

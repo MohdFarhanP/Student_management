@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { UserController } from '../controllers/UserController.js';
-import { UserRepository } from '../../infrastructure/repositories/userRepository.js';
-import { LoginUseCase } from '../../application/useCases/auth/LoginUseCase.js';
-import { UpdatePasswordUseCase } from '../../application/useCases/auth/UpdatePasswordUseCase.js';
-import { RefreshTokenUseCase } from '../../application/useCases/auth/RefreshTokenUseCase.js';
-import { LogoutUseCase } from '../../application/useCases/auth/LogoutUseCase.js';
-import { AuthService } from '../../application/services/authService.js';
-import { authenticateUser } from '../middleware/authenticateUser.js';
+import { UserController } from '../controllers/UserController';
+import { UserRepository } from '../../infrastructure/repositories/userRepository';
+import { LoginUseCase } from '../../application/useCases/auth/LoginUseCase';
+import { UpdatePasswordUseCase } from '../../application/useCases/auth/UpdatePasswordUseCase';
+import { RefreshTokenUseCase } from '../../application/useCases/auth/RefreshTokenUseCase';
+import { LogoutUseCase } from '../../application/useCases/auth/LogoutUseCase';
+import { AuthService } from '../../application/services/authService';
+import { authenticateUser } from '../middleware/authenticateUser';
 
 const router = Router();
 const userRepository = new UserRepository();

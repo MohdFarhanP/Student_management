@@ -1,4 +1,4 @@
-import { Student } from '../../../domain/entities/student.js';
+import { Student } from '../../../domain/entities/student';
 
 export interface IStudentProfileRepository {
   getProfile(email: string): Promise<Student | null>;

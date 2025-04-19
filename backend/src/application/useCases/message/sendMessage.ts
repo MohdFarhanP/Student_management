@@ -1,5 +1,5 @@
-import { IMessage } from '../../../domain/interface/IMessage.js';
-import { IMessageRepository } from '../../../domain/interface/IMessageRepository.js';
+import { IMessage } from '../../../domain/interface/IMessage';
+import { IMessageRepository } from '../../../domain/interface/IMessageRepository';
 
 export class SendMessage {
   constructor(private messageRepository: IMessageRepository) {}

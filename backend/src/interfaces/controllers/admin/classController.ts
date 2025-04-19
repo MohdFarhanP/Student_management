@@ -1,11 +1,11 @@
 import { Response, Request } from 'express';
-import HttpStatus from '../../../utils/httpStatus.js';
-import { GetClassesUseCase } from '../../../application/useCases/admin/class/getAllClasses.js';
-import { UpdateClassUseCase } from '../../../application/useCases/admin/class/updateUseCase.js';
-import { GetClassNameUseCase } from '../../../application/useCases/admin/class/getClassNames.js';
-import { CreateClassUseCase } from '../../../application/useCases/admin/class/createClassUseCase.js';
-import { FetchClassUseCase } from '../../../application/useCases/admin/class/fetchClassUseCase.js';
-import { GetStudentsByClassUseCase } from '../../../application/useCases/admin/class/getStudentsByClass.js';
+import HttpStatus from '../../../utils/httpStatus';
+import { GetClassesUseCase } from '../../../application/useCases/admin/class/getAllClasses';
+import { UpdateClassUseCase } from '../../../application/useCases/admin/class/updateUseCase';
+import { GetClassNameUseCase } from '../../../application/useCases/admin/class/getClassNames';
+import { CreateClassUseCase } from '../../../application/useCases/admin/class/createClassUseCase';
+import { FetchClassUseCase } from '../../../application/useCases/admin/class/fetchClassUseCase';
+import { GetStudentsByClassUseCase } from '../../../application/useCases/admin/class/getStudentsByClass';
 
 export class ClassController {
   constructor(

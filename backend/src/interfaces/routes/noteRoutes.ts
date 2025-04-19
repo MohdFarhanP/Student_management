@@ -1,10 +1,10 @@
 import express from 'express';
-import { NoteController } from '../controllers/noteController.js';
-import { authenticateUser } from '../middleware/authenticateUser.js';
-import { NoteRepositoryImpl } from '../../infrastructure/repositories/notesRepository.js';
-import { UploadNoteImpl } from '../../application/useCases/teacher/uploadsNotesUseCase.js';
-import { DownloadNoteImpl } from '../../application/useCases/student/downloadNotesUseCase.js';
-import { ListNotesImpl } from '../../application/useCases/student/listNoteUseCase.js';
+import { NoteController } from '../controllers/noteController';
+import { authenticateUser } from '../middleware/authenticateUser';
+import { NoteRepositoryImpl } from '../../infrastructure/repositories/notesRepository';
+import { UploadNoteImpl } from '../../application/useCases/teacher/uploadsNotesUseCase';
+import { DownloadNoteImpl } from '../../application/useCases/student/downloadNotesUseCase';
+import { ListNotesImpl } from '../../application/useCases/student/listNoteUseCase';
 
 const router = express.Router();
 
@@ -12,6 +12,7 @@ const noteRepository = new NoteRepositoryImpl();
 const uploadNoteUseCase = new UploadNoteImpl(noteRepository);
 const downloadNoteUseCase = new DownloadNoteImpl(noteRepository);
 const listNotesUseCase = new ListNotesImpl(noteRepository);
+
 const controller = new NoteController(
   uploadNoteUseCase,
   downloadNoteUseCase,

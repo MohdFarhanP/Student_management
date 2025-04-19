@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import HttpStatus from '../../../utils/httpStatus.js';
-import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase.js';
-import { UpdateStudentProfileImageUseCase } from '../../../application/useCases/student/UpdateStudentProfileImageUseCase.js';
+import HttpStatus from '../../../utils/httpStatus';
+import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase';
+import { UpdateStudentProfileImageUseCase } from '../../../application/useCases/student/UpdateStudentProfileImageUseCase';
 
 export class StudentController {
   constructor(

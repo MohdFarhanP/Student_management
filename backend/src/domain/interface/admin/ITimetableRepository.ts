@@ -1,6 +1,5 @@
-// src/domain/interface/admin/ITimetableRepository.js
 import { Types } from 'mongoose';
-import Timetable from '../../entities/timetable.js';
+import Timetable from '../../entities/timetable';
 
 export interface ITimetableRepository {
   getByClassId(classId: Types.ObjectId): Promise<Timetable>;

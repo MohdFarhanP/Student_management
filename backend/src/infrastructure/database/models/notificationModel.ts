@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { INotification } from '../../../domain/interface/INotification.js';
+import { INotification } from '../../../domain/interface/INotification';
 
 const notificationSchema = new mongoose.Schema<INotification>({
   title: { type: String, required: true },

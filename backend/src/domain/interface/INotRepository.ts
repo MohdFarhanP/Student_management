@@ -1,4 +1,4 @@
-import { INote } from './INote.js';
+import { INote } from './INote';
 
 export interface INoteRepository {
   save(note: INote): Promise<INote>;

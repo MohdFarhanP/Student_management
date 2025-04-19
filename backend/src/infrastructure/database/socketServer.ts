@@ -1,8 +1,8 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
-import { MessageRepository } from '../repositories/message/messageRepository.js';
-import { SendMessage } from '../../application/useCases/message/sendMessage.js';
-import { NotificationRepository } from '../repositories/notification/notificationReopository.js';
-import { SendNotification } from '../../application/useCases/notification/SendNotificationUseCase.js';
+import { MessageRepository } from '../repositories/message/messageRepository';
+import { SendMessage } from '../../application/useCases/message/sendMessage';
+import { NotificationRepository } from '../repositories/notification/notificationReopository';
+import { SendNotification } from '../../application/useCases/notification/SendNotificationUseCase';
 
 export interface SendMessageDTO {
   chatRoomId: string;

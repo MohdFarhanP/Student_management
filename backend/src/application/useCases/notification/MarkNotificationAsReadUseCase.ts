@@ -1,4 +1,4 @@
-import { INotificationRepository } from '../../../domain/interface/INotificationRepository.js';
+import { INotificationRepository } from '../../../domain/interface/INotificationRepository';
 
 export class MarkNotificationAsRead {
   constructor(private notificationRepository: INotificationRepository) {}

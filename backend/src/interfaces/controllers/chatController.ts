@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { SendMessage } from '../../application/useCases/message/sendMessage.js';
-import { MessageRepository } from '../../infrastructure/repositories/message/messageRepository.js';
+import { SendMessage } from '../../application/useCases/message/sendMessage';
+import { MessageRepository } from '../../infrastructure/repositories/message/messageRepository';
 
 export class ChatController {
   private sendMessageUseCase: SendMessage;

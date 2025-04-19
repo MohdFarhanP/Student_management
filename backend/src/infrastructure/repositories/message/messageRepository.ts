@@ -1,7 +1,7 @@
-import { MessageEntity } from '../../../domain/entities/message.js';
-import { IMessage } from '../../../domain/interface/IMessage.js';
-import { IMessageRepository } from '../../../domain/interface/IMessageRepository.js';
-import { MessageModel } from '../../database/models/messageModel.js';
+import { MessageEntity } from '../../../domain/entities/message';
+import { IMessage } from '../../../domain/interface/IMessage';
+import { IMessageRepository } from '../../../domain/interface/IMessageRepository';
+import { MessageModel } from '../../database/models/messageModel';
 
 export class MessageRepository implements IMessageRepository {
   async save(message: Omit<IMessage, 'id' | 'createdAt'>): Promise<IMessage> {

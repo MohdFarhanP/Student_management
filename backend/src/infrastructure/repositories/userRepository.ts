@@ -1,8 +1,8 @@
 import { Model, Document } from 'mongoose';
-import { AdminModel } from '../database/models/adminModel.js';
-import { studentModel } from '../database/models/studentModel.js';
-import { TeacherModel } from '../database/models/teacherModel.js';
-import { IUserRepository } from '../../domain/interface/IUserTokenRepository.js';
+import { AdminModel } from '../database/models/adminModel';
+import { studentModel } from '../database/models/studentModel';
+import { TeacherModel } from '../database/models/teacherModel';
+import { IUserRepository } from '../../domain/interface/IUserTokenRepository';
 
 interface IUserDocument extends Document {
   id: string;

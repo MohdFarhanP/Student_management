@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import HttpStatus from '../../../utils/httpStatus.js';
-import { GetTeacherProfileUseCase } from '../../../application/useCases/teacher/getTeacherProfileUseCase.js';
-import { UpdateTeacherProfileUseCase } from '../../../application/useCases/teacher/updateTeacherProfileUseCase.js';
+import HttpStatus from '../../../utils/httpStatus';
+import { GetTeacherProfileUseCase } from '../../../application/useCases/teacher/getTeacherProfileUseCase';
+import { UpdateTeacherProfileUseCase } from '../../../application/useCases/teacher/updateTeacherProfileUseCase';
 
 export class TeacherController {
   constructor(

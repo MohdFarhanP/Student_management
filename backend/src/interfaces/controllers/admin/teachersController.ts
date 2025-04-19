@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
-import HttpStatus from '../../../utils/httpStatus.js';
-import { GetTeachersByLimitUseCase } from '../../../application/useCases/admin/teacher/getTeachersByLimitUseCase.js';
-import { GetAllTeachersUseCase } from '../../../application/useCases/admin/teacher/getAllTeachersUseCase.js';
-import { ITeacher } from '../../../domain/interface/ITeacher.js';
-import { AddTeacherUseCase } from '../../../application/useCases/admin/teacher/addTeacherUseCase.js';
-import { DeleteTeacherUseCase } from '../../../application/useCases/admin/teacher/deleteTeacherUseCase.js';
-import { EditTeacherUseCase } from '../../../application/useCases/admin/teacher/editTeacherUseCase.js';
+import HttpStatus from '../../../utils/httpStatus';
+import { GetTeachersByLimitUseCase } from '../../../application/useCases/admin/teacher/getTeachersByLimitUseCase';
+import { GetAllTeachersUseCase } from '../../../application/useCases/admin/teacher/getAllTeachersUseCase';
+import { ITeacher } from '../../../domain/interface/ITeacher';
+import { AddTeacherUseCase } from '../../../application/useCases/admin/teacher/addTeacherUseCase';
+import { DeleteTeacherUseCase } from '../../../application/useCases/admin/teacher/deleteTeacherUseCase';
+import { EditTeacherUseCase } from '../../../application/useCases/admin/teacher/editTeacherUseCase';
 
 export class TeacherController {
   constructor(

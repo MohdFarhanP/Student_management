@@ -1,5 +1,5 @@
-import { IExcelParser } from '../../domain/interface/admin/IExcelParser.js';
-import { Student } from '../../domain/entities/student.js';
+import { IExcelParser } from '../../domain/interface/admin/IExcelParser';
+import { Student } from '../../domain/entities/student';
 import XLSX from '@e965/xlsx';
 
 interface StudentExcelRow {

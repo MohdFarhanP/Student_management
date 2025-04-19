@@ -1,4 +1,4 @@
-import { INotification } from '../interface/INotification.js';
+import { INotification } from '../interface/INotification';
 
 export class NotificationEntity implements INotification {
   id: string;

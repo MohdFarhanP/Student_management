@@ -1,5 +1,5 @@
-import { Student } from '../../entities/student.js';
-import { IStudent } from '../IStudent.js';
+import { Student } from '../../entities/student';
+import { IStudent } from '../IStudent';
 
 export interface IStudentRepository {
   insertMany(data: Student[]): Promise<void>;

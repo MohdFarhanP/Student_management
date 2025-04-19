@@ -1,5 +1,5 @@
-import { ClassEntity } from '../../../../domain/entities/class.js';
-import { ClassRepository } from '../../../../infrastructure/repositories/admin/classRepository.js';
+import { ClassEntity } from '../../../../domain/entities/class';
+import { ClassRepository } from '../../../../infrastructure/repositories/admin/classRepository';
 
 export class UpdateClassUseCase {
   constructor(private classRepository: ClassRepository) {}

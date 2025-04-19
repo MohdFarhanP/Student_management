@@ -1,9 +1,9 @@
-import { studentModel } from '../../database/models/studentModel.js';
-import { Student } from '../../../domain/entities/student.js';
-import { ClassModel } from '../../database/models/classModel.js';
+import { studentModel } from '../../database/models/studentModel';
+import { Student } from '../../../domain/entities/student';
+import { ClassModel } from '../../database/models/classModel';
 import mongoose from 'mongoose';
-import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository.js';
-import { IStudent } from '../../../domain/interface/IStudent.js';
+import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository';
+import { IStudent } from '../../../domain/interface/IStudent';
 
 interface PopulatedStudent {
   _id: string | mongoose.Types.ObjectId;

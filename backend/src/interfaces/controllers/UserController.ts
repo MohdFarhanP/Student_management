@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { LoginUseCase } from '../../application/useCases/auth/LoginUseCase.js';
-import { UpdatePasswordUseCase } from '../../application/useCases/auth/UpdatePasswordUseCase.js';
-import { RefreshTokenUseCase } from '../../application/useCases/auth/RefreshTokenUseCase.js';
-import { LogoutUseCase } from '../../application/useCases/auth/LogoutUseCase.js';
-import HttpStatus from '../../utils/httpStatus.js';
+import { LoginUseCase } from '../../application/useCases/auth/LoginUseCase';
+import { UpdatePasswordUseCase } from '../../application/useCases/auth/UpdatePasswordUseCase';
+import { RefreshTokenUseCase } from '../../application/useCases/auth/RefreshTokenUseCase';
+import { LogoutUseCase } from '../../application/useCases/auth/LogoutUseCase';
+import HttpStatus from '../../utils/httpStatus';
 // import { ITokenService } from '../../domain/interface/ITokenService.js';
 // import { IUserRepository } from '../../domain/interface/IUserTokenRepository.js';
 

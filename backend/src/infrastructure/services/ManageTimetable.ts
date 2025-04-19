@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
-import Timetable from '../../domain/entities/timetable.js';
-import { ITimetableRepository } from '../../domain/interface/admin/ITimetableRepository.js';
-import { TeacherRepository } from '../repositories/admin/teacherRepository.js';
+import Timetable from '../../domain/entities/timetable';
+import { ITimetableRepository } from '../../domain/interface/admin/ITimetableRepository';
+import { TeacherRepository } from '../repositories/admin/teacherRepository';
 
 export class ManageTimetable {
   private timetableRepo: ITimetableRepository;

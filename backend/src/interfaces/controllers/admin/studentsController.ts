@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
-import HttpStatus from '../../../utils/httpStatus.js';
-import { GetAllStudentsUseCase } from '../../../application/useCases/admin/student/getAllStudentsUseCase.js';
-import { AddStudentUseCase } from '../../../application/useCases/admin/student/addStudentUseCase.js';
-import { EditStudentUseCase } from '../../../application/useCases/admin/student/editStudentUseCase.js';
-import { DeleteStudentUseCase } from '../../../application/useCases/admin/student/deleteStudentUseCase.js';
-import { IStudent } from '../../../domain/interface/IStudent.js';
-import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase.js';
-import { Student } from '../../../domain/entities/student.js';
+import HttpStatus from '../../../utils/httpStatus';
+import { GetAllStudentsUseCase } from '../../../application/useCases/admin/student/getAllStudentsUseCase';
+import { AddStudentUseCase } from '../../../application/useCases/admin/student/addStudentUseCase';
+import { EditStudentUseCase } from '../../../application/useCases/admin/student/editStudentUseCase';
+import { DeleteStudentUseCase } from '../../../application/useCases/admin/student/deleteStudentUseCase';
+import { IStudent } from '../../../domain/interface/IStudent';
+import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase';
 
 export class StudentController {
   constructor(

@@ -1,11 +1,11 @@
-import { TeacherModel } from '../../database/models/teacherModel.js';
-import { ITeacherRepository } from '../../../domain/interface/admin/ITeacherRepository.js';
-import { Teacher } from '../../../domain/entities/teacher.js';
-import { ClassModel } from '../../database/models/classModel.js';
-import { SubjectModel } from '../../database/models/subjectModel.js';
+import { TeacherModel } from '../../database/models/teacherModel';
+import { ITeacherRepository } from '../../../domain/interface/admin/ITeacherRepository';
+import { Teacher } from '../../../domain/entities/teacher';
+import { ClassModel } from '../../database/models/classModel';
+import { SubjectModel } from '../../database/models/subjectModel';
 import mongoose from 'mongoose';
-import { ObjectId } from '../../../types/index.js';
-import { ITeacher } from '../../../domain/interface/ITeacher.js';
+import { ObjectId } from '../../../types/index';
+import { ITeacher } from '../../../domain/interface/ITeacher';
 
 interface PopulatedTeacher {
   _id: string | mongoose.Types.ObjectId;

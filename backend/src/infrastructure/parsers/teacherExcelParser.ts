@@ -1,6 +1,6 @@
 import XLSX from '@e965/xlsx';
-import { IExcelParser } from '../../domain/interface/admin/IExcelParser.js';
-import { Teacher } from '../../domain/entities/teacher.js';
+import { IExcelParser } from '../../domain/interface/admin/IExcelParser';
+import { Teacher } from '../../domain/entities/teacher';
 
 interface TeacherExcelRow {
   name: string;

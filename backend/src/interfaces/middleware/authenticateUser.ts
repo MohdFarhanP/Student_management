@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { ITokenService } from '../../domain/interface/ITokenService.js';
-import { AuthService } from '../../application/services/authService.js';
-import HttpStatus from '../../utils/httpStatus.js';
+import { ITokenService } from '../../domain/interface/ITokenService';
+import { AuthService } from '../../application/services/authService';
+import HttpStatus from '../../utils/httpStatus';
 
 const tokenService: ITokenService = new AuthService();
 

@@ -1,5 +1,5 @@
-import { ObjectId } from '../../types/index.js';
-import { TimetableSchedule } from '../../types/index.js';
+import { ObjectId } from '../../types/index';
+import { TimetableSchedule } from '../../types/index';
 
 class Timetable {
   classId: ObjectId;

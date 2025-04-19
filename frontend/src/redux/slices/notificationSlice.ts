@@ -32,7 +32,7 @@ export const fetchNotifications = createAsyncThunk(
   'notification/fetchNotifications',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await FetchNotifications(); // Await the promise
+      const response = await FetchNotifications();
       // Normalize response to array
       return Array.isArray(response) ? response : response ? [response] : [];
     } catch (error) {
@@ -47,7 +47,7 @@ export const markNotificationAsRead = createAsyncThunk(
   'notification/markNotificationAsRead',
   async (notificationId: string, { rejectWithValue }) => {
     try {
-      await MarkNotificationAsRead(notificationId); // Assumes this handles correct URL internally
+      await MarkNotificationAsRead(notificationId);
       return notificationId;
     } catch (error) {
       return rejectWithValue(
@@ -90,11 +90,11 @@ const notificationSlice = createSlice({
           // Remove duplicates by id
           const uniqueNotifications = Array.isArray(action.payload)
             ? action.payload.reduce((acc: Notification[], curr) => {
-                if (!acc.some((n) => n.id === curr.id)) {
-                  acc.push(curr);
-                }
-                return acc;
-              }, [])
+              if (!acc.some((n) => n.id === curr.id)) {
+                acc.push(curr);
+              }
+              return acc;
+            }, [])
             : [];
           state.notifications = uniqueNotifications;
         }

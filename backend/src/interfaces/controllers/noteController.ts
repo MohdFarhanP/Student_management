@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
-import { UploadNoteImpl } from '../../application/useCases/teacher/uploadsNotesUseCase.js';
-import { DownloadNoteImpl } from '../../application/useCases/student/downloadNotesUseCase.js';
-import { ListNotesImpl } from '../../application/useCases/student/listNoteUseCase.js';
-import { INote } from '../../domain/interface/INote.js';
-import HttpStatus from '../../utils/httpStatus.js';
+import { UploadNoteImpl } from '../../application/useCases/teacher/uploadsNotesUseCase';
+import { DownloadNoteImpl } from '../../application/useCases/student/downloadNotesUseCase';
+import { ListNotesImpl } from '../../application/useCases/student/listNoteUseCase';
+import { INote } from '../../domain/interface/INote';
+import HttpStatus from '../../utils/httpStatus';
+import axios from 'axios';
 
 export class NoteController {
   constructor(
@@ -14,7 +15,7 @@ export class NoteController {
 
   async uploadNote(req: Request, res: Response) {
     try {
-      if (!req.user || req.user.role !== 'teacher') {
+      if (!req.user || req.user.role !== 'Teacher') {
         res
           .status(HttpStatus.FORBIDDEN)
           .json({ error: 'Only teachers can upload notes' });
@@ -51,7 +52,7 @@ export class NoteController {
 
   async downloadNote(req: Request, res: Response) {
     try {
-      if (!req.user || req.user.role !== 'student') {
+      if (!req.user || req.user.role !== 'Student') {
         res
           .status(HttpStatus.FORBIDDEN)
           .json({ error: 'Only students can download notes' });
@@ -60,7 +61,19 @@ export class NoteController {
 
       const { noteId } = req.params;
       const note: INote = await this.downloadNoteUseCase.execute(noteId);
-      res.status(HttpStatus.OK).json({ fileUrl: note.fileUrl });
+
+      const response = await axios.get(note.fileUrl, {
+        responseType: 'stream',
+      });
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${note.title}"`
+      );
+      res.setHeader(
+        'Content-Type',
+        response.headers['content-type'] || 'application/octet-stream'
+      );
+      response.data.pipe(res);
     } catch (error: any) {
       res
         .status(HttpStatus.NOT_FOUND)
@@ -70,10 +83,10 @@ export class NoteController {
 
   async getAllNotes(req: Request, res: Response) {
     try {
-      if (!req.user || !['student', 'teacher'].includes(req.user.role)) {
+      if (!req.user || !['Student', 'Teacher'].includes(req.user.role)) {
         res
           .status(HttpStatus.FORBIDDEN)
-          .json({ error: 'Access restricted to students and teachers' });
+          .json({ error: 'Access restricted to Students and Teachers' });
         return;
       }
 

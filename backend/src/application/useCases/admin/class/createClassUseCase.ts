@@ -1,5 +1,5 @@
-import { ClassRepository } from '../../../../infrastructure/repositories/admin/classRepository.js';
-import { ClassEntity } from '../../../../domain/entities/class.js';
+import { ClassRepository } from '../../../../infrastructure/repositories/admin/classRepository';
+import { ClassEntity } from '../../../../domain/entities/class';
 import { Types } from 'mongoose';
 
 export class CreateClassUseCase {

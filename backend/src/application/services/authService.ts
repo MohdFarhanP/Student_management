@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { ITokenService } from '../../domain/interface/ITokenService.js';
+import { ITokenService } from '../../domain/interface/ITokenService';
 
 export class AuthService implements ITokenService {
   private jwtSecret = process.env.JWT_SECRET || 'secret_key';

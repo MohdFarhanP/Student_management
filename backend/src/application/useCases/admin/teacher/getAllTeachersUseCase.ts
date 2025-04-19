@@ -1,5 +1,5 @@
-import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository.js';
-import { Teacher } from '../../../../domain/entities/teacher.js';
+import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
+import { Teacher } from '../../../../domain/entities/teacher';
 
 export class GetAllTeachersUseCase {
   constructor(private teacherRepository: ITeacherRepository) {}

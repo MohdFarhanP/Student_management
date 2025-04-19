@@ -1,6 +1,6 @@
-import { ObjectId } from '../../../types/index.js';
-import { Teacher } from '../../entities/teacher.js';
-import { ITeacher } from '../ITeacher.js';
+import { ObjectId } from '../../../types/index';
+import { Teacher } from '../../entities/teacher';
+import { ITeacher } from '../ITeacher';
 
 export interface ITeacherRepository {
   insertMany(teachers: Teacher[]): Promise<void>;

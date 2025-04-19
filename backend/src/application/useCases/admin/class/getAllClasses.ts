@@ -1,4 +1,4 @@
-import { ClassRepository } from '../../../../infrastructure/repositories/admin/classRepository.js';
+import { ClassRepository } from '../../../../infrastructure/repositories/admin/classRepository';
 
 export class GetClassesUseCase {
   constructor(private classRepository: ClassRepository) {}

@@ -1,6 +1,6 @@
-import { INote } from '../../domain/interface/INote.js';
-import { INoteRepository } from '../../domain/interface/INotRepository.js';
-import { NoteModel } from '../database/models/notesModel.js';
+import { INote } from '../../domain/interface/INote';
+import { INoteRepository } from '../../domain/interface/INotRepository';
+import { NoteModel } from '../database/models/notesModel';
 
 export class NoteRepositoryImpl implements INoteRepository {
   async save(note: INote): Promise<INote> {

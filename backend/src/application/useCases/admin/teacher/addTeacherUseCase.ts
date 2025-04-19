@@ -1,8 +1,8 @@
-import { sendDefaultPasswordEmail } from '../../../../utils/emailService.js';
-import { ITokenService } from '../../../../domain/interface/ITokenService.js';
+import { sendDefaultPasswordEmail } from '../../../../utils/emailService';
+import { ITokenService } from '../../../../domain/interface/ITokenService';
 import crypto from 'crypto';
-import { ITeacher } from '../../../../domain/interface/ITeacher.js';
-import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository.js';
+import { ITeacher } from '../../../../domain/interface/ITeacher';
+import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
 
 export class AddTeacherUseCase {
   constructor(

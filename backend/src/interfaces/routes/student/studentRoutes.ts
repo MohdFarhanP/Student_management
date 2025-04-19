@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { StudentController } from '../../controllers/student/studentController.js';
-import { StudentProfileRepository } from '../../../infrastructure/repositories/student/StudentProfileRepository.js';
-import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase.js';
-import { UpdateStudentProfileImageUseCase } from '../../../application/useCases/student/UpdateStudentProfileImageUseCase.js';
-import { authenticateUser } from '../../middleware/authenticateUser.js';
-import { AttendanceController } from '../../controllers/teacher/attendanceControllers.js';
+import { StudentController } from '../../controllers/student/studentController';
+import { StudentProfileRepository } from '../../../infrastructure/repositories/student/StudentProfileRepository';
+import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase';
+import { UpdateStudentProfileImageUseCase } from '../../../application/useCases/student/UpdateStudentProfileImageUseCase';
+import { authenticateUser } from '../../middleware/authenticateUser';
+import { AttendanceController } from '../../controllers/teacher/attendanceControllers';
 
 const router = Router();
 

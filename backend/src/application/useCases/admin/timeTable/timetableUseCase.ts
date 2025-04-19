@@ -1,7 +1,7 @@
-import { ObjectId } from '../../../../types/index.js';
-import Timetable from '../../../../domain/entities/timetable.js';
-import { ITimetableRepository } from '../../../../domain/interface/admin/ITimetableRepository.js';
-import { TeacherRepository } from '../../../../infrastructure/repositories/admin/teacherRepository.js';
+import { ObjectId } from '../../../../types/index';
+import Timetable from '../../../../domain/entities/timetable';
+import { ITimetableRepository } from '../../../../domain/interface/admin/ITimetableRepository';
+import { TeacherRepository } from '../../../../infrastructure/repositories/admin/teacherRepository';
 
 class ManageTimetable {
   private timetableRepo: ITimetableRepository;

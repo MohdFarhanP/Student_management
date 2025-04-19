@@ -67,10 +67,10 @@ const TeacherSidebar: React.FC = () => {
           }
         />
         <Link
-          to="/teacher/settings"
+          to="/teacher/notes"
           className="block rounded p-2 hover:bg-white hover:font-medium hover:text-black"
         >
-          Settings
+          notes
         </Link>
       </nav>
       <div className="p-4">

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Message } from '../types/Message';
+import { Message } from '../types/message';
 
 export class ApiAdapter {
   private apiUrl: string;

@@ -1,5 +1,5 @@
-import { IAttendanceRepository } from '../../../domain/interface/IAttendanceRepository.js';
-import { Attendance } from '../../../domain/entities/attendance.js';
+import { IAttendanceRepository } from '../../../domain/interface/IAttendanceRepository';
+import { Attendance } from '../../../domain/entities/attendance';
 
 export class ViewAttendanceUseCase {
   constructor(private attendanceRepository: IAttendanceRepository) {}

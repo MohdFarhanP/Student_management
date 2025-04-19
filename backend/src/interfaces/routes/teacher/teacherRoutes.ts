@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { TeacherController } from '../../controllers/teacher/teacherController.js';
-import { TeacherProfileRepository } from '../../../infrastructure/repositories/teacher/TeacherProfileRepository.js';
-import { GetTeacherProfileUseCase } from '../../../application/useCases/teacher/getTeacherProfileUseCase.js';
-import { authenticateUser } from '../../middleware/authenticateUser.js';
-import { UpdateTeacherProfileUseCase } from '../../../application/useCases/teacher/updateTeacherProfileUseCase.js';
-import { AttendanceController } from '../../controllers/teacher/attendanceControllers.js';
+import { TeacherController } from '../../controllers/teacher/teacherController';
+import { TeacherProfileRepository } from '../../../infrastructure/repositories/teacher/TeacherProfileRepository';
+import { GetTeacherProfileUseCase } from '../../../application/useCases/teacher/getTeacherProfileUseCase';
+import { authenticateUser } from '../../middleware/authenticateUser';
+import { UpdateTeacherProfileUseCase } from '../../../application/useCases/teacher/updateTeacherProfileUseCase';
+import { AttendanceController } from '../../controllers/teacher/attendanceControllers';
+
 const router = Router();
 const teacherRepository = new TeacherProfileRepository();
 const getTeacherProfileUseCase = new GetTeacherProfileUseCase(

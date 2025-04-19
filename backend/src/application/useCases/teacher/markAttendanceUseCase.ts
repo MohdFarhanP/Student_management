@@ -1,6 +1,6 @@
-import { IAttendanceRepository } from '../../../domain/interface/IAttendanceRepository.js';
-import { Attendance } from '../../../domain/entities/attendance.js';
-import ManageTimetable from '../../../infrastructure/services/ManageTimetable.js';
+import { IAttendanceRepository } from '../../../domain/interface/IAttendanceRepository';
+import { Attendance } from '../../../domain/entities/attendance';
+import ManageTimetable from '../../../infrastructure/services/ManageTimetable';
 import { Types } from 'mongoose';
 
 export class MarkAttendanceUseCase {

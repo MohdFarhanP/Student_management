@@ -1,5 +1,5 @@
-import { SubjectRepository } from '../../../../infrastructure/repositories/admin/subjectRepository.js';
-import { ClassRepository } from '../../../../infrastructure/repositories/admin/classRepository.js';
+import { SubjectRepository } from '../../../../infrastructure/repositories/admin/subjectRepository';
+import { ClassRepository } from '../../../../infrastructure/repositories/admin/classRepository';
 import mongoose from 'mongoose';
 
 export class FetchSubjectsByClassIdUseCase {

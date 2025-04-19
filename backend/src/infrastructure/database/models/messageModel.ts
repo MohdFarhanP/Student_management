@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { IMessage } from '../../../domain/interface/IMessage.js';
+import { IMessage } from '../../../domain/interface/IMessage';
 
 const messageSchema = new mongoose.Schema<IMessage>({
   chatRoomId: { type: String, required: true },

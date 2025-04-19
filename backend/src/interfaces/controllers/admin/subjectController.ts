@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/CreateSubjectUseCase.js';
-import HttpStatus from '../../../utils/httpStatus.js';
-import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/GetSubjectUseCase.js';
-import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/FetchSubjectsByClassIdUseCase.js';
-import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/DeleteSubjectUseCase.js';
-import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/UpdateSubjectUseCase.js';
+import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/CreateSubjectUseCase';
+import HttpStatus from '../../../utils/httpStatus';
+import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/GetSubjectUseCase';
+import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/FetchSubjectsByClassIdUseCase';
+import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/DeleteSubjectUseCase';
+import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/UpdateSubjectUseCase';
 
 export class SubjectController {
   constructor(

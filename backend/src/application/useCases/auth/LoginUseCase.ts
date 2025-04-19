@@ -1,5 +1,5 @@
-import { IUserRepository } from '../../../domain/interface/IUserTokenRepository.js';
-import { ITokenService } from '../../../domain/interface/ITokenService.js';
+import { IUserRepository } from '../../../domain/interface/IUserTokenRepository';
+import { ITokenService } from '../../../domain/interface/ITokenService';
 
 export class LoginUseCase {
   constructor(

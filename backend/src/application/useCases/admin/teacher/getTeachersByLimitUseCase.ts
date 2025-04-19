@@ -1,4 +1,4 @@
-import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository.js';
+import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
 
 export class GetTeachersByLimitUseCase {
   constructor(private teacherRepository: ITeacherRepository) {}

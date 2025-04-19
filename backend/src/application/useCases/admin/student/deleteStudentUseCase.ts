@@ -1,4 +1,4 @@
-import { StudentRepository } from '../../../../infrastructure/repositories/admin/studentRepository.js';
+import { StudentRepository } from '../../../../infrastructure/repositories/admin/studentRepository';
 import { Types } from 'mongoose';
 
 export class DeleteStudentUseCase {

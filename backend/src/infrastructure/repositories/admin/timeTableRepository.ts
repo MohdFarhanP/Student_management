@@ -1,7 +1,7 @@
-import Timetable from '../../../domain/entities/timetable.js';
-import TimetableModel from '../../database/models/timeTableModel.js';
-import { ITimetableRepository } from '../../../domain/interface/admin/ITimetableRepository.js';
-import { ObjectId } from '../../../types/index.js';
+import Timetable from '../../../domain/entities/timetable';
+import TimetableModel from '../../database/models/timeTableModel';
+import { ITimetableRepository } from '../../../domain/interface/admin/ITimetableRepository';
+import { ObjectId } from '../../../types/index';
 
 class TimetableRepository implements ITimetableRepository {
   async getByClassId(classId: ObjectId): Promise<Timetable> {

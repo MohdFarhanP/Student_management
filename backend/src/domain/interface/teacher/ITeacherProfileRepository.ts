@@ -1,4 +1,4 @@
-import { Teacher } from '../../entities/teacher.js';
+import { Teacher } from '../../entities/teacher';
 
 export interface ITeacherProfileRepository {
   getProfile(email: string): Promise<Teacher | null>;

@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
-import { IAttendanceRepository } from '../../../domain/interface/IAttendanceRepository.js';
-import { Attendance } from '../../../domain/entities/attendance.js';
-import { IAttendance } from '../../../domain/interface/IAttendance.js';
-import { AttendanceModel } from '../../database/models/attendanceModel.js';
+import { IAttendanceRepository } from '../../../domain/interface/IAttendanceRepository';
+import { Attendance } from '../../../domain/entities/attendance';
+import { IAttendance } from '../../../domain/interface/IAttendance';
+import { AttendanceModel } from '../../database/models/attendanceModel';
 import { Types } from 'mongoose';
 
 type LeanAttendance = Omit<IAttendance, 'id'> & {

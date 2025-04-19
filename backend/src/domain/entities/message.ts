@@ -1,4 +1,4 @@
-import { IMessage } from '../interface/IMessage.js';
+import { IMessage } from '../interface/IMessage';
 
 export class MessageEntity implements IMessage {
   id: string;

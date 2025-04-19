@@ -1,6 +1,6 @@
-import { studentModel } from '../../database/models/studentModel.js';
-import { Student } from '../../../domain/entities/student.js';
-import { IStudentProfileRepository } from '../../../domain/interface/student/IStudentProfileRepository.js';
+import { studentModel } from '../../database/models/studentModel';
+import { Student } from '../../../domain/entities/student';
+import { IStudentProfileRepository } from '../../../domain/interface/student/IStudentProfileRepository';
 import mongoose from 'mongoose';
 
 interface PopulatedStudent {

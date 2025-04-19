@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
-import HttpStatus from '../../../utils/httpStatus.js';
-import { MarkAttendanceUseCase } from '../../../application/useCases/teacher/markAttendanceUseCase.js';
-import { AttendanceRepository } from '../../../infrastructure/repositories/teacher/attendanceRepository.js';
-import ManageTimetable from '../../../infrastructure/services/ManageTimetable.js';
-import TimetableRepository from '../../../infrastructure/repositories/admin/timeTableRepository.js';
-import { TeacherRepository } from '../../../infrastructure/repositories/admin/teacherRepository.js';
+import HttpStatus from '../../../utils/httpStatus';
+import { MarkAttendanceUseCase } from '../../../application/useCases/teacher/markAttendanceUseCase';
+import { AttendanceRepository } from '../../../infrastructure/repositories/teacher/attendanceRepository';
+import ManageTimetable from '../../../infrastructure/services/ManageTimetable';
+import TimetableRepository from '../../../infrastructure/repositories/admin/timeTableRepository';
+import { TeacherRepository } from '../../../infrastructure/repositories/admin/teacherRepository';
 import mongoose from 'mongoose';
-import { ViewAttendanceUseCase } from '../../../application/useCases/student/ViewAttendanceUseCase.js';
+import { ViewAttendanceUseCase } from '../../../application/useCases/student/ViewAttendanceUseCase';
 
 export class AttendanceController {
   private markAttendanceUseCase: MarkAttendanceUseCase;

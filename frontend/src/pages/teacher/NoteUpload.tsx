@@ -1,34 +1,33 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { uploadNote } from '../../redux/slices/noteSlice';
 import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
+import { AppDispatch, RootState } from '../../redux/store';
+import { toast } from 'react-toastify';
 
-const NoteUpload = () => {
+const NoteUpload: React.FC = () => {
   const [title, setTitle] = useState('');
-  const [file, setFile] = useState(null);
-  const [uploadError, setUploadError] = useState(null);
-  const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.notes);
+  const [file, setFile] = useState<File | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error } = useSelector((state: RootState) => state.notes);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !file) {
-      setUploadError('Title and file are required');
+      setLocalError('Title and file are required');
       return;
     }
 
-    setUploadError(null);
+    setLocalError(null);
     try {
       const fileUrl = await uploadToCloudinary(file);
-      if (!fileUrl) {
-        setUploadError('Failed to upload file to Cloudinary');
-        return;
-      }
       await dispatch(uploadNote({ title, fileUrl })).unwrap();
+      toast.success('Note uploaded successfully');
       setTitle('');
       setFile(null);
     } catch (err) {
-      setUploadError('Failed to upload note');
+      setLocalError(err instanceof Error ? err.message : 'Failed to upload note');
     }
   };
 
@@ -45,18 +44,19 @@ const NoteUpload = () => {
         />
         <input
           type="file"
-          onChange={(e) => setFile(e.target.files[0])}
+          accept=".pdf,.doc,.docx"
+          onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
           className="w-full p-2 border rounded"
         />
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:bg-blue-300"
         >
           {loading ? 'Uploading...' : 'Upload'}
         </button>
-        {uploadError && <p className="text-red-500">{uploadError}</p>}
-        {error && <p className="text-red-500">{error.message}</p>}
+        {localError && <p className="text-red-500">{localError}</p>}
+        {error && <p className="text-red-500">{error}</p>}
       </form>
     </div>
   );

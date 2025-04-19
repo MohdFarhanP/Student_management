@@ -1,5 +1,5 @@
-import { SendNotificationDTO } from '../../infrastructure/database/socketServer.js';
-import { INotification } from './INotification.js';
+import { SendNotificationDTO } from '../../infrastructure/database/socketServer';
+import { INotification } from './INotification';
 
 export interface INotificationRepository {
   save(notification: SendNotificationDTO): Promise<INotification>;

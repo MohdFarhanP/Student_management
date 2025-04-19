@@ -1,9 +1,9 @@
-import { TeacherRepository } from '../../../../infrastructure/repositories/admin/teacherRepository.js';
-import { ITeacher } from '../../../../domain/interface/ITeacher.js';
-import { Teacher } from '../../../../domain/entities/teacher.js';
+import { TeacherRepository } from '../../../../infrastructure/repositories/admin/teacherRepository';
+import { ITeacher } from '../../../../domain/interface/ITeacher';
+import { Teacher } from '../../../../domain/entities/teacher';
 import { Types } from 'mongoose';
-import { SubjectModel } from '../../../../infrastructure/database/models/subjectModel.js';
-import { ClassModel } from '../../../../infrastructure/database/models/classModel.js';
+import { SubjectModel } from '../../../../infrastructure/database/models/subjectModel';
+import { ClassModel } from '../../../../infrastructure/database/models/classModel';
 
 export class EditTeacherUseCase {
   constructor(private teacherRepository: TeacherRepository) {}

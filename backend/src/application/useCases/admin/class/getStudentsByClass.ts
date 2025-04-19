@@ -1,5 +1,5 @@
-import { Student } from '../../../../domain/entities/student.js';
-import { IStudentRepository } from '../../../../domain/interface/admin/IStudentRepository.js';
+import { Student } from '../../../../domain/entities/student';
+import { IStudentRepository } from '../../../../domain/interface/admin/IStudentRepository';
 
 export class GetStudentsByClassUseCase {
   constructor(private studentRepository: IStudentRepository) {}

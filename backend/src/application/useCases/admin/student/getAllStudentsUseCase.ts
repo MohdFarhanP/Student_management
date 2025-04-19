@@ -1,4 +1,4 @@
-import { IStudentRepository } from '../../../../domain/interface/admin/IStudentRepository.js';
+import { IStudentRepository } from '../../../../domain/interface/admin/IStudentRepository';
 
 export class GetAllStudentsUseCase {
   constructor(private studentRepository: IStudentRepository) {}

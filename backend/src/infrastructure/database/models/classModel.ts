@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IClass } from '../../../domain/interface/IClass.js';
+import { IClass } from '../../../domain/interface/IClass';
 
 const ClassSchema = new mongoose.Schema<IClass>({
   name: { type: String, required: true, unique: true },

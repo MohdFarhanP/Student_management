@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { ISubject } from '../../../domain/interface/ISubject.js';
+import { ISubject } from '../../../domain/interface/ISubject';
 
 const SubjectSchema = new Schema<ISubject>({
   subjectName: { type: String, required: true },

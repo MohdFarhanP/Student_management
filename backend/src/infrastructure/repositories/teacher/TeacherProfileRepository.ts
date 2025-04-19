@@ -1,9 +1,9 @@
-import { TeacherModel } from '../../database/models/teacherModel.js';
-import { Teacher } from '../../../domain/entities/teacher.js';
-import { ITeacherProfileRepository } from '../../../domain/interface/teacher/ITeacherProfileRepository.js';
+import { TeacherModel } from '../../database/models/teacherModel';
+import { Teacher } from '../../../domain/entities/teacher';
+import { ITeacherProfileRepository } from '../../../domain/interface/teacher/ITeacherProfileRepository';
 import mongoose from 'mongoose';
-import { ClassModel } from '../../database/models/classModel.js';
-import { SubjectModel } from '../../database/models/subjectModel.js';
+import { ClassModel } from '../../database/models/classModel';
+import { SubjectModel } from '../../database/models/subjectModel';
 
 interface PopulatedTeacher extends Document {
   _id: mongoose.Types.ObjectId;

@@ -1,9 +1,9 @@
 import express from 'express';
-import classRoutes from './classRoutes.js';
-import bulkUploadRoute from './bulkUploadRoutes.js';
-import studentsRoute from './studentsRoutes.js';
-import teacherRoute from './teachersRoutes.js';
-import timeTableRoutes from './timeTableRoutes.js';
+import classRoutes from './classRoutes';
+import bulkUploadRoute from './bulkUploadRoutes';
+import studentsRoute from './studentsRoutes';
+import teacherRoute from './teachersRoutes';
+import timeTableRoutes from './timeTableRoutes';
 
 const router = express.Router();
 

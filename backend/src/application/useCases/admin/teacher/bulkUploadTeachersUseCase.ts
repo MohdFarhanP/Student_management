@@ -1,6 +1,6 @@
-import { Teacher } from '../../../../domain/entities/teacher.js';
-import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository.js';
-import { IExcelParser } from '../../../../domain/interface/admin/IExcelParser.js';
+import { Teacher } from '../../../../domain/entities/teacher';
+import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
+import { IExcelParser } from '../../../../domain/interface/admin/IExcelParser';
 
 export class BulkUploadTeacherUseCase {
   constructor(

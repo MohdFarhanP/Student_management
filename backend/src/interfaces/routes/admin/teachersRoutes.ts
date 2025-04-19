@@ -1,12 +1,12 @@
 import express from 'express';
-import { GetAllTeachersUseCase } from '../../../application/useCases/admin/teacher/getAllTeachersUseCase.js';
-import { TeacherController } from '../../controllers/admin/teachersController.js';
-import { GetTeachersByLimitUseCase } from '../../../application/useCases/admin/teacher/getTeachersByLimitUseCase.js';
-import { TeacherRepository } from '../../../infrastructure/repositories/admin/teacherRepository.js';
-import { EditTeacherUseCase } from '../../../application/useCases/admin/teacher/editTeacherUseCase.js';
-import { AddTeacherUseCase } from '../../../application/useCases/admin/teacher/addTeacherUseCase.js';
-import { DeleteTeacherUseCase } from '../../../application/useCases/admin/teacher/deleteTeacherUseCase.js';
-import { AuthService } from '../../../application/services/authService.js';
+import { GetAllTeachersUseCase } from '../../../application/useCases/admin/teacher/getAllTeachersUseCase';
+import { TeacherController } from '../../controllers/admin/teachersController';
+import { GetTeachersByLimitUseCase } from '../../../application/useCases/admin/teacher/getTeachersByLimitUseCase';
+import { TeacherRepository } from '../../../infrastructure/repositories/admin/teacherRepository';
+import { EditTeacherUseCase } from '../../../application/useCases/admin/teacher/editTeacherUseCase';
+import { AddTeacherUseCase } from '../../../application/useCases/admin/teacher/addTeacherUseCase';
+import { DeleteTeacherUseCase } from '../../../application/useCases/admin/teacher/deleteTeacherUseCase';
+import { AuthService } from '../../../application/services/authService';
 
 const router = express.Router();
 const teacherRepository = new TeacherRepository();

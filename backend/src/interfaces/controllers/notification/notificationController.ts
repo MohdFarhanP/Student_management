@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { INotificationRepository } from '../../../domain/interface/INotificationRepository.js';
-import { MarkNotificationAsRead } from '../../../application/useCases/notification/MarkNotificationAsReadUseCase.js';
+import { INotificationRepository } from '../../../domain/interface/INotificationRepository';
+import { MarkNotificationAsRead } from '../../../application/useCases/notification/MarkNotificationAsReadUseCase';
 
 export class NotificationController {
   constructor(

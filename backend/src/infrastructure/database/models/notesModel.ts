@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { INote } from '../../../domain/interface/INote.js';
+import { INote } from '../../../domain/interface/INote';
 
 const noteSchema = new Schema<INote>({
   title: { type: String, required: true },

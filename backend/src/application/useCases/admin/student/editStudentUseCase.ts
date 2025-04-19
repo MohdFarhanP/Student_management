@@ -1,6 +1,6 @@
-import { StudentRepository } from '../../../../infrastructure/repositories/admin/studentRepository.js';
-import { IStudent } from '../../../../domain/interface/IStudent.js';
-import { Student } from '../../../../domain/entities/student.js';
+import { StudentRepository } from '../../../../infrastructure/repositories/admin/studentRepository';
+import { IStudent } from '../../../../domain/interface/IStudent';
+import { Student } from '../../../../domain/entities/student';
 import { Types } from 'mongoose';
 
 export class EditStudentUseCase {

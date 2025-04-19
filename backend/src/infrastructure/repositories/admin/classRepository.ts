@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
-import { ClassEntity } from '../../../domain/entities/class.js';
-import { ClassModel } from '../../database/models/classModel.js';
-import { TeacherModel } from '../../database/models/teacherModel.js';
+import { ClassEntity } from '../../../domain/entities/class';
+import { ClassModel } from '../../database/models/classModel';
+import { TeacherModel } from '../../database/models/teacherModel';
 
 interface PopulatedClass {
   _id: Types.ObjectId;

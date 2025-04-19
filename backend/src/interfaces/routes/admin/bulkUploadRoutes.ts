@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { BulkUploadController } from '../../controllers/admin/bulkUploadController.js';
+import { BulkUploadController } from '../../controllers/admin/bulkUploadController';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });

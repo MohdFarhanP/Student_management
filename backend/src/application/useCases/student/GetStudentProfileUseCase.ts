@@ -1,5 +1,5 @@
-import { Student } from '../../../domain/entities/student.js';
-import { IStudentProfileRepository } from '../../../domain/interface/student/IStudentProfileRepository.js';
+import { Student } from '../../../domain/entities/student';
+import { IStudentProfileRepository } from '../../../domain/interface/student/IStudentProfileRepository';
 
 export class GetStudentProfileUseCase {
   constructor(private studentRepository: IStudentProfileRepository) {}

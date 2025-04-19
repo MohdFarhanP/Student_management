@@ -36,9 +36,9 @@ const StudentSidebar: React.FC = () => {
       path: '/student/chat',
     },
     {
-      name: 'Settings',
+      name: 'notes',
       icon: <MdSettings size={22} />,
-      path: '/student/settings',
+      path: '/student/notes',
     },
   ];
 
