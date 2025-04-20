@@ -62,6 +62,7 @@ export class NoteController {
       const { noteId } = req.params;
       const note: INote = await this.downloadNoteUseCase.execute(noteId);
 
+      console.log('this is note to download',note)
       const response = await axios.get(note.fileUrl, {
         responseType: 'stream',
       });

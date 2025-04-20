@@ -176,7 +176,7 @@ export class StudentRepository implements IStudentRepository {
       .exec();
 
     return students.map((student) => {
-      const populatedClass = student.class as { name: string } | null;
+      const populatedClass = student.class as unknown as { name: string } | null;
 
       return new Student({
         id: student._id.toString(),
