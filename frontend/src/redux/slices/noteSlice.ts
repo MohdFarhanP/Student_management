@@ -21,8 +21,8 @@ export const uploadNote = createAsyncThunk(
       return await uploadNoteApi(data);
     } catch (error) {
       return rejectWithValue(
-        error instanceof Error ? error.message : 'Failed to uplod note'
-      );  
+        error instanceof Error ? error.message : 'Failed to upload note'
+      );
     }
   }
 );
@@ -35,7 +35,7 @@ export const fetchNotes = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : 'Failed to fetch note'
-      );  
+      );
     }
   }
 );
@@ -44,11 +44,12 @@ export const downloadNote = createAsyncThunk(
   'notes/downloadNote',
   async (noteId: string, { rejectWithValue }) => {
     try {
-      return await downloadNoteApi(noteId);
+      await downloadNoteApi(noteId);
+      return undefined;
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : 'Failed to download note'
-      );  
+      );
     }
   }
 );
@@ -98,4 +99,3 @@ const noteSlice = createSlice({
 });
 
 export default noteSlice.reducer;
-

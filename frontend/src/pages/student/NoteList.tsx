@@ -16,11 +16,13 @@ const NoteList: React.FC = () => {
     dispatch(downloadNote(noteId)).then((action) => {
       if (downloadNote.fulfilled.match(action)) {
         const link = document.createElement('a');
-        link.href = action.payload; // Use signed URL
+        link.href = `http://localhost:5000/api/notes/download/${noteId}`;
         link.setAttribute('download', title);
         document.body.appendChild(link);
         link.click();
         link.remove();
+      } else {
+        console.error('Download failed:', action.error.message);
       }
     });
   };

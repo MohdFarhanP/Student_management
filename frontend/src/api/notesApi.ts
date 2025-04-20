@@ -10,4 +10,4 @@ export const fetchNotesApi = () =>
   apiRequest<INote[]>('get', NOTES_API_URL).then((res) => res);
 
 export const downloadNoteApi = (noteId: string) =>
-  apiRequest<{ fileUrl: string }>('get', `${NOTES_API_URL}/download/${noteId}`).then((res) => res.fileUrl);
+  apiRequest<void>('get', `${NOTES_API_URL}/download/${noteId}`).then(() => undefined);
