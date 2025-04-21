@@ -14,9 +14,11 @@ const notificationSchema = new mongoose.Schema<INotification>({
   senderRole: { type: String, enum: ['Admin', 'Teacher'], required: true },
   isRead: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
+  scheduledAt: { type: String },
 });
 
 notificationSchema.index({ recipientIds: 1, createdAt: -1 });
+notificationSchema.index({ scheduledAt: 1 });
 
 export const NotificationModel = mongoose.model<INotification>(
   'Notification',

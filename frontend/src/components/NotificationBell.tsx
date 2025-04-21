@@ -20,7 +20,6 @@ const NotificationBell: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
-    // Set userId before connecting
     socket.io.opts.query = { userId: user.id };
     dispatch(fetchNotifications());
 
@@ -50,7 +49,6 @@ const NotificationBell: React.FC = () => {
     dispatch(markNotificationAsRead(notificationId));
   };
 
-  // Add fallback for notifications to prevent filter error
   const unreadCount = Array.isArray(notifications)
     ? notifications.filter((n) => !n.isRead).length
     : 0;
@@ -96,7 +94,9 @@ const NotificationBell: React.FC = () => {
                 <h3 className="font-bold">{notification.title}</h3>
                 <p>{notification.message}</p>
                 <p className="text-xs text-gray-500">
-                  {new Date(notification.createdAt).toLocaleString()}
+                  {notification.scheduledAt
+                    ? `Scheduled: ${new Date(notification.scheduledAt).toLocaleString()}`
+                    : new Date(notification.createdAt).toLocaleString()}
                 </p>
                 {!notification.isRead && (
                   <button

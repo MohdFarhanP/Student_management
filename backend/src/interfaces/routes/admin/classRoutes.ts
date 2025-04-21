@@ -10,12 +10,12 @@ import { UpdateClassUseCase } from '../../../application/useCases/admin/class/up
 import { GetClassNameUseCase } from '../../../application/useCases/admin/class/getClassNames';
 import { GetStudentsByClassUseCase } from '../../../application/useCases/admin/class/getStudentsByClass';
 import { StudentRepository } from '../../../infrastructure/repositories/admin/studentRepository';
-import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/createSubjectUseCase';
-import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/fetchSubjectsByClassIdUseCase';
+import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/CreateSubjectUseCase';
+import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/FetchSubjectsByClassIdUseCase';
 import { SubjectRepository } from '../../../infrastructure/repositories/admin/subjectRepository';
-import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/getSubjectUseCase';
-import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/deleteSubjectUseCase';
-import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/updateSubjectUseCase';
+import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/GetSubjectUseCase';
+import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/DeleteSubjectUseCase';
+import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/UpdateSubjectUseCase';
 
 const classRepository = new ClassRepository();
 const studentRepository = new StudentRepository();

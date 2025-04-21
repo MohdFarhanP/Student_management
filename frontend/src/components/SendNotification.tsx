@@ -11,6 +11,7 @@ const SendNotification: React.FC = () => {
     'global' | 'role' | 'Student'
   >('global');
   const [recipientIds, setRecipientIds] = useState<string>('');
+  const [scheduledAt, setScheduledAt] = useState<string>(''); // New state for scheduling
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,7 +38,16 @@ const SendNotification: React.FC = () => {
       return;
     }
 
-    const notification = {
+    // Define the notification type explicitly to include scheduledAt
+    const notification: {
+      title: string;
+      message: string;
+      recipientType: 'global' | 'role' | 'Student';
+      recipientIds?: string[];
+      senderId: string;
+      senderRole: 'Admin' | 'Teacher';
+      scheduledAt?: string;
+    } = {
       title: title.trim(),
       message: message.trim(),
       recipientType,
@@ -49,11 +59,23 @@ const SendNotification: React.FC = () => {
       senderRole: user.role as 'Admin' | 'Teacher',
     };
 
+    // Include scheduledAt if provided
+    if (scheduledAt) {
+      const scheduledDate = new Date(scheduledAt);
+      if (scheduledDate < new Date()) {
+        setError('Scheduled time cannot be in the past');
+        return;
+      }
+      notification.scheduledAt = scheduledDate.toISOString(); // Ensure UTC
+      console.log('Sending with scheduledAt:', notification.scheduledAt); // Debug log
+    }
+
     console.log('Sending notification:', notification);
     socket.emit('sendNotification', notification);
     setTitle('');
     setMessage('');
     setRecipientIds('');
+    setScheduledAt('');
     setError(null);
   };
 
@@ -82,8 +104,8 @@ const SendNotification: React.FC = () => {
         className="mb-2 w-full rounded border p-2"
       >
         <option value="global">Global</option>
-        {user.role === 'admin' && <option value="role">Role</option>}
-        <option value="student">Student</option>
+        {user.role === 'Admin' && <option value="role">Role</option>}
+        <option value="Student">Student</option>
       </select>
       {recipientType !== 'global' && (
         <input
@@ -98,6 +120,13 @@ const SendNotification: React.FC = () => {
           className="mb-2 w-full rounded border p-2"
         />
       )}
+      <input
+        type="datetime-local"
+        value={scheduledAt}
+        onChange={(e) => setScheduledAt(e.target.value)}
+        placeholder="Schedule notification (optional)"
+        className="mb-2 w-full rounded border p-2"
+      />
       <button
         onClick={handleSend}
         className="rounded bg-blue-500 p-2 text-white"

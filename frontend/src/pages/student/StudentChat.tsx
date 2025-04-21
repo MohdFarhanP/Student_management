@@ -73,24 +73,28 @@ const StudentChat: React.FC = () => {
   if (!user) return <div>Please log in to access the chat.</div>;
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <StudentSidebar />
-      <div className="ml-70 flex-1 p-4 sm:p-6">
-        <div className="mb-4 flex items-center justify-between sm:mb-6">
-          <h1 className="text-xl font-semibold text-gray-800 sm:text-2xl">
+      <div className="flex-1 max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 lg:ml-45">
+        <div className="flex flex-row items-center justify-between sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
+          <h1 className="text-xl pl-[50px] sm:pl-0 md:pl-10 sm:text-2xl lg:text-3xl lg:pl-0 font-bold mb-2 sm:mb-0 text-gray-800 dark:text-gray-100">
             Student Chat
           </h1>
           <NotificationBell />
         </div>
         {error && (
-          <div className="mb-4 text-red-500 sm:mb-6">Error: {error}</div>
+          <div className="mb-4 sm:mb-6 text-red-500 dark:text-red-400 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            Error: {error}
+          </div>
         )}
-        <ChatWindow
-          messages={messages}
-          sendMessage={sendMessage}
-          chatRoomId="class-123"
-          isTeacher={false}
-        />
+        <div className="rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
+          <ChatWindow
+            messages={messages}
+            sendMessage={sendMessage}
+            chatRoomId="class-123"
+            isTeacher={false}
+          />
+        </div>
       </div>
     </div>
   );

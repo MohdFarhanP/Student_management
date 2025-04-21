@@ -3,6 +3,7 @@ import { MessageRepository } from '../repositories/message/messageRepository';
 import { SendMessage } from '../../application/useCases/message/sendMessage';
 import { NotificationRepository } from '../repositories/notification/notificationReopository';
 import { SendNotification } from '../../application/useCases/notification/SendNotificationUseCase';
+import { NotificationScheduler } from '../services/notificationScheduler';
 
 export interface SendMessageDTO {
   chatRoomId: string;
@@ -20,6 +21,7 @@ export interface SendNotificationDTO {
   recipientIds?: string[];
   senderId: string;
   senderRole: 'Admin' | 'Teacher';
+  scheduledAt?: Date;
 }
 
 export class SocketServer {
@@ -32,7 +34,13 @@ export class SocketServer {
     const sendNotificationUseCase = new SendNotification(
       notificationRepository
     );
+    const notificationScheduler = new NotificationScheduler(
+      this.io,
+      notificationRepository
+    );
 
+    notificationScheduler.start();
+    
     this.io.use((socket, next) => {
       const userId = socket.handshake.query.userId as string;
       if (!userId) {
@@ -128,21 +136,28 @@ export class SocketServer {
 
             const savedNotification =
               await sendNotificationUseCase.execute(notification);
-            if (notification.recipientType === 'global') {
-              this.io.emit('notification', savedNotification);
-            } else if (notification.recipientType === 'role') {
-              notification.recipientIds?.forEach((role) => {
-                this.io
-                  .to(`role-${role}`)
-                  .emit('notification', savedNotification);
-              });
-            } else if (notification.recipientType === 'Student') {
-              notification.recipientIds?.forEach((userId) => {
-                this.io
-                  .to(`user-${userId}`)
-                  .emit('notification', savedNotification);
-              });
+
+            // Only emit immediately if not scheduled or scheduled time is now/past
+            const now = new Date();
+            if (!notification.scheduledAt || new Date(notification.scheduledAt) <= now) {
+              if (notification.recipientType === 'global') {
+                this.io.emit('notification', savedNotification);
+              } else if (notification.recipientType === 'role') {
+                notification.recipientIds?.forEach((role) => {
+                  this.io
+                    .to(`role-${role}`)
+                    .emit('notification', savedNotification);
+                });
+              } else if (notification.recipientType === 'Student') {
+                notification.recipientIds?.forEach((userId) => {
+                  this.io
+                    .to(`user-${userId}`)
+                    .emit('notification', savedNotification);
+                });
+              }
             }
+
+            // Always emit back to the sender for confirmation
             socket.emit('notification', savedNotification);
           } catch (error) {
             console.error('Error processing notification:', error);

@@ -26,9 +26,8 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
 
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', uploadPreset); // Ensure ngfOut2 is used
+  formData.append('upload_preset', uploadPreset); // Uses ngfOut2 preset with Public access
   formData.append('resource_type', file.type.startsWith('image/') ? 'image' : 'raw');
-  formData.append('access_mode', 'public'); // Explicitly set to public
 
   try {
     const response = await axios.post(

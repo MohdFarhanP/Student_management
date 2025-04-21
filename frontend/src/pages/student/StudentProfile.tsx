@@ -19,7 +19,6 @@ const StudentProfile: React.FC = () => {
     (state: RootState) => state.student
   );
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string>('');
 
@@ -66,54 +65,17 @@ const StudentProfile: React.FC = () => {
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-100 md:flex-row">
-      {/* Sidebar */}
-      <div
-        className={`fixed z-40 w-64 bg-white shadow-lg transition-transform duration-300 ease-in-out md:relative md:z-0 ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } md:translate-x-0`}
-      >
-        <StudentSidebar />
-      </div>
-
-      {/* Overlay for mobile */}
-      {isSidebarOpen && (
-        <div
-          className="bg-opacity-50 fixed inset-0 bg-black md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
-      {/* Main Content */}
-      <div className="flex-1 p-4 md:ml-44 md:p-6">
-        {/* Mobile Menu Button */}
-        <button
-          className="mb-4 rounded-full bg-white p-2 text-black shadow md:hidden"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        >
-          <svg
-            className="h-6 w-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
-
-        <h1 className="mb-6 text-center text-2xl font-bold text-black md:text-left md:text-3xl">
+    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <StudentSidebar />
+      <div className="flex-1 max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 lg:ml-45">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 text-center sm:text-left text-gray-800 dark:text-gray-100">
           Student Profile
         </h1>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {/* Updated Profile Image Card */}
-          <div className="flex max-h-min w-64 flex-col items-center rounded-lg bg-white p-6 shadow-md">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Profile Image Card */}
+          <div className="flex flex-col items-center rounded-lg bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <label
               htmlFor="profileImageInput"
               className="relative cursor-pointer"
@@ -121,13 +83,13 @@ const StudentProfile: React.FC = () => {
               <img
                 src={profileImage || profile?.profileImage || defaultImage}
                 alt="Profile"
-                className={`mb-4 h-24 w-24 rounded-full border-4 border-gray-200 object-cover shadow-md ${
-                  isEditing ? 'transition hover:opacity-80' : 'cursor-default'
+                className={`mb-4 h-20 w-20 sm:h-24 sm:w-24 rounded-full border-4 border-gray-200 dark:border-gray-600 object-cover shadow-md ${
+                  isEditing ? 'hover:opacity-80 transition' : 'cursor-default'
                 }`}
               />
               {isEditing && (
-                <div className="absolute right-2 bottom-2 rounded-full bg-white p-1 text-black shadow">
-                  <RiImageEditLine />
+                <div className="absolute right-1 bottom-1 rounded-full bg-white dark:bg-gray-700 p-1.5 text-black dark:text-gray-100 shadow">
+                  <RiImageEditLine size={16} />
                 </div>
               )}
             </label>
@@ -137,78 +99,63 @@ const StudentProfile: React.FC = () => {
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                hidden
+                className="hidden"
               />
             )}
-            <h1 className="text-center text-xl font-bold text-gray-800">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 text-center">
               {profile?.name ?? user?.email?.split('@')[0] ?? 'Unknown'}
-            </h1>
-            <p className="mt-1 text-sm text-gray-500">Student</p>
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Student</p>
             <button
               onClick={handleEditToggle}
-              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="mt-4 rounded-lg bg-blue-500 dark:bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
             >
               {isEditing ? 'Cancel Edit' : 'Edit Profile'}
             </button>
           </div>
 
           {/* Profile Details Card */}
-          <div className="rounded-2xl bg-white p-6 shadow-md">
-            <h2 className="mb-4 text-center text-lg font-semibold text-gray-800">
+          <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4 text-center">
               Profile Details
             </h2>
-            <div className="space-y-2 text-center text-sm">
-              <p className="text-gray-700">Role: Student</p>
-              <p className="text-gray-700">Age: {profile?.age || 'N/A'}</p>
-              <p className="text-gray-700">
-                Gender: {profile?.gender || 'N/A'}
-              </p>
-              <p className="text-gray-700">
-                Roll Number: {profile?.roleNumber || 'N/A'}
-              </p>
-              <p className="text-gray-700">
-                Date of Birth: {profile?.dob || 'N/A'}
+            <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 text-center">
+              <p>Role: Student</p>
+              <p>Age: {profile?.age || 'N/A'}</p>
+              <p>Gender: {profile?.gender || 'N/A'}</p>
+              <p>Roll Number: {profile?.roleNumber || 'N/A'}</p>
+              <p>
+                Date of Birth:{' '}
+                {profile?.dob
+                  ? new Date(profile.dob).toLocaleDateString()
+                  : 'N/A'}
               </p>
             </div>
           </div>
 
           {/* Address Card */}
-          <div className="rounded-2xl bg-white p-6 shadow-md">
-            <h2 className="mb-4 text-center text-lg font-semibold text-gray-800">
+          <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4 text-center">
               Address Details
             </h2>
-            <div className="space-y-2 text-center text-sm">
-              <p className="text-gray-700">
-                House: {profile?.address?.houseName || 'N/A'}
-              </p>
-              <p className="text-gray-700">
-                Place: {profile?.address?.place || 'N/A'}
-              </p>
-              <p className="text-gray-700">
-                District: {profile?.address?.district || 'N/A'}
-              </p>
-              <p className="text-gray-700">
-                Pincode: {profile?.address?.pincode || 'N/A'}
-              </p>
-              <p className="text-gray-700">
-                Phone: {profile?.address?.phoneNo || 'N/A'}
-              </p>
-              <p className="text-gray-700">
-                Guardian: {profile?.address?.guardianName || 'N/A'}
-              </p>
-              <p className="text-gray-700">
-                Contact: {profile?.address?.guardianContact || 'N/A'}
-              </p>
+            <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 text-center">
+              <p>House: {profile?.address?.houseName || 'N/A'}</p>
+              <p>Place: {profile?.address?.place || 'N/A'}</p>
+              <p>District: {profile?.address?.district || 'N/A'}</p>
+              <p>Pincode: {profile?.address?.pincode || 'N/A'}</p>
+              <p>Phone: {profile?.address?.phoneNo || 'N/A'}</p>
+              <p>Guardian: {profile?.address?.guardianName || 'N/A'}</p>
+              <p>Contact: {profile?.address?.guardianContact || 'N/A'}</p>
             </div>
           </div>
 
           {/* Current Class Card */}
-          <div className="rounded-2xl bg-white p-6 shadow-md">
-            <h2 className="mb-2 text-center text-lg font-semibold text-gray-800">
+          <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4 text-center">
               Current Class
             </h2>
-            <div className="text-center text-sm">
-              <p className="text-gray-700">Class: {profile?.class || 'N/A'}</p>
+            <div className="text-sm text-gray-700 dark:text-gray-300 text-center">
+              <p>Class: {profile?.class || 'N/A'}</p>
             </div>
           </div>
         </div>

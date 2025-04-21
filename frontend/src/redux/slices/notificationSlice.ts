@@ -1,8 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import {
-  FetchNotifications,
-  MarkNotificationAsRead,
-} from '../../api/notification';
+import { FetchNotifications, MarkNotificationAsRead } from '../../api/notification';
 
 export interface Notification {
   id: string;
@@ -14,6 +11,7 @@ export interface Notification {
   senderRole: 'Admin' | 'Teacher';
   isRead: boolean;
   createdAt: string;
+  scheduledAt?: string;
 }
 
 interface NotificationState {
@@ -33,7 +31,6 @@ export const fetchNotifications = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await FetchNotifications();
-      // Normalize response to array
       return Array.isArray(response) ? response : response ? [response] : [];
     } catch (error) {
       return rejectWithValue(
@@ -64,11 +61,9 @@ const notificationSlice = createSlice({
   initialState,
   reducers: {
     addNotification: (state, action: PayloadAction<Notification>) => {
-      // Ensure notifications is an array
       if (!Array.isArray(state.notifications)) {
         state.notifications = [];
       }
-      // Prevent duplicates by checking id
       if (!state.notifications.some((n) => n.id === action.payload.id)) {
         state.notifications.push(action.payload);
       }
@@ -87,10 +82,13 @@ const notificationSlice = createSlice({
         fetchNotifications.fulfilled,
         (state, action: PayloadAction<Notification[]>) => {
           state.loading = false;
-          // Remove duplicates by id
+          const now = new Date().toISOString();
           const uniqueNotifications = Array.isArray(action.payload)
             ? action.payload.reduce((acc: Notification[], curr) => {
-              if (!acc.some((n) => n.id === curr.id)) {
+              if (
+                !acc.some((n) => n.id === curr.id) &&
+                (!curr.scheduledAt || curr.scheduledAt <= now || curr.isRead)
+              ) {
                 acc.push(curr);
               }
               return acc;

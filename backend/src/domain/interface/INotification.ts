@@ -8,4 +8,5 @@ export interface INotification {
   senderRole: 'Admin' | 'Teacher';
   isRead: boolean;
   createdAt: Date;
+  scheduledAt?: string;
 }
