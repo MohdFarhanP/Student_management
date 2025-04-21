@@ -12,9 +12,12 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'image/jpeg',
+    'image/png',
+    'image/gif',
   ];
   if (!allowedTypes.includes(file.type)) {
-    throw new Error('Invalid file type. Only PDF and DOCX are allowed.');
+    throw new Error('Invalid file type. Only PDF, DOCX, and images (JPEG, PNG, GIF) are allowed.');
   }
   const maxSize = 10 * 1024 * 1024;
   if (file.size > maxSize) {
@@ -23,11 +26,13 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
 
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', uploadPreset);
-  formData.append('resource_type', 'raw');
+  formData.append('upload_preset', uploadPreset); // Ensure ngfOut2 is used
+  formData.append('resource_type', file.type.startsWith('image/') ? 'image' : 'raw');
+  formData.append('access_mode', 'public'); // Explicitly set to public
+
   try {
     const response = await axios.post(
-      `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
+      `https://api.cloudinary.com/v1_1/${cloudName}/${file.type.startsWith('image/') ? 'image' : 'raw'}/upload`,
       formData,
       {
         headers: {
