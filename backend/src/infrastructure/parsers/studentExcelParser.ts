@@ -1,13 +1,14 @@
 import { IExcelParser } from '../../domain/interface/admin/IExcelParser';
 import { Student } from '../../domain/entities/student';
 import XLSX from '@e965/xlsx';
+import { Gender } from '../../domain/types/enums';
 
 interface StudentExcelRow {
   name: string;
   email: string;
   roleNumber: string;
   dob: string;
-  gender: 'Male' | 'Female';
+  gender: Gender;
   age: number;
   class?: string;
   password?: string;
@@ -25,28 +26,27 @@ export class StudentExcelParser implements IExcelParser<Student> {
   parse(buffer: Buffer): Student[] {
     const workbook = XLSX.read(buffer, { type: 'buffer' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet) as StudentExcelRow[];
+    const rows = XLSX.utils.sheet_to_json<StudentExcelRow>(sheet);
 
     return rows.map((row) => {
-      const typedRow = row as StudentExcelRow;
       return new Student({
-        name: typedRow.name,
-        email: typedRow.email,
-        roleNumber: typedRow.roleNumber,
-        dob: typedRow.dob,
-        gender: typedRow.gender,
-        age: typedRow.age,
-        class: typedRow.class || null,
-        password: typedRow.password || 'defaultPassword',
-        profileImage: typedRow.profileImage || '',
+        name: row.name,
+        email: row.email,
+        roleNumber: row.roleNumber,
+        dob: row.dob,
+        gender: row.gender,
+        age: row.age,
+        class: row.class || null,
+        password: row.password || 'defaultPassword',
+        profileImage: row.profileImage || '',
         address: {
-          houseName: typedRow.houseName || '',
-          place: typedRow.place || '',
-          district: typedRow.district || '',
-          pincode: typedRow.pincode || 0,
-          phoneNo: typedRow.phoneNo || 0,
-          guardianName: typedRow.guardianName || '',
-          guardianContact: typedRow.guardianContact || null,
+          houseName: row.houseName || '',
+          place: row.place || '',
+          district: row.district || '',
+          pincode: row.pincode || 0,
+          phoneNo: row.phoneNo || 0,
+          guardianName: row.guardianName || '',
+          guardianContact: row.guardianContact ?? null,
         },
       });
     });

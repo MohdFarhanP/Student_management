@@ -206,7 +206,7 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
               name="dateOfBirth"
               value={formData.dateOfBirth || ''}
               onChange={handleChange}
-              className="mt-1 w-full rounded-md border border-gray-300 bg-white p-2 text-black"
+              className="mt-1 w-full rounded-md border p-2 text-black placeholder-gray-500"
               disabled={isSubmitting}
             />
             {errors.dateOfBirth && (

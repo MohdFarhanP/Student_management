@@ -8,7 +8,7 @@ export interface ITeacherRepository {
     page: number,
     limit: number
   ): Promise<{ data: Teacher[]; totalCount: number }>;
-  getAll(): Promise<{ data: Teacher[] }>;
+  getAll(): Promise<{ data: Partial<Teacher>[] }>
   getById(id: ObjectId | string): Promise<Teacher>;
   getByEmail(email: string): Promise<Teacher | null>;
   save(teacher: Teacher): Promise<void>;

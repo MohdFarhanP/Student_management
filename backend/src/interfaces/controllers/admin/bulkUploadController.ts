@@ -1,95 +1,90 @@
 import { Request, Response } from 'express';
-import { BulkUploadStudentUseCase } from '../../../application/useCases/admin/student/bulkUploadStudentUseCase';
-import { BulkUploadTeacherUseCase } from '../../../application/useCases/admin/teacher/bulkUploadTeachersUseCase';
-import { StudentRepository } from '../../../infrastructure/repositories/admin/studentRepository';
-import { TeacherRepository } from '../../../infrastructure/repositories/admin/teacherRepository';
-import { StudentExcelParser } from '../../../infrastructure/parsers/studentExcelParser';
-import { TeacherExcelParser } from '../../../infrastructure/parsers/teacherExcelParser';
-import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository';
+import { IBulkUploadStudentUseCase } from '../../../domain/interface/IBulkUploadStudentUseCase';
+import { IBulkUploadTeacherUseCase } from '../../../domain/interface/IBulkUploadTeacherUseCase';
+import { IApiResponse, IBulkUploadResult } from '../../../domain/types/interfaces';
+import { IBulkUploadController } from '../../../domain/interface/IBulkUploadController';
 
-export class BulkUploadController {
-  private studentUseCase: BulkUploadStudentUseCase;
-  private teacherUseCase: BulkUploadTeacherUseCase;
-
+export class BulkUploadController implements IBulkUploadController {
   constructor(
-    studentRepository: IStudentRepository = new StudentRepository(),
-    teacherRepository: TeacherRepository = new TeacherRepository()
-  ) {
-    this.studentUseCase = new BulkUploadStudentUseCase(
-      studentRepository,
-      new StudentExcelParser()
-    );
-    this.teacherUseCase = new BulkUploadTeacherUseCase(
-      teacherRepository,
-      new TeacherExcelParser()
-    );
-  }
+    private studentUseCase: IBulkUploadStudentUseCase,
+    private teacherUseCase: IBulkUploadTeacherUseCase
+  ) {}
 
-  async uploadStudents(req: Request, res: Response) {
+  async uploadStudents(req: Request, res: Response): Promise<void> {
     try {
       if (!req.file) {
-        res.status(400).json({ message: 'No file uploaded' });
+        res.status(400).json({
+          success: false,
+          message: 'No file uploaded',
+        } as IApiResponse<never>);
         return;
       }
 
-      const studentResult = await this.studentUseCase.execute(req.file.buffer);
+      const result = await this.studentUseCase.execute(req.file.buffer);
 
       res.status(200).json({
+        success: true,
         message: 'Student bulk upload successful',
-        studentsAdded: studentResult.studentsAdded,
-      });
-      return;
+        data: { addedCount: result.addedCount },
+      } as IApiResponse<IBulkUploadResult>);
     } catch (error: unknown) {
       console.error('Student bulk upload error:', error);
 
       if (typeof error === 'object' && error !== null && 'code' in error) {
         const mongoError = error as { code: number };
         if (mongoError.code === 11000) {
-          res
-            .status(400)
-            .json({ message: 'Some students already exist in the database.' });
+          res.status(400).json({
+            success: false,
+            message: 'Some students already exist in the database.',
+          } as IApiResponse<never>);
           return;
         }
       }
 
-      const errorMessage =
-        error instanceof Error ? error.message : 'Internal Server Error';
-      res.status(500).json({ message: errorMessage });
-      return;
+      const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+      res.status(500).json({
+        success: false,
+        message: errorMessage,
+      } as IApiResponse<never>);
     }
   }
-  async uploadTeachers(req: Request, res: Response) {
+
+  async uploadTeachers(req: Request, res: Response): Promise<void> {
     try {
       if (!req.file) {
-        res.status(400).json({ message: 'No file uploaded' });
+        res.status(400).json({
+          success: false,
+          message: 'No file uploaded',
+        } as IApiResponse<never>);
         return;
       }
 
-      const teacherResult = await this.teacherUseCase.execute(req.file.buffer);
+      const result = await this.teacherUseCase.execute(req.file.buffer);
 
       res.status(200).json({
+        success: true,
         message: 'Teacher bulk upload successful',
-        teachersAdded: teacherResult.teachersAdded,
-      });
-      return;
+        data: { addedCount: result.addedCount },
+      } as IApiResponse<IBulkUploadResult>);
     } catch (error: unknown) {
-      console.error('Student bulk upload error:', error);
+      console.error('Teacher bulk upload error:', error);
 
       if (typeof error === 'object' && error !== null && 'code' in error) {
         const mongoError = error as { code: number };
-
         if (mongoError.code === 11000) {
-          res
-            .status(400)
-            .json({ message: 'Some teachers already exist in the database.' });
+          res.status(400).json({
+            success: false,
+            message: 'Some teachers already exist in the database.',
+          } as IApiResponse<never>);
           return;
         }
       }
-      const errorMessage =
-        error instanceof Error ? error.message : 'Internal Server Error';
 
-      res.status(500).json({ message: errorMessage });
-      return;
+      const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
+      res.status(500).json({
+        success: false,
+        message: errorMessage,
+      } as IApiResponse<never>);
     }
   }
 }

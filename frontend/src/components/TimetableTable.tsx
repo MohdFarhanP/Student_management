@@ -22,6 +22,18 @@ type Teacher = {
   name: string;
 };
 
+const PERIOD_DURATIONS = [
+  { period: 1, time: '9:00 AM - 10:00 AM' },
+  { period: 2, time: '10:00 AM - 11:00 AM' },
+  { period: 3, time: '11:00 AM - 12:00 PM' },
+  { period: 'lunch', time: '12:00 PM - 1:00 PM (Lunch)' },
+  { period: 4, time: '1:00 PM - 2:00 PM' },
+  { period: 5, time: '2:00 PM - 3:00 PM' },
+  { period: 6, time: '3:00 PM - 4:00 PM' },
+];
+
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
 const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
   const [timetable, setTimetable] = useState<TimetableData | null>(null);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -50,8 +62,9 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
         setTimetable(timetableData);
         setTeachers(teachersData);
       } catch (err: unknown) {
-        if (err instanceof AxiosError)
+        if (err instanceof AxiosError) {
           setError(err.message || 'Failed to fetch timetable or teachers');
+        }
       } finally {
         setLoading(false);
       }
@@ -88,7 +101,6 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
       setTimetable(updatedTimetable);
       setIsAssignModalOpen(false);
     } catch (err) {
-      // Error handling is already done in the API function
       console.log(err);
     }
   };
@@ -106,7 +118,6 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
       setTimetable(updatedTimetable);
       setIsEditModalOpen(false);
     } catch (err) {
-      // Error handling is already done in the API function
       console.log(err);
     }
   };
@@ -122,7 +133,6 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
       setTimetable(updatedTimetable);
       setIsDeleteModalOpen(false);
     } catch (err) {
-      // Error handling is already done in the API function
       console.log(err);
     }
   };
@@ -130,71 +140,86 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
   if (!timetable)
-    return <div className="mt-4 text-center">No timetable found.</div>;
+    return <div className="mt-4 text-center text-gray-600">No timetable found.</div>;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full rounded-lg border border-gray-300 bg-white shadow-md">
+    <div className="overflow-x-auto mt-6">
+      <table className="min-w-full rounded-lg border border-gray-200 bg-white shadow-lg">
         <thead>
-          <tr className="bg-blue-100 text-blue-800">
-            <th className="border-b p-3">Period</th>
-            {Object.keys(timetable.schedule).map((day) => (
-              <th key={day} className="border-b p-3">
+          <tr className="bg-blue-600 text-white">
+            <th className="p-4 text-left font-semibold">Period</th>
+            {DAYS.map((day) => (
+              <th key={day} className="p-4 text-center font-semibold">
                 {day}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {[1, 2, 3, 4, 5, 6].map((period) => (
-            <tr key={period} className="transition-colors hover:bg-gray-50">
-              <td className="border-b p-3 text-center font-medium text-gray-700">
-                Period {period}
+          {PERIOD_DURATIONS.map(({ period, time }) => (
+            <tr
+              key={period}
+              className={`transition-colors ${period === 'lunch' ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
+            >
+              <td
+                className={`p-4 font-medium text-gray-800 ${
+                  period === 'lunch' ? 'text-center italic text-gray-600' : ''
+                }`}
+              >
+                {period === 'lunch' ? 'Lunch Break' : `Period ${period}`}
+                <div className="text-xs text-gray-500">{time}</div>
               </td>
-              {Object.keys(timetable.schedule).map((day) => {
-                const slot = timetable.schedule[day].find(
-                  (s: TimetableSlot) => s.period === period
-                );
-                const teacher = teachers.find((t) => t.id === slot?.teacherId);
-                return (
-                  <td
-                    key={`${day}-${period}`}
-                    className="group relative cursor-pointer border-b p-3 text-center"
-                    onClick={() =>
-                      slot?.teacherId
-                        ? handleEditClick(day, period)
-                        : handleAssignClick(day, period)
-                    }
-                  >
-                    {slot?.teacherId ? (
-                      <div className="space-y-1">
-                        <p className="font-semibold text-gray-800">
-                          {slot.subject}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {teacher?.name || 'Unknown Teacher'}
-                        </p>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteClick(day, period);
-                          }}
-                          className="text-sm text-red-500 hover:text-red-700"
-                        >
-                          Delete
-                        </button>
-                        <div className="absolute -top-10 left-1/2 hidden -translate-x-1/2 transform rounded bg-gray-800 p-2 text-xs text-white group-hover:block">
-                          Teacher: {teacher?.name}
-                          <br />
-                          Subject: {slot.subject}
+              {period === 'lunch' ? (
+                <td
+                  colSpan={DAYS.length}
+                  className="p-4 text-center bg-gray-100 text-gray-600 italic"
+                >
+                  Lunch Break (12:00 PM - 1:00 PM)
+                </td>
+              ) : (
+                DAYS.map((day) => {
+                  const slot = timetable.schedule[day]?.find(
+                    (s: TimetableSlot) => s.period === period
+                  );
+                  const teacher = teachers.find((t) => t.id === slot?.teacherId);
+                  return (
+                    <td
+                      key={`${day}-${period}`}
+                      className="group relative cursor-pointer p-4 text-center border-r border-gray-200"
+                      onClick={() =>
+                        slot?.teacherId
+                          ? handleEditClick(day, period as number)
+                          : handleAssignClick(day, period as number)
+                      }
+                    >
+                      {slot?.teacherId ? (
+                        <div className="space-y-1">
+                          <p className="font-semibold text-gray-800">{slot.subject}</p>
+                          <p className="text-sm text-gray-600">
+                            {teacher?.name || 'Unknown Teacher'}
+                          </p>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(day, period as number);
+                            }}
+                            className="text-sm text-red-500 hover:text-red-700"
+                          >
+                            Delete
+                          </button>
+                          <div className="absolute -top-10 left-1/2 hidden -translate-x-1/2 transform rounded bg-gray-800 p-2 text-xs text-white group-hover:block">
+                            Teacher: {teacher?.name || 'Unknown Teacher'}
+                            <br />
+                            Subject: {slot.subject}
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <span className="text-gray-400 italic">Free</span>
-                    )}
-                  </td>
-                );
-              })}
+                      ) : (
+                        <span className="text-gray-400 italic">Free</span>
+                      )}
+                    </td>
+                  );
+                })
+              )}
             </tr>
           ))}
         </tbody>
@@ -217,11 +242,11 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
           classId={classId}
           initialData={{
             teacherId:
-              timetable.schedule[selectedSlot.day].find(
+              timetable.schedule[selectedSlot.day]?.find(
                 (s: TimetableSlot) => s.period === selectedSlot.period
               )?.teacherId || '',
             subject:
-              timetable.schedule[selectedSlot.day].find(
+              timetable.schedule[selectedSlot.day]?.find(
                 (s: TimetableSlot) => s.period === selectedSlot.period
               )?.subject || '',
           }}

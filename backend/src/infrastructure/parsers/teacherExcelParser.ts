@@ -1,12 +1,13 @@
 import XLSX from '@e965/xlsx';
 import { IExcelParser } from '../../domain/interface/admin/IExcelParser';
 import { Teacher } from '../../domain/entities/teacher';
+import { Gender } from '../../domain/types/enums';
 
 interface TeacherExcelRow {
   name: string;
   subject: string;
   email: string;
-  gender: 'Male' | 'Female';
+  gender: Gender;
   phoneNo: number;
   empId: string;
   assignedClass: string;

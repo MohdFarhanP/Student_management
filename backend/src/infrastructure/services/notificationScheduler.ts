@@ -10,7 +10,7 @@ export class NotificationScheduler {
   ) {}
 
   start() {
-    cron.schedule('* * * * *', async () => {
+    cron.schedule('0 * * * *', async () => {
       try {
         const now = new Date();
         const utcNow = new Date(now.toISOString()); // Normalize to UTC

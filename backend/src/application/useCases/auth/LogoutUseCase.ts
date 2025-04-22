@@ -1,7 +1,9 @@
 import { ITokenService } from '../../../domain/interface/ITokenService';
-import { IUserRepository } from '../../../domain/interface/IUserTokenRepository';
+import { IUserRepository } from '../../../domain/interface/IUserRepository';
+import { Role } from '../../../domain/types/enums';
+import { ILogoutUseCase } from '../../../domain/interface/ILogoutUseCase';
 
-export class LogoutUseCase {
+export class LogoutUseCase implements ILogoutUseCase {
   constructor(
     private tokenService: ITokenService,
     private userRepository: IUserRepository

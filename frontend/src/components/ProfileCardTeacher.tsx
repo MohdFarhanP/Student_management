@@ -17,6 +17,7 @@ const ProfileCardTeacher: React.FC<ProfileCardProps> = ({
           src={selectedTeacher.profileImage || profile}
           className="h-20 w-20 rounded-full border border-gray-300 object-cover"
         />
+        <p className='text-xs text-gray-600'>{selectedTeacher.email}</p>
         <h2 className="mt-1 text-lg font-semibold text-gray-800">
           {selectedTeacher.name}
         </h2>

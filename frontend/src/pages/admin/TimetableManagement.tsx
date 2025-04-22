@@ -8,9 +8,10 @@ import AdminSideBar from '../../components/AdminSideBar';
 import { AxiosError } from 'axios';
 
 export type Class = {
-  _id: string;
+  _id?: string;
   name: string;
 };
+
 
 const TimetableManagement: React.FC = () => {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -24,8 +25,8 @@ const TimetableManagement: React.FC = () => {
       try {
         const classesData = await fetchClasses();
         setClasses(classesData);
-        if (classesData.length > 0) {
-          setSelectedClassId(classesData[0]._id);
+        if (classesData.length > 0 && classesData[0]._id) {
+          setSelectedClassId(classesData[0]._id ?? '');
         }
       } catch (err: unknown) {
         if (err instanceof AxiosError) {

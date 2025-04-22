@@ -1,9 +1,9 @@
-import { studentModel } from '../../database/models/studentModel';  
-import { Student } from '../../../domain/entities/student';
+import { studentModel } from '../../database/models/studentModel';
 import { ClassModel } from '../../database/models/classModel';
 import mongoose from 'mongoose';
 import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository';
-import { IStudent } from '../../../domain/interface/IStudent';
+import { Student } from '../../../domain/entities/student';
+import { IStudent } from '../../../domain/types/interfaces';
 
 interface PopulatedStudent {
   _id: string | mongoose.Types.ObjectId;
@@ -29,7 +29,7 @@ interface PopulatedStudent {
 }
 
 export class StudentRepository implements IStudentRepository {
-  async insertMany(students: Student[]) {
+  async insertMany(students: Student[]): Promise<void> {
     if (!students || students.length === 0) return;
 
     const processedStudents = await Promise.all(
@@ -46,11 +46,11 @@ export class StudentRepository implements IStudentRepository {
     await studentModel.insertMany(processedStudents);
   }
 
-  async getAll(page: number, limit: number) {
+  async getAll(page: number, limit: number): Promise<{ students: Student[]; totalCount: number }> {
     const skip = (page - 1) * limit;
 
     const rawStudentsData = await studentModel
-      .find({isDeleted:false})
+      .find({ isDeleted: false })
       .skip(skip)
       .limit(limit)
       .select('-password')
@@ -82,20 +82,20 @@ export class StudentRepository implements IStudentRepository {
       });
     });
 
-    const totalCount = await studentModel.countDocuments({isDeleted:false});
+    const totalCount = await studentModel.countDocuments({ isDeleted: false });
     return { students, totalCount };
   }
 
   async findById(id: string): Promise<Student | null> {
-    const student = await studentModel.findOne({id, isDeleted:false}).lean();
+    const student = await studentModel.findOne({ _id: id, isDeleted: false }).lean();
     if (!student) return null;
     return new Student({ ...student, id: student._id.toString() });
   }
 
   async create(data: Partial<IStudent>): Promise<Student> {
-    const existStudent = await studentModel.findOne({ email: data.email, isDeleted:false });
+    const existStudent = await studentModel.findOne({ email: data.email, isDeleted: false });
     if (existStudent) {
-      throw Error('student already exist');
+      throw new Error('Student already exists');
     }
     if (data.class && typeof data.class === 'string') {
       const classDoc = await ClassModel.findOne({ name: data.class });
@@ -128,13 +128,17 @@ export class StudentRepository implements IStudentRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const result = await studentModel.findByIdAndUpdate(id,{$isDeleted:true});
+    const result = await studentModel.findByIdAndUpdate(
+      id,
+      { $set: { isDeleted: true } },
+      { new: true }
+    );
     if (!result) throw new Error('Student not found');
   }
 
   async getProfile(email: string): Promise<Student | null> {
     const rawStudent = await studentModel
-      .findOne({ email, isDeleted:false})
+      .findOne({ email, isDeleted: false })
       .select('-password')
       .populate('class', 'name')
       .lean();
@@ -165,13 +169,13 @@ export class StudentRepository implements IStudentRepository {
   }
 
   async findByEmail(email: string): Promise<Student | null> {
-    const student = await studentModel.findOne({ email ,isDeleted:false});
+    const student = await studentModel.findOne({ email, isDeleted: false });
     return student ? new Student(student) : null;
   }
 
   async getStudentsByClass(classId: string): Promise<Student[]> {
     const students = await studentModel
-      .find({ class: classId ,isDeleted: false})
+      .find({ class: classId, isDeleted: false })
       .populate('class', 'name')
       .exec();
 

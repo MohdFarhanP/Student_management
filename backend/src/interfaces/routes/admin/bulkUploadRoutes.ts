@@ -1,18 +1,14 @@
 import express from 'express';
 import multer from 'multer';
-import { BulkUploadController } from '../../controllers/admin/bulkUploadController';
+import { DependencyContainer } from '../../../infrastructure/di/container';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-const bulkUploadController = new BulkUploadController();
+const container = DependencyContainer.getInstance();
+const bulkUploadController = container.getBulkUploadController();
 
-router.post('/students/bulk-upload', upload.single('file'), (req, res) =>
-  bulkUploadController.uploadStudents(req, res)
-);
-
-router.post('/teachers/bulk-upload', upload.single('file'), (req, res) =>
-  bulkUploadController.uploadTeachers(req, res)
-);
+router.post('/students/bulk-upload', upload.single('file'), bulkUploadController.uploadStudents.bind(bulkUploadController));
+router.post('/teachers/bulk-upload', upload.single('file'), bulkUploadController.uploadTeachers.bind(bulkUploadController));
 
 export default router;

@@ -10,7 +10,7 @@ interface ICredentials {
   role: string;
 }
 
-interface User {
+export interface User {
   id: string;
   email: string;
   role: UserRole;
@@ -22,7 +22,7 @@ interface LoginResponse {
   user: User;
 }
 
-interface TokenResponse {
+export interface TokenResponse {
   message: string;
   user: User;
 }
@@ -48,7 +48,8 @@ export const updateUserPassword = (password: string) =>
 export const adminLogout = () =>
   apiRequest<void>('post', `${AUTH_API_URL}/logout`);
 
-export const refreshUserToken = () =>
-  apiRequest<TokenResponse>('post', `${AUTH_API_URL}/refresh-token`).then(
-    (res) => res.user
-  );
+export const refreshUserToken = (showErrorToast = true) =>
+  apiRequest<TokenResponse>('post', `${AUTH_API_URL}/refresh-token`,
+    undefined,
+    {showErrorToast},
+  ).then((res) => res.user);

@@ -33,6 +33,7 @@ router.patch(
 );
 router.get(
   '/attendance/:studentId',
+  authenticateUser,
   controller.viewAttendance.bind(controller)
 );
 export default router;

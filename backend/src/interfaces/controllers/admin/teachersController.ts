@@ -79,6 +79,7 @@ export class TeacherController {
   async deleteTeacher(req: Request, res: Response): Promise<void> {
     try {
       const { teacherId } = req.params;
+      console.log("hitting the controller")
       await this.deleteTeacherUseCase.execute(teacherId);
       res.status(HttpStatus.OK).json({
         message: 'Teacher deleted successfully',

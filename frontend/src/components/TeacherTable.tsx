@@ -12,6 +12,7 @@ interface TeacherTableProps {
   setIsOpen: (isOpen: boolean) => void;
   page: number;
   setPage: React.Dispatch<React.SetStateAction<number>>;
+  onDelete: (studentId: string) => void
 }
 
 const TeacherTable = ({
@@ -21,6 +22,7 @@ const TeacherTable = ({
   setIsOpen,
   page,
   setPage,
+  onDelete
 }: TeacherTableProps) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [teacherIdToDelete, setTeacherIdToDelete] = useState<string | null>(
@@ -36,6 +38,7 @@ const TeacherTable = ({
     if (!teacherIdToDelete) return;
     try {
       await deleteTeacher(teacherIdToDelete);
+      onDelete(teacherIdToDelete)
       toast.success('Teacher deleted successfully');
       setIsConfirmOpen(false);
       setTeacherIdToDelete(null);

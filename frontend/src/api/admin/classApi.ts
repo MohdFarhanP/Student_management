@@ -24,13 +24,8 @@ interface Student {
 }
 
 interface Class {
+  _id: string;
   name: string;
-  grade: string;
-  section: string;
-  roomNo: string;
-  tutor: string;
-  totalStudents?: string;
-  _id?: string;
 }
 
 export const addClass = (data: IClassData) =>

@@ -1,11 +1,11 @@
 import { TeacherModel } from '../../database/models/teacherModel';
-import { ITeacherRepository } from '../../../domain/interface/admin/ITeacherRepository';
+import { ITeacherRepository } from '../../../domain/interface/ITeacherRepository';
 import { Teacher } from '../../../domain/entities/teacher';
 import { ClassModel } from '../../database/models/classModel';
 import { SubjectModel } from '../../database/models/subjectModel';
 import mongoose from 'mongoose';
-import { ObjectId } from '../../../types/index';
-import { ITeacher } from '../../../domain/interface/ITeacher';
+import { ObjectId } from '../../../types';
+import { ITeacher, Day } from '../../../domain/types/interfaces';
 
 interface PopulatedTeacher {
   _id: string | mongoose.Types.ObjectId;
@@ -17,7 +17,7 @@ interface PopulatedTeacher {
   assignedClass?: { name: string } | null;
   subject?: { subjectName: string } | null;
   dateOfBirth: string;
-  availability: { [day: string]: number[] };
+  availability: { [key in Day]: number[] };
   profileImage?: string;
   specialization?: string;
   experienceYears?: number;
@@ -27,7 +27,7 @@ interface PopulatedTeacher {
 }
 
 export class TeacherRepository implements ITeacherRepository {
-  async insertMany(teachers: Teacher[]) {
+  async insertMany(teachers: Teacher[]): Promise<void> {
     if (!teachers || teachers.length === 0) return;
 
     const processedTeachers = await Promise.all(
@@ -59,13 +59,15 @@ export class TeacherRepository implements ITeacherRepository {
 
     await TeacherModel.insertMany(processedTeachers);
   }
-  async getAllByLimit(page: number, limit: number) {
+
+  async getAllByLimit(page: number, limit: number): Promise<{ data: Teacher[]; totalCount: number }> {
     const skip = (page - 1) * limit;
 
-    const rawTeachersData = await TeacherModel.find({isDeleted:false})
+    const rawTeachersData = await TeacherModel.find({ isDeleted: false })
       .skip(skip)
       .limit(limit)
       .select('-password')
+      .select('-availability')
       .populate('assignedClass', 'name')
       .populate('subject', 'subjectName')
       .lean();
@@ -90,39 +92,33 @@ export class TeacherRepository implements ITeacherRepository {
       });
     });
 
-    const totalCount = await TeacherModel.countDocuments({isDeleted:false});
+    const totalCount = await TeacherModel.countDocuments({ isDeleted: false });
     return { data: teachers, totalCount };
   }
-  async getAll(): Promise<{ data: Teacher[] }> {
-    const rawTeachersData = await TeacherModel.find({isDeleted:false}).select('_id name').lean();
+
+  async getAll(): Promise<{ data: Partial<Teacher>[] }> {
+    const rawTeachersData = await TeacherModel.find({ isDeleted: false })
+      .select('_id name')
+      .lean();
 
     const teachers = rawTeachersData.map((t) => ({
       id: t._id.toString(),
       name: t.name,
-      email: '',
-      gender: 'Male' as const,
-      phoneNo: 0,
-      empId: '',
-      assignedClass: null,
-      subject: null,
-      dateOfBirth: '',
-      profileImage: '',
-      specialization: '',
-      experienceYears: 0,
-      qualification: '',
+      specialization: t.specialization,
       availability: {
-        Monday: [],
-        Tuesday: [],
-        Wednesday: [],
-        Thursday: [],
-        Friday: [],
+        [Day.Monday]: [],
+        [Day.Tuesday]: [],
+        [Day.Wednesday]: [],
+        [Day.Thursday]: [],
+        [Day.Friday]: [],
       },
     }));
 
     return { data: teachers };
   }
+
   async getById(teacherId: ObjectId | string): Promise<Teacher> {
-    const rawTeacher = await TeacherModel.findOne({id:teacherId,isDeleted:false})
+    const rawTeacher = await TeacherModel.findOne({ _id: teacherId, isDeleted: false })
       .populate('assignedClass', 'name')
       .populate('subject', 'subjectName')
       .lean();
@@ -150,6 +146,12 @@ export class TeacherRepository implements ITeacherRepository {
       availability: teacherData.availability,
     });
   }
+
+  async getByEmail(email: string): Promise<Teacher | null> {
+    const teacher = await TeacherModel.findOne({ email, isDeleted: false });
+    return teacher ? new Teacher(teacher) : null;
+  }
+
   async save(teacher: Teacher): Promise<void> {
     try {
       await TeacherModel.findByIdAndUpdate(teacher.id, {
@@ -159,6 +161,7 @@ export class TeacherRepository implements ITeacherRepository {
       throw new Error(`Failed to save teacher: ${(error as Error).message}`);
     }
   }
+
   async update(id: string, data: Partial<ITeacher>): Promise<Teacher> {
     const updatedTeacher = await TeacherModel.findByIdAndUpdate(
       id,
@@ -186,6 +189,7 @@ export class TeacherRepository implements ITeacherRepository {
       qualification: updatedTeacher.qualification,
     });
   }
+
   async create(data: Partial<ITeacher>): Promise<Teacher> {
     if (data.subject && typeof data.subject === 'string') {
       const subjectDoc = await SubjectModel.findOne({
@@ -225,14 +229,11 @@ export class TeacherRepository implements ITeacherRepository {
       availability: newTeacher.availability,
     });
   }
+
   async delete(id: string): Promise<void> {
-    const result = await TeacherModel.findByIdAndUpdate(id,{isDeleted:true});
+    const result = await TeacherModel.findByIdAndUpdate(id, { isDeleted: true });
     if (!result) {
       throw new Error('Teacher not found or already deleted');
     }
-  }
-  async getByEmail(email: string): Promise<Teacher | null> {
-    const teacher = await TeacherModel.findOne({ email ,isDeleted:false});
-    return teacher ? new Teacher(teacher) : null;
   }
 }

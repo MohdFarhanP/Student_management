@@ -15,6 +15,8 @@ const Student = () => {
   const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
 
   useEffect(() => {
     const fetch = async () => {
@@ -45,7 +47,7 @@ const Student = () => {
     setTotalCount((prevCount) => prevCount - 1);
     if (selectedStudent?.id === studentId) setSelectedStudent(null);
   };
-
+  const filterStudent = students.filter((student)=>student.name.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase()))
   return (
     <div className="flex min-h-screen bg-white">
       <AdminSideBar />
@@ -65,14 +67,17 @@ const Student = () => {
 
         <input
           type="search"
+          value={searchTerm}
+          onChange={(e)=>setSearchTerm(e.target.value)}
           className="mb-6 w-xl rounded-lg border border-gray-300 p-2 text-black focus:ring-2 focus:ring-gray-300 focus:outline-none"
           placeholder="Search students by name..."
         />
+        
 
         <div className="flex gap-6">
           <StudentTable
             setSelectedStudent={setSelectedStudent}
-            students={students}
+            students={filterStudent}
             totalPages={totalPages}
             setIsOpen={setIsEditModalOpen}
             page={page}

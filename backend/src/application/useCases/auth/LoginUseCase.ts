@@ -1,13 +1,16 @@
-import { IUserRepository } from '../../../domain/interface/IUserTokenRepository';
+import { IUserRepository } from '../../../domain/interface/IUserRepository';
 import { ITokenService } from '../../../domain/interface/ITokenService';
+import { Role } from '../../../domain/types/enums';
+import { ITokenResponse } from '../../../domain/types/interfaces';
+import { ILoginUseCase } from '../../../domain/interface/ILoginUseCase';
 
-export class LoginUseCase {
+export class LoginUseCase implements ILoginUseCase {
   constructor(
     private userRepository: IUserRepository,
     private tokenService: ITokenService
   ) {}
 
-  async execute(email: string, password: string, role: string) {
+  async execute(email: string, password: string, role: Role): Promise<ITokenResponse> {
     const user = await this.userRepository.findByEmailAndRole(email, role);
     if (!user) {
       throw new Error('Invalid credentials');
@@ -36,7 +39,7 @@ export class LoginUseCase {
         role,
         isInitialLogin: user.isInitialLogin,
       },
-      token,
+      accessToken: token,
       refreshToken,
     };
   }

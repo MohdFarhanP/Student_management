@@ -1,14 +1,16 @@
 import mongoose from 'mongoose';
+import { IStudent } from '../types/interfaces';
+import { Gender } from '../types/enums';
 
-export class Student {
+export class Student implements IStudent {
   id?: string;
   name: string;
   email: string;
   roleNumber: string;
   dob: string;
-  gender: 'Male' | 'Female';
+  gender: Gender;
   age: number;
-  class?: string | mongoose.Types.ObjectId | null;
+  class?: mongoose.Types.ObjectId | string | null;
   password?: string;
   profileImage?: string;
   address: {
@@ -18,16 +20,16 @@ export class Student {
     pincode: number;
     phoneNo: number;
     guardianName: string;
-    guardianContact?: string | null | undefined;
+    guardianContact?: string | null;
   };
 
-  constructor(data: Partial<Student>) {
+  constructor(data: Partial<IStudent>) {
     this.id = data.id;
     this.name = data.name || 'Unknown';
     this.email = data.email || '';
     this.roleNumber = data.roleNumber || '';
     this.dob = data.dob || '';
-    this.gender = data.gender || 'Male';
+    this.gender = data.gender || Gender.Male;
     this.age = data.age || 0;
     this.class = data.class || null;
     this.password = data.password;

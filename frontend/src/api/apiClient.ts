@@ -20,7 +20,7 @@ axiosInstance.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       try {
-        await store.dispatch(refreshToken()).unwrap();
+        await store.dispatch(refreshToken({showErrorToast: false})).unwrap();
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         store.dispatch(logoutUser());
@@ -36,8 +36,9 @@ const apiRequest = async <T, D = undefined>(
   method: 'get' | 'post' | 'put' | 'patch' | 'delete',
   url: string,
   data?: D,
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig & { showErrorToast?: boolean }
 ): Promise<T> => {
+  const showToast = config?.showErrorToast ?? true;
   try {
     const response = await axiosInstance({
       method,
@@ -48,13 +49,22 @@ const apiRequest = async <T, D = undefined>(
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const isRefresh = error.config?.url === '/auth/refresh-token';
+
+      if (status === 401 && !isRefresh && showToast) {
+        toast.error('Unauthorized');
+      }
+
       const message =
-        error.response?.data?.message ||
-        `${method.toUpperCase()} request failed`;
-      toast.error(message);
+        error.response?.data?.message || `${method.toUpperCase()} request failed`;
+
+      if (showToast && status !== 401) toast.error(message);
+
       throw new Error(message);
     }
-    toast.error('An unexpected error occurred');
+
+    if (showToast) toast.error('An unexpected error occurred');
     throw error;
   }
 };

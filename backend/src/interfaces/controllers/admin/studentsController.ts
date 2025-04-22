@@ -85,6 +85,7 @@ export class StudentController {
   async deleteStudent(req: Request, res: Response): Promise<void> {
     try {
       const { studentId } = req.params;
+      console.log('hitting the controller')
       await this.deleteStudentUseCase.execute(studentId);
       res
         .status(HttpStatus.OK)

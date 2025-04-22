@@ -1,7 +1,7 @@
 import React from 'react';
 
 type Class = {
-  _id: string;
+  _id?: string;
   name: string;
 };
 

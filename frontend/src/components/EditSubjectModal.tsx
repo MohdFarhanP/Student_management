@@ -32,13 +32,12 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
   onSubmit,
 }) => {
   const [subjectName, setSubjectName] = useState(subject.subjectName);
-  const [selectedTeachers, setSelectedTeachers] = useState<string[]>(
-    subject.teachers
-  );
-  const [existingNotes, setExistingNotes] = useState<string[]>(subject.notes); // Existing URLs
-  const [newNotesFiles, setNewNotesFiles] = useState<File[]>([]); // New uploads
+  const [selectedTeachers, setSelectedTeachers] = useState<string[]>(subject.teachers);
+  const [existingNotes, setExistingNotes] = useState<string[]>(subject.notes);
+  const [newNotesFiles, setNewNotesFiles] = useState<File[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ subjectName?: string; teachers?: string }>({});
 
   useEffect(() => {
     const fetchTeachers = async () => {
@@ -54,20 +53,42 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
     };
     fetchTeachers();
 
-    // Reset state when subject changes
     setSubjectName(subject.subjectName);
     setSelectedTeachers(subject.teachers);
     setExistingNotes(subject.notes);
     setNewNotesFiles([]);
+    setErrors({});
   }, [subject]);
 
   if (!isOpen) return null;
 
+  const validateForm = () => {
+    const newErrors: { subjectName?: string; teachers?: string } = {};
+
+    // Validate subjectName
+    const trimmedSubjectName = subjectName.trim();
+    if (!trimmedSubjectName) {
+      newErrors.subjectName = 'Subject name is required.';
+    } else if (trimmedSubjectName.length < 3) {
+      newErrors.subjectName = 'Subject name must be at least 3 characters long.';
+    } else if (trimmedSubjectName.length > 50) {
+      newErrors.subjectName = 'Subject name must not exceed 50 characters.';
+    } else if (!/^[a-zA-Z0-9\s\-_]+$/.test(trimmedSubjectName)) {
+      newErrors.subjectName = 'Subject name can only contain letters, numbers, spaces, hyphens, or underscores.';
+    }
+
+    // Validate selectedTeachers
+    if (selectedTeachers.length === 0) {
+      newErrors.teachers = 'At least one teacher must be selected.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const invalidFiles = files.filter(
-      (file) => file.type !== 'application/pdf'
-    );
+    const invalidFiles = files.filter((file) => file.type !== 'application/pdf');
 
     if (invalidFiles.length > 0) {
       toast.error('Only PDF files are allowed.');
@@ -83,6 +104,7 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
         ? prev.filter((t) => t !== teacher)
         : [...prev, teacher]
     );
+    setErrors((prev) => ({ ...prev, teachers: undefined }));
   };
 
   const removeExistingNote = (noteUrl: string) => {
@@ -94,18 +116,18 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!subjectName || selectedTeachers.length === 0) {
-      toast.error('Please enter subject name and select at least one teacher.');
+    if (!validateForm()) {
       return;
     }
 
     setLoading(true);
     try {
       await onSubmit({
-        subjectName,
+        subjectName: subjectName.trim(),
         teachers: selectedTeachers,
-        notes: newNotesFiles, // Only send new files; existing notes are managed server-side
+        notes: newNotesFiles,
       });
+      setErrors({});
       onClose();
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
@@ -138,11 +160,19 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
           <input
             type="text"
             value={subjectName}
-            onChange={(e) => setSubjectName(e.target.value)}
-            className="mt-1 w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none"
+            onChange={(e) => {
+              setSubjectName(e.target.value);
+              setErrors((prev) => ({ ...prev, subjectName: undefined }));
+            }}
+            className={`mt-1 w-full rounded-md border p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none ${
+              errors.subjectName ? 'border-red-500' : 'border-gray-300'
+            }`}
             placeholder="Enter subject name"
             disabled={loading}
           />
+          {errors.subjectName && (
+            <p className="mt-1 text-sm text-red-500">{errors.subjectName}</p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -166,6 +196,9 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
               </button>
             ))}
           </div>
+          {errors.teachers && (
+            <p className="mt-1 text-sm text-red-500">{errors.teachers}</p>
+          )}
         </div>
 
         <div className="mb-4">

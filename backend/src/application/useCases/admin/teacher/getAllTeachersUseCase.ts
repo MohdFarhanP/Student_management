@@ -4,7 +4,7 @@ import { Teacher } from '../../../../domain/entities/teacher';
 export class GetAllTeachersUseCase {
   constructor(private teacherRepository: ITeacherRepository) {}
 
-  async execute(): Promise<{ data: Teacher[] }> {
+  async execute(): Promise<{ data: Partial<Teacher>[] }> {
     return await this.teacherRepository.getAll();
   }
 }

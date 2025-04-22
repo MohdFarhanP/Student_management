@@ -8,6 +8,7 @@ import { DeleteStudentUseCase } from '../../../application/useCases/admin/studen
 import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase';
 import { AuthService } from '../../../application/services/authService';
 import { StudentProfileRepository } from '../../../infrastructure/repositories/student/StudentProfileRepository';
+import { authenticateUser } from '../../middleware/authenticateUser';
 
 const router = express.Router();
 const studentRepository = new StudentRepository();
@@ -29,18 +30,21 @@ const studentController = new StudentController(
   getStudentProfileUseCase
 );
 
-router.get('/students', studentController.getStudents.bind(studentController));
-router.post('/student', studentController.addStudent.bind(studentController));
+router.get('/students', authenticateUser, studentController.getStudents.bind(studentController));
+router.post('/student', authenticateUser, studentController.addStudent.bind(studentController));
 router.put(
   '/studentById/:studentId',
+  authenticateUser,
   studentController.editStudent.bind(studentController)
 );
 router.delete(
   '/studentById/:studentId',
+  authenticateUser,
   studentController.deleteStudent.bind(studentController)
 );
 router.get(
   '/profile/:email',
+  authenticateUser,
   studentController.getProfile.bind(studentController)
 );
 export default router;

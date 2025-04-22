@@ -55,11 +55,15 @@ export const updatePassword = createAsyncThunk(
   }
 );
 
-export const refreshToken = createAsyncThunk(
+export const refreshToken = createAsyncThunk<
+User, 
+{ showErrorToast?: boolean } | undefined, 
+{ rejectValue: string }
+>(
   'auth/refreshToken',
-  async (_, { rejectWithValue }) => {
+  async (args, { rejectWithValue }) => {
     try {
-      const response = await refreshUserToken();
+      const response = await refreshUserToken(args?.showErrorToast);
       return response;
     } catch (error: unknown) {
       console.error('refreshToken: error=', error);
@@ -72,13 +76,13 @@ export const refreshToken = createAsyncThunk(
 
 export const checkAuthOnLoad = createAsyncThunk(
   'auth/checkAuthOnLoad',
-  async (_, { dispatch, rejectWithValue }) => {
+  async (_, { dispatch }) => {
     try {
-      const response = await dispatch(refreshToken()).unwrap();
+      const response = await dispatch(refreshToken({ showErrorToast: false })).unwrap();
       return response;
     } catch (error) {
-      console.error('checkAuthOnLoad: refreshToken failed:', error);
-      return rejectWithValue('Authentication check failed');
+      console.warn('checkAuthOnLoad: refreshToken failed silently.',error);
+      return null;
     }
   }
 );

@@ -1,6 +1,6 @@
 import React from 'react';
 import profile from '../assets/profile.jpg';
-import { IStudent } from '../pages/admin/Student';
+import { IStudent } from '../api/admin/studentApi';
 
 interface ProfileCardProps {
   selectedStudent: IStudent;
@@ -17,6 +17,7 @@ const ProfileCardStudents: React.FC<ProfileCardProps> = ({
           src={selectedStudent.profileImage || profile}
           className="h-20 w-20 rounded-full border border-gray-300 object-cover"
         />
+        <p className='textarea-xs text-gray-600'>{selectedStudent.email}</p>
         <h2 className="mt-1 text-lg font-semibold text-gray-800">
           {selectedStudent.name}
         </h2>
@@ -24,10 +25,17 @@ const ProfileCardStudents: React.FC<ProfileCardProps> = ({
 
       {/* Student Details */}
       <div className="grid grid-cols-2 gap-3 text-xs text-gray-700">
+        {/* Row 1 */}
         <div>
           <p className="font-semibold">Age:</p>
           <p>{selectedStudent.age}</p>
         </div>
+        <div>
+          <p className="font-semibold">Roll No:</p>
+          <p>{selectedStudent.roleNumber || 'N/A'}</p>
+        </div>
+
+        {/* Row 2 */}
         <div>
           <p className="font-semibold">Gender:</p>
           <p>{selectedStudent.gender}</p>
@@ -36,15 +44,19 @@ const ProfileCardStudents: React.FC<ProfileCardProps> = ({
           <p className="font-semibold">DOB:</p>
           <p>{selectedStudent.dob || 'N/A'}</p>
         </div>
+
+        {/* Row 3 */}
         <div>
           <p className="font-semibold">Class:</p>
           <p>{selectedStudent.class || 'N/A'}</p>
         </div>
-        <div className="col-span-2">
+        <div>
           <p className="font-semibold">Subjects:</p>
           <p>{selectedStudent.subjectIds?.length || 0}</p>
         </div>
       </div>
+
+
 
       {/* Address Details */}
       <h3 className="mt-3 text-sm font-semibold text-gray-800">Address</h3>

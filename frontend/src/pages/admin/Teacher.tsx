@@ -32,6 +32,8 @@ const Teacher = () => {
   const [selectedTeacher, setSelectedTeacher] = useState<ITeacher | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
 
   useEffect(() => {
     const fetch = async () => {
@@ -40,7 +42,7 @@ const Teacher = () => {
       setTotalCount(totalCount ?? 0);
     };
     fetch();
-  }, [page, teachers]);
+  }, [page]);
 
   const totalPages = Math.max(Math.ceil(totalCount / limit), 1);
 
@@ -48,9 +50,20 @@ const Teacher = () => {
     setTeachers((prevTeachers) => [newTeacher, ...prevTeachers]);
     setTotalCount((prevCount) => prevCount + 1);
   };
+
   const handleEditTeacher = (updatedTeacher: ITeacher) => {
     setTeachers((prev) => [...prev, updatedTeacher]);
   };
+
+  const handleDeleteTeacher = (teacherId: string) => {
+    setTeachers((prevTeachers) =>
+      prevTeachers.filter((s) => s.id !== teacherId)
+    );
+    setTotalCount((prevCount) => prevCount - 1);
+    if (selectedTeacher?.id === teacherId) setSelectedTeacher(null);
+  };
+
+  const filterTeachers = teachers.filter((teacher)=> teacher.name.toLowerCase().includes(searchTerm.toLocaleLowerCase()))
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -72,6 +85,8 @@ const Teacher = () => {
         {/* Search Bar */}
         <input
           type="search"
+          value={searchTerm}
+          onChange={(e)=>setSearchTerm(e.target.value)}
           className="mb-6 w-xl rounded-lg border border-gray-300 p-2 text-black focus:ring-2 focus:ring-gray-300 focus:outline-none"
           placeholder="Search teachers by name..."
         />
@@ -80,11 +95,12 @@ const Teacher = () => {
           {/* Teacher Table */}
           <TeacherTable
             setSelectedTeacher={setSelectedTeacher}
-            teachers={teachers}
+            teachers={filterTeachers}
             totalPages={totalPages}
             setIsOpen={setIsEditModalOpen}
             page={page}
             setPage={setPage}
+            onDelete={handleDeleteTeacher}
           />
           {/* Profile Card */}
           {selectedTeacher && (

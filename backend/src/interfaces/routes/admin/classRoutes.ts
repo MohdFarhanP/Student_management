@@ -10,12 +10,13 @@ import { UpdateClassUseCase } from '../../../application/useCases/admin/class/up
 import { GetClassNameUseCase } from '../../../application/useCases/admin/class/getClassNames';
 import { GetStudentsByClassUseCase } from '../../../application/useCases/admin/class/getStudentsByClass';
 import { StudentRepository } from '../../../infrastructure/repositories/admin/studentRepository';
-import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/createSubjectUseCase';
-import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/fetchSubjectsByClassIdUseCase';
+import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/CreateSubjectUseCase';
+import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/FetchSubjectsByClassIdUseCase';
 import { SubjectRepository } from '../../../infrastructure/repositories/admin/subjectRepository';
-import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/getSubjectUseCase';
-import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/deleteSubjectUseCase';
-import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/updateSubjectUseCase';
+import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/GetSubjectUseCase';
+import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/DeleteSubjectUseCase';
+import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/UpdateSubjectUseCase';
+import { authenticateUser } from '../../middleware/authenticateUser';
 
 const classRepository = new ClassRepository();
 const studentRepository = new StudentRepository();
@@ -69,37 +70,44 @@ const subjectController = new SubjectController(
 
 const router = express.Router();
 
-router.post('/class', classController.addClasses.bind(classController));
-router.get('/classdata', classController.getClasses.bind(classController));
-router.put('/update/:id', classController.updateClass.bind(classController));
+router.post('/class', authenticateUser, classController.addClasses.bind(classController));
+router.get('/classdata', authenticateUser, classController.getClasses.bind(classController));
+router.put('/update/:id', authenticateUser, classController.updateClass.bind(classController));
 router.get(
   '/:classId/subject',
+  authenticateUser,
   subjectController.fetchSubjectsByClassId.bind(subjectController)
 );
 
 router.get(
   '/classnames',
+  authenticateUser,
   classController.getAllClassNames.bind(classController)
 );
-router.get('/classlist', classController.fetchClasses.bind(classController));
+router.get('/classlist', authenticateUser, classController.fetchClasses.bind(classController));
 router.post(
   '/:grade/subjects',
+  authenticateUser,
   subjectController.createSubject.bind(subjectController)
 );
 router.get(
   '/:grade/subjects',
+  authenticateUser,
   subjectController.getClassSubjects.bind(subjectController)
 );
 router.get(
   '/:classId/students',
+  authenticateUser,
   classController.getStudentByClass.bind(classController)
 );
 router.delete(
   '/:classGrade/subjects/:subjectId',
+  authenticateUser,
   subjectController.deleteSubject.bind(subjectController)
 );
 router.put(
   '/:classGrade/subjects/:subjectId',
+  authenticateUser,
   subjectController.updateSubject.bind(subjectController)
 );
 // router.put('/:classId/subjects/:subjectId', SubjectController.updateSubject);
