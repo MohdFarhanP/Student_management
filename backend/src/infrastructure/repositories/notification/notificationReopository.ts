@@ -5,14 +5,13 @@ import { NotificationModel } from '../../database/models/notificationModel';
 import { SendNotificationDTO } from '../../database/socketServer';
 
 export class NotificationRepository implements INotificationRepository {
-  
   async save(notification: SendNotificationDTO): Promise<INotification> {
     try {
       console.log('Saving notification with scheduledAt:', notification.scheduledAt);
       const doc = new NotificationModel({
         ...notification,
         scheduledAt: notification.scheduledAt
-          ? new Date(notification.scheduledAt)
+          ? new Date(notification.scheduledAt).toISOString() // Ensure string storage
           : undefined,
       });
       const saved = await doc.save();
@@ -26,7 +25,7 @@ export class NotificationRepository implements INotificationRepository {
         senderRole: saved.senderRole,
         isRead: saved.isRead,
         createdAt: saved.createdAt,
-        scheduledAt: saved.scheduledAt ? saved.scheduledAt : undefined, 
+        scheduledAt: saved.scheduledAt, // Should be string
       });
     } catch (error) {
       throw new Error(
@@ -37,12 +36,17 @@ export class NotificationRepository implements INotificationRepository {
 
   async findScheduled(currentTime: Date): Promise<INotification[]> {
     try {
-      const utcCurrentTime = new Date(currentTime.toISOString()); // Normalize to UTC
+      const utcCurrentTime = currentTime.toISOString(); // UTC ISO string
       console.log('Checking scheduled notifications at:', utcCurrentTime);
       const docs = await NotificationModel.find({
         scheduledAt: { $lte: utcCurrentTime, $exists: true },
         isRead: false,
       }).sort({ scheduledAt: 1 });
+      console.log('Retrieved documents with scheduledAt:', docs.map(doc => ({
+        _id: doc._id,
+        scheduledAt: doc.scheduledAt,
+        isRead: doc.isRead,
+      }))); // Debug log
       return docs.map(
         (doc) =>
           new NotificationEntity({
@@ -55,7 +59,7 @@ export class NotificationRepository implements INotificationRepository {
             senderRole: doc.senderRole,
             isRead: doc.isRead,
             createdAt: doc.createdAt,
-            scheduledAt: doc.scheduledAt ? doc.scheduledAt : undefined, // Ensure ISO string
+            scheduledAt: doc.scheduledAt || undefined, // Ensure string
           })
       );
     } catch (error) {
@@ -86,7 +90,7 @@ export class NotificationRepository implements INotificationRepository {
             senderRole: doc.senderRole,
             isRead: doc.isRead,
             createdAt: doc.createdAt,
-            scheduledAt: doc.scheduledAt ? doc.scheduledAt : undefined,
+            scheduledAt: doc.scheduledAt || undefined,
           })
       );
     } catch (error) {

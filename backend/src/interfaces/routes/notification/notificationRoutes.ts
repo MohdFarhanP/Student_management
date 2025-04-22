@@ -4,6 +4,7 @@ import { NotificationRepository } from '../../../infrastructure/repositories/not
 import { MarkNotificationAsRead } from '../../../application/useCases/notification/MarkNotificationAsReadUseCase';
 import { NotificationController } from '../../controllers/notification/notificationController';
 import { authenticateUser } from '../../middleware/authenticateUser';
+import { GetNotificationsUseCase } from '../../../application/useCases/notification/GetNotificationsUseCase';
 
 const router = express.Router();
 
@@ -12,9 +13,13 @@ const notificationRepository: INotificationRepository =
 const markNotificationAsReadUseCase = new MarkNotificationAsRead(
   notificationRepository
 );
+const getNotificationsUseCase = new GetNotificationsUseCase(
+  notificationRepository
+)
 const notificationController = new NotificationController(
   notificationRepository,
-  markNotificationAsReadUseCase
+  markNotificationAsReadUseCase,
+  getNotificationsUseCase
 );
 
 router.get(

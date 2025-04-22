@@ -1,18 +1,22 @@
 import { Request, Response } from 'express';
 import { INotificationRepository } from '../../../domain/interface/INotificationRepository';
 import { MarkNotificationAsRead } from '../../../application/useCases/notification/MarkNotificationAsReadUseCase';
+import { GetNotificationsUseCase } from '../../../application/useCases/notification/GetNotificationsUseCase';
 
 export class NotificationController {
   constructor(
     private notificationRepository: INotificationRepository,
-    private markNotificationAsRead: MarkNotificationAsRead
+    private markNotificationAsRead: MarkNotificationAsRead,
+    private getNotificationsUseCase: GetNotificationsUseCase, 
   ) {}
 
   getNotifications = async (req: Request, res: Response) => {
     try {
       const userId = req.user!.id;
-      const notifications =
-        await this.notificationRepository.findByUserId(userId);
+      console.log('Hitting the controller');
+      console.log('This is the user id:', userId);
+      const notifications = await this.getNotificationsUseCase.execute(userId);
+      console.log('Notifications from use case:', notifications);
       res.json(notifications);
     } catch (error) {
       res.status(500).json({

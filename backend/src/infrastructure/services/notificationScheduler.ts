@@ -17,6 +17,7 @@ export class NotificationScheduler {
         console.log(`Checking scheduled notifications at ${utcNow}`);
         const notifications = await this.notificationRepository.findScheduled(utcNow);
         console.log(`Found ${notifications.length} scheduled notifications`);
+        console.log(`This is the notification scheduled ${notifications}`);
         for (const notification of notifications) {
           console.log(`Sending notification ${notification.id} scheduled for ${notification.scheduledAt}`);
           this.sendNotification(notification);
@@ -37,7 +38,7 @@ export class NotificationScheduler {
   private sendNotification(notification: INotification) {
     if (notification.recipientType === 'global') {
       this.io.emit('notification', notification);
-    } else if (notification.recipientType === 'role') {
+    } else if (notification.recipientType === 'role') { 
       notification.recipientIds?.forEach((role) => {
         this.io.to(`role-${role}`).emit('notification', notification);
       });

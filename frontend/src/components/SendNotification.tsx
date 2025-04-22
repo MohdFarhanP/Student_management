@@ -37,6 +37,12 @@ const SendNotification: React.FC = () => {
       setError('Message is required');
       return;
     }
+    console.log("title",title);
+    console.log("message",message);
+    console.log("recipientType",recipientType);
+    console.log("recipientIds",recipientIds);
+    console.log("scheduledAt",scheduledAt);
+    
 
     // Define the notification type explicitly to include scheduledAt
     const notification: {

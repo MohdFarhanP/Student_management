@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/CreateSubjectUseCase';
+import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/createSubjectUseCase';
 import HttpStatus from '../../../utils/httpStatus';
-import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/GetSubjectUseCase';
-import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/FetchSubjectsByClassIdUseCase';
-import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/DeleteSubjectUseCase';
-import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/UpdateSubjectUseCase';
+import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/getSubjectUseCase';
+import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/fetchSubjectsByClassIdUseCase';
+import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/deleteSubjectUseCase';
+import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/updateSubjectUseCase';
 
 export class SubjectController {
   constructor(
