@@ -1,83 +1,125 @@
-import { Response, Request } from 'express';
+import { Request, Response } from 'express';
 import HttpStatus from '../../../utils/httpStatus';
-import { GetClassesUseCase } from '../../../application/useCases/admin/class/getAllClasses';
-import { UpdateClassUseCase } from '../../../application/useCases/admin/class/updateUseCase';
-import { GetClassNameUseCase } from '../../../application/useCases/admin/class/getClassNames';
-import { CreateClassUseCase } from '../../../application/useCases/admin/class/createClassUseCase';
-import { FetchClassUseCase } from '../../../application/useCases/admin/class/fetchClassUseCase';
-import { GetStudentsByClassUseCase } from '../../../application/useCases/admin/class/getStudentsByClass';
+import { ICreateClassUseCase } from '../../../domain/interface/ICreateClassUseCase';
+import { IFetchClassUseCase } from '../../../domain/interface/IFetchClassUseCase';
+import { IGetClassesUseCase } from '../../../domain/interface/IGetClassesUseCase';
+import { IUpdateClassUseCase } from '../../../domain/interface/IUpdateClassUseCase';
+import { IGetClassNameUseCase } from '../../../domain/interface/IGetClassNameUseCase';
+import { IGetStudentsByClassUseCase } from '../../../domain/interface/IGetStudentsByClassUseCase';
+import { IClassController } from '../../../domain/interface/IClassController';
+import { IApiResponse } from '../../../domain/types/interfaces';
 
-export class ClassController {
+export class ClassController implements IClassController {
   constructor(
-    private createClassUseCase: CreateClassUseCase,
-    private fetchClassUseCase: FetchClassUseCase,
-    private getAllClassesUseCase: GetClassesUseCase,
-    private updateClassUseCase: UpdateClassUseCase,
-    private getAllClassNamesUseCase: GetClassNameUseCase,
-    private getStudentsByClassUseCase: GetStudentsByClassUseCase
+    private createClassUseCase: ICreateClassUseCase,
+    private fetchClassUseCase: IFetchClassUseCase,
+    private getAllClassesUseCase: IGetClassesUseCase,
+    private updateClassUseCase: IUpdateClassUseCase,
+    private getAllClassNamesUseCase: IGetClassNameUseCase,
+    private getStudentsByClassUseCase: IGetStudentsByClassUseCase
   ) {}
-  async addClasses(req: Request, res: Response) {
+
+  async addClasses(req: Request, res: Response): Promise<void> {
     try {
-      const msg = await this.createClassUseCase.execute(req.body);
-      res.status(HttpStatus.CREATED).json({ message: msg });
+      const message = await this.createClassUseCase.execute(req.body);
+      res.status(HttpStatus.CREATED).json({
+        success: true,
+        message,
+      } as IApiResponse<never>);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-      }
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
-  async getClasses(req: Request, res: Response) {
+
+  async getClasses(req: Request, res: Response): Promise<void> {
     try {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 5;
-      const { data: classes, totalCount } =
-        await this.getAllClassesUseCase.execute(page, limit);
-      res.status(HttpStatus.OK).json({ classes, totalCount });
+      const { data: classes, totalCount } = await this.getAllClassesUseCase.execute(page, limit);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Classes fetched successfully',
+        data: { classes, totalCount },
+      } as IApiResponse<{ classes: any[]; totalCount: number }>);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-      }
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
-  async updateClass(req: Request, res: Response) {
+
+  async updateClass(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const updatedMsg = await this.updateClassUseCase.execute(id, req.body);
-      res.status(HttpStatus.OK).json({ message: updatedMsg });
+      const message = await this.updateClassUseCase.execute(id, req.body);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message,
+      } as IApiResponse<never>);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-      }
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
-  async getAllClassNames(req: Request, res: Response) {
+
+  async getAllClassNames(req: Request, res: Response): Promise<void> {
     try {
-      const classes = await this.getAllClassNamesUseCase.execute();
-      res.status(HttpStatus.OK).json(classes);
+      const grades = await this.getAllClassNamesUseCase.execute();
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Class names fetched successfully',
+        data: grades,
+      } as IApiResponse<{ grade: string }[]>);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-      }
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
-  async fetchClasses(req: Request, res: Response) {
+
+  async fetchClasses(req: Request, res: Response): Promise<void> {
     try {
       const classes = await this.fetchClassUseCase.execute();
-      res.status(HttpStatus.OK).json(classes);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Classes fetched successfully',
+        data: classes,
+      } as IApiResponse<{ _id: string; name: string }[]>);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-      }
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
+
   async getStudentByClass(req: Request, res: Response): Promise<void> {
     try {
       const { classId } = req.params;
       const students = await this.getStudentsByClassUseCase.execute(classId);
-      res.status(200).json(students);
-    } catch (error) {
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Students fetched successfully',
+        data: students,
+      } as IApiResponse<any[]>);
+    } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      res.status(HttpStatus.BAD_REQUEST).json({ message });
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
 }

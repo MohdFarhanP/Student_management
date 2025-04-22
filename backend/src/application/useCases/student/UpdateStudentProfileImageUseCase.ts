@@ -5,6 +5,12 @@ export class UpdateStudentProfileImageUseCase {
   constructor(private studentRepository: IStudentProfileRepository) {}
 
   async execute(email: string, profileImage: string): Promise<Student> {
+    if (!email || !email.includes('@')) {
+      throw new Error('Valid email is required');
+    }
+    if (!profileImage || typeof profileImage !== 'string') {
+      throw new Error('Valid profileImage URL is required');
+    }
     const updatedProfile = await this.studentRepository.updateProfileImage(
       email,
       profileImage

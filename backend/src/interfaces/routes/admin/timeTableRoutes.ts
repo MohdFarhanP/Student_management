@@ -1,23 +1,14 @@
 import express, { Router } from 'express';
-import TimetableController from '../../controllers/admin/timeTableController';
-import TimetableRepository from '../../../infrastructure/repositories/admin/timeTableRepository';
-import { TeacherRepository } from '../../../infrastructure/repositories/admin/teacherRepository';
-import ManageTimetable from '../../../application/useCases/admin/timeTable/timetableUseCase';
+import { DependencyContainer } from '../../../infrastructure/di/container';
 import { authenticateUser } from '../../middleware/authenticateUser';
 
 const router: Router = express.Router();
-const timetableRepo = new TimetableRepository();
-const teacherRepo = new TeacherRepository();
-const manageTimetable = new ManageTimetable(timetableRepo, teacherRepo);
-const controller = new TimetableController(manageTimetable);
+const container = DependencyContainer.getInstance();
+const timetableController = container.getTimetableController();
 
-router.put('/:classId/assign', authenticateUser, controller.assignTeacher.bind(controller));
-router.put('/:classId/update', authenticateUser, controller.updateTimetableSlot.bind(controller));
-router.delete(
-  '/:classId/slot',
-  authenticateUser,
-  controller.deleteTimetableSlot.bind(controller)
-);
-router.get('/:classId', authenticateUser, controller.getTimetable.bind(controller));
+router.put('/:classId/assign', authenticateUser, timetableController.assignTeacher.bind(timetableController));
+router.put('/:classId/slot', authenticateUser, timetableController.updateTimetableSlot.bind(timetableController));
+router.delete('/:classId/slot', authenticateUser, timetableController.deleteTimetableSlot.bind(timetableController));
+router.get('/:classId', authenticateUser, timetableController.getTimetable.bind(timetableController));
 
 export default router;

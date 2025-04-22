@@ -1,92 +1,127 @@
 import { Request, Response } from 'express';
 import HttpStatus from '../../../utils/httpStatus';
-import { GetTeachersByLimitUseCase } from '../../../application/useCases/admin/teacher/getTeachersByLimitUseCase';
-import { GetAllTeachersUseCase } from '../../../application/useCases/admin/teacher/getAllTeachersUseCase';
-import { ITeacher } from '../../../domain/interface/ITeacher';
-import { AddTeacherUseCase } from '../../../application/useCases/admin/teacher/addTeacherUseCase';
-import { DeleteTeacherUseCase } from '../../../application/useCases/admin/teacher/deleteTeacherUseCase';
-import { EditTeacherUseCase } from '../../../application/useCases/admin/teacher/editTeacherUseCase';
+import { IGetTeachersByLimitUseCase } from '../../../domain/interface/IGetTeachersByLimitUseCase';
+import { IGetAllTeachersUseCase } from '../../../domain/interface/IGetAllTeachersUseCase';
+import { IAddTeacherUseCase } from '../../../domain/interface/IAddTeacherUseCase';
+import { IEditTeacherUseCase } from '../../../domain/interface/IEditTeacherUseCase';
+import { IDeleteTeacherUseCase } from '../../../domain/interface/IDeleteTeacherUseCase';
+import { ITeacherController } from '../../../domain/interface/ITeacherController';
+import { IApiResponse } from '../../../domain/types/interfaces';
+import { ITeacher } from '../../../domain/types/interfaces';
+import { Teacher } from '../../../domain/entities/teacher';
 
-export class TeacherController {
+export class TeacherController implements ITeacherController {
   constructor(
-    private getTeachersByLimitUseCase: GetTeachersByLimitUseCase,
-    private editTeacherUseCase: EditTeacherUseCase,
-    private getAllTeachersUseCase: GetAllTeachersUseCase,
-    private addTeacherUseCase: AddTeacherUseCase,
-    private deleteTeacherUseCase: DeleteTeacherUseCase
+    private getTeachersByLimitUseCase: IGetTeachersByLimitUseCase,
+    private editTeacherUseCase: IEditTeacherUseCase,
+    private getAllTeachersUseCase: IGetAllTeachersUseCase,
+    private addTeacherUseCase: IAddTeacherUseCase,
+    private deleteTeacherUseCase: IDeleteTeacherUseCase
   ) {}
 
   async getTeachers(req: Request, res: Response): Promise<void> {
     try {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 10;
-      const { data: teachers, totalCount } =
-        await this.getTeachersByLimitUseCase.execute(page, limit);
+      const { teachers, totalCount } = await this.getTeachersByLimitUseCase.execute(page, limit);
       if (totalCount === 0) {
-        res.status(HttpStatus.NOT_FOUND).json({ message: 'No teachers found' });
+        res.status(HttpStatus.OK).json({
+          success: true,
+          message: 'No teachers found',
+          data: { teachers: [], totalCount: 0 },
+        } as IApiResponse<{ teachers: Teacher[]; totalCount: number }>);
         return;
       }
-      res.status(HttpStatus.OK).json({ teachers, totalCount });
-    } catch (error) {
-      console.error('Error fetching teachers:', error);
-      res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json({ message: 'Internal Server Error' });
-    }
-  }
-  async getAllTeachers(req: Request, res: Response): Promise<void> {
-    try {
-      const { data: teachers } = await this.getAllTeachersUseCase.execute();
-      res.status(HttpStatus.OK).json({ teachers });
-    } catch (error) {
-      console.error('Error fetching teachers:', error);
-      res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json({ message: 'Internal Server Error' });
-    }
-  }
-  async editTeacher(req: Request, res: Response): Promise<void> {
-    try {
-      const { teacherId } = req.params;
-      const teacherData: Partial<ITeacher> = req.body;
-
-      const updatedTeacher = await this.editTeacherUseCase.execute(
-        teacherId,
-        teacherData
-      );
       res.status(HttpStatus.OK).json({
-        message: 'Teacher updated successfully',
-        data: updatedTeacher,
-      });
+        success: true,
+        message: 'Teachers fetched successfully',
+        data: { teachers, totalCount },
+      } as IApiResponse<{ teachers: Teacher[]; totalCount: number }>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      res.status(HttpStatus.BAD_REQUEST).json({ message });
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
+
+  async getAllTeachers(req: Request, res: Response): Promise<void> {
+    try {
+      const teachers = await this.getAllTeachersUseCase.execute();
+      if (teachers.length === 0) {
+        res.status(HttpStatus.OK).json({
+          success: true,
+          message: 'No teachers found',
+          data: [],
+        } as IApiResponse<Teacher[]>);
+        return;
+      }
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'All teachers fetched successfully',
+        data: teachers,
+      } as IApiResponse<Teacher[]>);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
+    }
+  }
+
   async addTeacher(req: Request, res: Response): Promise<void> {
     try {
       const teacherData: Partial<ITeacher> = req.body;
       const newTeacher = await this.addTeacherUseCase.execute(teacherData);
       res.status(HttpStatus.CREATED).json({
+        success: true,
         message: 'Teacher added successfully',
         data: newTeacher,
-      });
+      } as IApiResponse<Teacher>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      res.status(HttpStatus.BAD_REQUEST).json({ message });
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
+
+  async editTeacher(req: Request, res: Response): Promise<void> {
+    try {
+      const { teacherId } = req.params;
+      const teacherData: Partial<ITeacher> = req.body;
+      const updatedTeacher = await this.editTeacherUseCase.execute(teacherId, teacherData);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Teacher updated successfully',
+        data: updatedTeacher,
+      } as IApiResponse<Teacher>);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
+    }
+  }
+
   async deleteTeacher(req: Request, res: Response): Promise<void> {
     try {
       const { teacherId } = req.params;
-      console.log("hitting the controller")
       await this.deleteTeacherUseCase.execute(teacherId);
       res.status(HttpStatus.OK).json({
+        success: true,
         message: 'Teacher deleted successfully',
-      });
+      } as IApiResponse<never>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      res.status(HttpStatus.BAD_REQUEST).json({ message });
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
 }

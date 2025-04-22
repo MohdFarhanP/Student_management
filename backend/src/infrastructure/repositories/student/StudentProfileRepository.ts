@@ -2,29 +2,7 @@ import { studentModel } from '../../database/models/studentModel';
 import { Student } from '../../../domain/entities/student';
 import { IStudentProfileRepository } from '../../../domain/interface/student/IStudentProfileRepository';
 import mongoose from 'mongoose';
-
-interface PopulatedStudent {
-  _id: string | mongoose.Types.ObjectId;
-  name: string;
-  email: string;
-  roleNumber: string;
-  dob: string;
-  gender: 'Male' | 'Female';
-  age: number;
-  class?: { name: string } | null;
-  profileImage?: string;
-  address: {
-    houseName: string;
-    place: string;
-    district: string;
-    pincode: number;
-    phoneNo: number;
-    guardianName: string;
-    guardianContact?: string | null | undefined;
-  };
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { Gender } from '../../../domain/types/enums';
 
 export class StudentProfileRepository implements IStudentProfileRepository {
   async getProfile(email: string): Promise<Student | null> {
@@ -36,25 +14,25 @@ export class StudentProfileRepository implements IStudentProfileRepository {
 
     if (!rawStudent) return null;
 
-    const studentData = rawStudent as unknown as PopulatedStudent;
+    const classData = rawStudent.class as unknown as { name: string } | null;
     return new Student({
-      id: studentData._id.toString(),
-      name: studentData.name,
-      email: studentData.email,
-      roleNumber: studentData.roleNumber,
-      dob: studentData.dob,
-      gender: studentData.gender,
-      age: studentData.age,
-      class: studentData.class ? studentData.class.name : null,
-      profileImage: studentData.profileImage,
+      id: rawStudent._id.toString(),
+      name: rawStudent.name,
+      email: rawStudent.email,
+      roleNumber: rawStudent.roleNumber,
+      dob: rawStudent.dob,
+      gender: rawStudent.gender === 'Male' ? Gender.Male : Gender.Female,
+      age: rawStudent.age,
+      class: classData ? classData.name : null,
+      profileImage: rawStudent.profileImage,
       address: {
-        houseName: studentData.address.houseName,
-        place: studentData.address.place,
-        district: studentData.address.district,
-        pincode: studentData.address.pincode,
-        phoneNo: studentData.address.phoneNo,
-        guardianName: studentData.address.guardianName,
-        guardianContact: studentData.address.guardianContact ?? null,
+        houseName: rawStudent.address.houseName,
+        place: rawStudent.address.place,
+        district: rawStudent.address.district,
+        pincode: rawStudent.address.pincode,
+        phoneNo: rawStudent.address.phoneNo,
+        guardianName: rawStudent.address.guardianName,
+        guardianContact: rawStudent.address.guardianContact ?? null,
       },
     });
   }
@@ -67,7 +45,7 @@ export class StudentProfileRepository implements IStudentProfileRepository {
       .findOneAndUpdate(
         { email },
         { profileImage },
-        { new: true } // Return the updated document
+        { new: true }
       )
       .select('-password')
       .populate('class', 'name')
@@ -75,25 +53,25 @@ export class StudentProfileRepository implements IStudentProfileRepository {
 
     if (!rawStudent) return null;
 
-    const studentData = rawStudent as unknown as PopulatedStudent;
+    const classData = rawStudent.class as unknown as { name: string } | null;
     return new Student({
-      id: studentData._id.toString(),
-      name: studentData.name,
-      email: studentData.email,
-      roleNumber: studentData.roleNumber,
-      dob: studentData.dob,
-      gender: studentData.gender,
-      age: studentData.age,
-      class: studentData.class ? studentData.class.name : null,
-      profileImage: studentData.profileImage,
+      id: rawStudent._id.toString(),
+      name: rawStudent.name,
+      email: rawStudent.email,
+      roleNumber: rawStudent.roleNumber,
+      dob: rawStudent.dob,
+      gender: rawStudent.gender === 'Male' ? Gender.Male : Gender.Female,
+      age: rawStudent.age,
+      class: classData ? classData.name : null,
+      profileImage: rawStudent.profileImage,
       address: {
-        houseName: studentData.address.houseName,
-        place: studentData.address.place,
-        district: studentData.address.district,
-        pincode: studentData.address.pincode,
-        phoneNo: studentData.address.phoneNo,
-        guardianName: studentData.address.guardianName,
-        guardianContact: studentData.address.guardianContact ?? null,
+        houseName: rawStudent.address.houseName,
+        place: rawStudent.address.place,
+        district: rawStudent.address.district,
+        pincode: rawStudent.address.pincode,
+        phoneNo: rawStudent.address.phoneNo,
+        guardianName: rawStudent.address.guardianName,
+        guardianContact: rawStudent.address.guardianContact ?? null,
       },
     });
   }

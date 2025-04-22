@@ -8,7 +8,7 @@ import { connectDB } from './infrastructure/database/database';
 import adminRoutes from './interfaces/routes/admin/adminRoutes';
 import cookieParser from 'cookie-parser';
 import authenticationRoutes from './interfaces/routes/authenticationRoutes';
-import studentRoutes from './interfaces/routes/student/studentRoutes';
+import studentRoutes from './interfaces/routes/student/student';
 import teacherRoutes from './interfaces/routes/teacher/teacherRoutes';
 import notificationRoutes from './interfaces/routes/notification/notificationRoutes';
 import noteRoutes from './interfaces/routes/noteRoutes';

@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { ITokenService } from '../../domain/interface/ITokenService';
+import { Role } from '../../domain/types/enums';
 
 export class AuthService implements ITokenService {
   private jwtSecret = process.env.JWT_SECRET || 'secret_key';
@@ -18,25 +19,25 @@ export class AuthService implements ITokenService {
     return bcrypt.hash(password, saltRounds);
   }
 
-  generateToken(payload: { id: string; email: string; role: string }): string {
+  generateToken(payload: { id: string; email: string; role: Role }): string {
     return jwt.sign(payload, this.jwtSecret, { expiresIn: '15m' });
   }
 
-  generateRefreshToken(payload: { email: string; role: string }): string {
+  generateRefreshToken(payload: { email: string; role: Role }): string {
     return jwt.sign(payload, this.refreshSecret, { expiresIn: '7d' });
   }
 
-  verifyRefreshToken(token: string): { email: string; role: string } {
+  verifyRefreshToken(token: string): { email: string; role: Role } {
     return jwt.verify(token, this.refreshSecret) as {
       email: string;
-      role: string;
+      role: Role;
     };
   }
-  verifyToken(token: string): { id: string; email: string; role: string } {
+  verifyToken(token: string): { id: string; email: string; role: Role } {
     return jwt.verify(token, this.jwtSecret) as {
       id: string;
       email: string;
-      role: string;
+      role: Role;
     };
   }
 }

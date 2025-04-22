@@ -1,34 +1,13 @@
-import express from 'express';
-import { NoteController } from '../controllers/noteController';
+import express, { Router } from 'express';
+import { DependencyContainer } from '../../infrastructure/di/container';
 import { authenticateUser } from '../middleware/authenticateUser';
-import { NoteRepositoryImpl } from '../../infrastructure/repositories/notesRepository';
-import { UploadNoteImpl } from '../../application/useCases/teacher/uploadsNotesUseCase';
-import { DownloadNoteImpl } from '../../application/useCases/student/downloadNotesUseCase';
-import { ListNotesImpl } from '../../application/useCases/student/listNoteUseCase';
 
-const router = express.Router();
+const router: Router = express.Router();
+const container = DependencyContainer.getInstance();
+const noteController = container.getNoteController();
 
-const noteRepository = new NoteRepositoryImpl();
-const uploadNoteUseCase = new UploadNoteImpl(noteRepository);
-const downloadNoteUseCase = new DownloadNoteImpl(noteRepository);
-const listNotesUseCase = new ListNotesImpl(noteRepository);
-
-const controller = new NoteController(
-  uploadNoteUseCase,
-  downloadNoteUseCase,
-  listNotesUseCase
-);
-
-router.post(
-  '/upload',
-  authenticateUser,
-  controller.uploadNote.bind(controller)
-);
-router.get(
-  '/download/:noteId',
-  authenticateUser,
-  controller.downloadNote.bind(controller)
-);
-router.get('/', authenticateUser, controller.getAllNotes.bind(controller));
+router.post('/upload', authenticateUser, noteController.uploadNote.bind(noteController));
+router.get('/download/:noteId', authenticateUser, noteController.downloadNote.bind(noteController));
+router.get('/', authenticateUser, noteController.getAllNotes.bind(noteController));
 
 export default router;

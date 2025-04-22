@@ -1,5 +1,5 @@
-import { Role, Gender, Day } from './enums';
-import mongoose from 'mongoose';
+import { Role, Gender, Day, Grade, Section, SubjectName } from './enums';
+import mongoose, { ObjectId } from 'mongoose';
 
 // User entity (for authentication)
 export interface IUser {
@@ -32,6 +32,11 @@ export interface IStudent {
     guardianName: string;
     guardianContact?: string | null;
   };
+  refreshToken?: string;
+  isInitialLogin?: boolean;
+  isDeleted?: boolean;
+  createdAt?: Date; 
+  updatedAt?: Date; 
 }
 
 // Teacher entity
@@ -51,6 +56,50 @@ export interface ITeacher {
   experienceYears?: number;
   qualification?: string;
   availability?: { [key in Day]: number[] };
+  isInitialLogin?: boolean;
+
+}
+
+// Class entity
+export interface IClass {
+  id?: string;
+  name: string;
+  section: Section;
+  teachers: mongoose.Types.ObjectId[];
+  timetable: mongoose.Types.ObjectId | null;
+  students: mongoose.Types.ObjectId[];
+  totalStudents: number;
+  tutor: mongoose.Types.ObjectId;
+  roomNo: string;
+  subjects: mongoose.Types.ObjectId[];
+  grade: Grade;
+}
+
+// Subject entity
+export interface ISubject {
+  id?: string;
+  subjectName: SubjectName;
+  teachers: mongoose.Types.ObjectId[];
+  notes?: string[];
+}
+
+export interface TimetableSlot {
+  period: number;
+  teacherId?: mongoose.Types.ObjectId | null;
+  subject?: string | null;
+}
+
+export interface TimetableSchedule {
+  Monday: TimetableSlot[];
+  Tuesday: TimetableSlot[];
+  Wednesday: TimetableSlot[];
+  Thursday: TimetableSlot[];
+  Friday: TimetableSlot[];
+}
+
+export interface TimetableData {
+  classId: ObjectId;
+  schedule: TimetableSchedule;
 }
 
 // Token response (for auth)

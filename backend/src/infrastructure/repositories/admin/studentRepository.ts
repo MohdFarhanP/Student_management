@@ -4,6 +4,29 @@ import mongoose from 'mongoose';
 import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository';
 import { Student } from '../../../domain/entities/student';
 import { IStudent } from '../../../domain/types/interfaces';
+import { Gender } from '../../../domain/types/enums';
+
+// Utility function to map MongoDB data to IStudent with Gender enum
+const mapToStudentData = (data: any): Partial<IStudent> => ({
+  id: data._id?.toString(),
+  name: data.name,
+  email: data.email,
+  roleNumber: data.roleNumber,
+  dob: data.dob,
+  gender: data.gender === 'Male' ? Gender.Male : Gender.Female, // Map string to enum
+  age: data.age,
+  class: data.class ? (typeof data.class === 'object' ? data.class.name : data.class) : null,
+  profileImage: data.profileImage,
+  address: {
+    houseName: data.address?.houseName || '',
+    place: data.address?.place || '',
+    district: data.address?.district || '',
+    pincode: data.address?.pincode || 0,
+    phoneNo: data.address?.phoneNo || 0,
+    guardianName: data.address?.guardianName || '',
+    guardianContact: data.address?.guardianContact ?? null,
+  },
+});
 
 interface PopulatedStudent {
   _id: string | mongoose.Types.ObjectId;
@@ -11,7 +34,7 @@ interface PopulatedStudent {
   email: string;
   roleNumber: string;
   dob: string;
-  gender: 'Male' | 'Female';
+  gender: 'Male' | 'Female'; // MongoDB returns string literals
   age: number;
   class?: { name: string } | null;
   profileImage?: string;
@@ -57,30 +80,7 @@ export class StudentRepository implements IStudentRepository {
       .populate('class', 'name')
       .lean();
 
-    const studentsData = rawStudentsData as unknown as PopulatedStudent[];
-
-    const students = studentsData.map((s) => {
-      return new Student({
-        id: s._id.toString(),
-        name: s.name,
-        email: s.email,
-        roleNumber: s.roleNumber,
-        dob: s.dob,
-        gender: s.gender,
-        age: s.age,
-        class: s.class ? s.class.name : null,
-        profileImage: s.profileImage,
-        address: {
-          houseName: s.address.houseName,
-          place: s.address.place,
-          district: s.address.district,
-          pincode: s.address.pincode,
-          phoneNo: s.address.phoneNo,
-          guardianName: s.address.guardianName,
-          guardianContact: s.address.guardianContact ?? null,
-        },
-      });
-    });
+    const students = rawStudentsData.map((s) => new Student(mapToStudentData(s)));
 
     const totalCount = await studentModel.countDocuments({ isDeleted: false });
     return { students, totalCount };
@@ -89,7 +89,7 @@ export class StudentRepository implements IStudentRepository {
   async findById(id: string): Promise<Student | null> {
     const student = await studentModel.findOne({ _id: id, isDeleted: false }).lean();
     if (!student) return null;
-    return new Student({ ...student, id: student._id.toString() });
+    return new Student(mapToStudentData(student));
   }
 
   async create(data: Partial<IStudent>): Promise<Student> {
@@ -105,10 +105,7 @@ export class StudentRepository implements IStudentRepository {
     const studentEntity = new Student(data);
 
     const newStudent = await studentModel.create(studentEntity);
-    return new Student({
-      ...newStudent.toObject(),
-      id: newStudent._id.toString(),
-    });
+    return new Student(mapToStudentData(newStudent.toObject()));
   }
 
   async update(id: string, data: Partial<IStudent>): Promise<Student> {
@@ -121,10 +118,7 @@ export class StudentRepository implements IStudentRepository {
       .findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true })
       .lean();
     if (!updatedStudent) throw new Error('Student not found');
-    return new Student({
-      ...updatedStudent,
-      id: updatedStudent._id.toString(),
-    });
+    return new Student(mapToStudentData(updatedStudent));
   }
 
   async delete(id: string): Promise<void> {
@@ -144,50 +138,29 @@ export class StudentRepository implements IStudentRepository {
       .lean();
 
     if (!rawStudent) return null;
-
-    const studentData = rawStudent as unknown as PopulatedStudent;
-    return new Student({
-      id: studentData._id.toString(),
-      name: studentData.name,
-      email: studentData.email,
-      roleNumber: studentData.roleNumber,
-      dob: studentData.dob,
-      gender: studentData.gender,
-      age: studentData.age,
-      class: studentData.class ? studentData.class.name : null,
-      profileImage: studentData.profileImage,
-      address: {
-        houseName: studentData.address.houseName,
-        place: studentData.address.place,
-        district: studentData.address.district,
-        pincode: studentData.address.pincode,
-        phoneNo: studentData.address.phoneNo,
-        guardianName: studentData.address.guardianName,
-        guardianContact: studentData.address.guardianContact ?? null,
-      },
-    });
+    return new Student(mapToStudentData(rawStudent));
   }
 
   async findByEmail(email: string): Promise<Student | null> {
-    const student = await studentModel.findOne({ email, isDeleted: false });
-    return student ? new Student(student) : null;
+    const student = await studentModel.findOne({ email, isDeleted: false }).lean();
+    if (!student) return null;
+    return new Student(mapToStudentData(student));
   }
 
   async getStudentsByClass(classId: string): Promise<Student[]> {
     const students = await studentModel
       .find({ class: classId, isDeleted: false })
       .populate('class', 'name')
-      .exec();
+      .lean();
 
     return students.map((student) => {
-      const populatedClass = student.class as unknown as { name: string } | null;
-
+      const studentData = mapToStudentData(student);
       return new Student({
-        id: student._id.toString(),
-        name: student.name,
-        class: populatedClass?.name ?? null,
-        email: student.email,
-        profileImage: student?.profileImage,
+        id: studentData.id,
+        name: studentData.name,
+        class: studentData.class,
+        email: studentData.email,
+        profileImage: studentData.profileImage,
       });
     });
   }

@@ -1,74 +1,11 @@
 import express from 'express';
-import { ClassController } from '../../controllers/admin/classController';
-// import { authenticateAdmin } from '../middleware/adminMiddleware.js';
-import { SubjectController } from '../../controllers/admin/subjectController';
-import { ClassRepository } from '../../../infrastructure/repositories/admin/classRepository';
-import { CreateClassUseCase } from '../../../application/useCases/admin/class/createClassUseCase';
-import { FetchClassUseCase } from '../../../application/useCases/admin/class/fetchClassUseCase';
-import { GetClassesUseCase } from '../../../application/useCases/admin/class/getAllClasses';
-import { UpdateClassUseCase } from '../../../application/useCases/admin/class/updateUseCase';
-import { GetClassNameUseCase } from '../../../application/useCases/admin/class/getClassNames';
-import { GetStudentsByClassUseCase } from '../../../application/useCases/admin/class/getStudentsByClass';
-import { StudentRepository } from '../../../infrastructure/repositories/admin/studentRepository';
-import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/CreateSubjectUseCase';
-import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/FetchSubjectsByClassIdUseCase';
-import { SubjectRepository } from '../../../infrastructure/repositories/admin/subjectRepository';
-import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/GetSubjectUseCase';
-import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/DeleteSubjectUseCase';
-import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/UpdateSubjectUseCase';
+import { DependencyContainer } from '../../../infrastructure/di/container';
 import { authenticateUser } from '../../middleware/authenticateUser';
 
-const classRepository = new ClassRepository();
-const studentRepository = new StudentRepository();
-const subjectRepository = new SubjectRepository();
-
-const createSubjectUseCase = new CreateSubjectUseCase(
-  subjectRepository,
-  classRepository
-);
-const fetchSubjectsByClassIdUseCase = new FetchSubjectsByClassIdUseCase(
-  subjectRepository,
-  classRepository
-);
-const getSubjectsByClass = new GetSubjectsByClassUseCase(
-  subjectRepository,
-  classRepository
-);
-const deleteSubjectUseCase = new DeleteSubjectUseCase(
-  subjectRepository,
-  classRepository
-);
-const updateSubjectUseCase = new UpdateSubjectUseCase(
-  subjectRepository,
-  classRepository
-);
-
-const createClassUseCase = new CreateClassUseCase(classRepository);
-const fetchClassUseCase = new FetchClassUseCase(classRepository);
-const getAllClassesUseCase = new GetClassesUseCase(classRepository);
-const updateClassUseCase = new UpdateClassUseCase(classRepository);
-const getAllClassNamesUseCase = new GetClassNameUseCase(classRepository);
-const getStudentsByClassUseCase = new GetStudentsByClassUseCase(
-  studentRepository
-);
-const classController = new ClassController(
-  createClassUseCase,
-  fetchClassUseCase,
-  getAllClassesUseCase,
-  updateClassUseCase,
-  getAllClassNamesUseCase,
-  getStudentsByClassUseCase
-);
-
-const subjectController = new SubjectController(
-  createSubjectUseCase,
-  fetchSubjectsByClassIdUseCase,
-  getSubjectsByClass,
-  deleteSubjectUseCase,
-  updateSubjectUseCase
-);
-
 const router = express.Router();
+const container = DependencyContainer.getInstance();
+const classController = container.getClassController();
+const subjectController = container.getSubjectController();
 
 router.post('/class', authenticateUser, classController.addClasses.bind(classController));
 router.get('/classdata', authenticateUser, classController.getClasses.bind(classController));
@@ -78,7 +15,6 @@ router.get(
   authenticateUser,
   subjectController.fetchSubjectsByClassId.bind(subjectController)
 );
-
 router.get(
   '/classnames',
   authenticateUser,
@@ -110,7 +46,5 @@ router.put(
   authenticateUser,
   subjectController.updateSubject.bind(subjectController)
 );
-// router.put('/:classId/subjects/:subjectId', SubjectController.updateSubject);
-// router.delete('/:classId/subjects/:subjectId', SubjectController.deleteSubject);
 
 export default router;

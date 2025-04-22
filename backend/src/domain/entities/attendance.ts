@@ -3,31 +3,34 @@ import { Types } from 'mongoose';
 export class Attendance {
   constructor(
     public id: string,
-    public classId: Types.ObjectId | string,
-    public studentId: Types.ObjectId | string,
+    public classId: string,
+    public studentId: string,
     public date: Date,
     public period: number,
     public status: 'present' | 'absent',
     public day: string,
-    public createdBy: Types.ObjectId | string
+    public createdBy: string
   ) {}
 
   static create(data: Partial<Attendance>): Attendance {
+    if (!data.classId || !Types.ObjectId.isValid(data.classId)) {
+      throw new Error('Valid class ID is required');
+    }
+    if (!data.studentId || !Types.ObjectId.isValid(data.studentId)) {
+      throw new Error('Valid student ID is required');
+    }
+    if (!data.createdBy || !Types.ObjectId.isValid(data.createdBy)) {
+      throw new Error('Valid createdBy ID is required');
+    }
     return new Attendance(
-      data.id || '',
-      Types.ObjectId.isValid(data.classId as string)
-        ? new Types.ObjectId(data.classId as string)
-        : data.classId || new Types.ObjectId(),
-      Types.ObjectId.isValid(data.studentId as string)
-        ? new Types.ObjectId(data.studentId as string)
-        : data.studentId || new Types.ObjectId(),
+      data.id || new Types.ObjectId().toString(),
+      data.classId,
+      data.studentId,
       data.date || new Date(),
       data.period || 1,
       data.status || 'present',
-      data.day || '',
-      Types.ObjectId.isValid(data.createdBy as string)
-        ? new Types.ObjectId(data.createdBy as string)
-        : data.createdBy || new Types.ObjectId()
+      data.day || 'Monday',
+      data.createdBy
     );
   }
 }

@@ -1,14 +1,22 @@
-import { Student } from '../../../domain/entities/student';
 import { IStudentProfileRepository } from '../../../domain/interface/student/IStudentProfileRepository';
+import { IGetStudentProfileUseCase } from '../../../domain/interface/IGetStudentProfileUseCase';
+import { Student } from '../../../domain/entities/student';
 
-export class GetStudentProfileUseCase {
+export class GetStudentProfileUseCase implements IGetStudentProfileUseCase {
   constructor(private studentRepository: IStudentProfileRepository) {}
 
-  async execute(email: string): Promise<Student> {
-    const profile = await this.studentRepository.getProfile(email);
-    if (!profile) {
-      throw new Error('Student profile not found');
+  async execute(email: string): Promise<Student | null> {
+    try {
+      if (!email || !email.includes('@')) {
+        throw new Error('Valid email is required');
+      }
+      const profile = await this.studentRepository.getProfile(email);
+      if (!profile) {
+        throw new Error('Student profile not found');
+      }
+      return profile;
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Failed to fetch student profile');
     }
-    return profile;
   }
 }

@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IStudent } from '../../../domain/interface/IStudent';
+import { IStudent } from '../../../domain/types/interfaces'; 
 
 const StudentSchema = new Schema<IStudent>(
   {
@@ -7,23 +7,23 @@ const StudentSchema = new Schema<IStudent>(
     email: { type: String, required: true, unique: true },
     password: { type: String, default: 'student123' },
     age: { type: Number, required: true },
-    gender: { type: String, enum: ['Male', 'Female'], required: true },
+    gender: { type: String, enum: ['Male', 'Female'], required: true }, 
     roleNumber: { type: String, required: true, unique: true },
     class: { type: Schema.Types.ObjectId, ref: 'Class', default: null },
     dob: { type: String, required: true },
     profileImage: { type: String, default: '' },
     address: {
-      houseName: { type: String },
-      place: { type: String },
-      district: { type: String },
-      pincode: { type: Number },
-      phoneNo: { type: Number },
-      guardianName: { type: String },
+      houseName: { type: String, default: '' },
+      place: { type: String, default: '' },
+      district: { type: String, default: '' },
+      pincode: { type: Number, default: 0 },
+      phoneNo: { type: Number, default: 0 },
+      guardianName: { type: String, default: '' },
       guardianContact: { type: String, default: null },
     },
     refreshToken: { type: String },
     isInitialLogin: { type: Boolean, default: true },
-    isDeleted:{ type:Boolean, default:false}
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

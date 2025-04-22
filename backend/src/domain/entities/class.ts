@@ -1,32 +1,33 @@
 import { Types } from 'mongoose';
+import { Grade, Section } from '../types/enums';
 
 export class ClassEntity {
   constructor(
     public id: string,
     public name: string,
-    public section: string,
+    public section: Section,
     public teachers: Types.ObjectId[],
     public timetable: Types.ObjectId | null,
     public students: Types.ObjectId[],
     public totalStudents: number,
-    public tutor: string,
+    public tutor: Types.ObjectId, // Changed to ObjectId
     public roomNo: string,
     public subjects: Types.ObjectId[],
-    public grade: string
+    public grade: Grade
   ) {}
 
   static create({
     id = new Types.ObjectId().toString(),
     name = '',
-    section = '',
+    section = Section.A,
     teachers = [],
     timetable = null,
     students = [],
     totalStudents = 0,
-    tutor = '',
+    tutor = new Types.ObjectId(), // Default to new ObjectId
     roomNo = '',
     subjects = [],
-    grade = '',
+    grade = Grade.Grade1,
   }: Partial<ClassEntity>): ClassEntity {
     return new ClassEntity(
       id,
@@ -36,7 +37,7 @@ export class ClassEntity {
       timetable as Types.ObjectId | null,
       students as Types.ObjectId[],
       totalStudents,
-      tutor,
+      tutor as Types.ObjectId,
       roomNo,
       subjects as Types.ObjectId[],
       grade

@@ -1,109 +1,126 @@
 import { Request, Response } from 'express';
-import { CreateSubjectUseCase } from '../../../application/useCases/admin/subject/CreateSubjectUseCase';
 import HttpStatus from '../../../utils/httpStatus';
-import { GetSubjectsByClassUseCase } from '../../../application/useCases/admin/subject/GetSubjectUseCase';
-import { FetchSubjectsByClassIdUseCase } from '../../../application/useCases/admin/subject/FetchSubjectsByClassIdUseCase';
-import { DeleteSubjectUseCase } from '../../../application/useCases/admin/subject/DeleteSubjectUseCase';
-import { UpdateSubjectUseCase } from '../../../application/useCases/admin/subject/UpdateSubjectUseCase';
+import { ICreateSubjectUseCase } from '../../../domain/interface/ICreateSubjectUseCase';
+import { IFetchSubjectsByClassIdUseCase } from '../../../domain/interface/IFetchSubjectsByClassIdUseCase';
+import { IGetSubjectsByGradeUseCase } from '../../../domain/interface/IGetSubjectsByGradeUseCase';
+import { IDeleteSubjectUseCase } from '../../../domain/interface/IDeleteSubjectUseCase';
+import { IUpdateSubjectUseCase } from '../../../domain/interface/IUpdateSubjectUseCase';
+import { ISubjectController } from '../../../domain/interface/ISubjectController';
+import { IApiResponse } from '../../../domain/types/interfaces';
+import { SubjectEntity } from '../../../domain/entities/subject';
+import { Types } from 'mongoose';
 
-export class SubjectController {
+export class SubjectController implements ISubjectController {
   constructor(
-    private createSubjectUseCase: CreateSubjectUseCase,
-    private fetchSubjectsByClassIdUseCase: FetchSubjectsByClassIdUseCase,
-    private getSubjectsByClass: GetSubjectsByClassUseCase,
-    private deleteSubjectUseCase: DeleteSubjectUseCase,
-    private updateSubjectUseCase: UpdateSubjectUseCase
+    private createSubjectUseCase: ICreateSubjectUseCase,
+    private fetchSubjectsByClassIdUseCase: IFetchSubjectsByClassIdUseCase,
+    private getSubjectsByGradeUseCase: IGetSubjectsByGradeUseCase,
+    private deleteSubjectUseCase: IDeleteSubjectUseCase,
+    private updateSubjectUseCase: IUpdateSubjectUseCase
   ) {}
-  async createSubject(req: Request, res: Response) {
+
+  async createSubject(req: Request, res: Response): Promise<void> {
     try {
       const { grade } = req.params;
       const { subjectName, teachers, notes } = req.body;
 
-      const subjectData = {
+      const subjectData: Partial<SubjectEntity> = {
         subjectName,
-        teachers,
-        notes,
+        teachers: teachers?.map((id: string) => new Types.ObjectId(id)) ?? [],
+        notes: notes?.filter((note: string) => note.trim()) ?? [],
       };
 
-      const newSubject = await this.createSubjectUseCase.execute(
-        grade,
-        subjectData
-      );
-      res.status(HttpStatus.CREATED).json({ data: newSubject });
-      return;
+      const newSubject = await this.createSubjectUseCase.execute(grade, subjectData);
+      res.status(HttpStatus.CREATED).json({
+        success: true,
+        message: 'Subject created successfully',
+        data: newSubject,
+      } as IApiResponse<SubjectEntity>);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-      }
-      return;
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
-  async getClassSubjects(req: Request, res: Response) {
+
+  async getSubjectsByGrade(req: Request, res: Response): Promise<void> {
     try {
       const { grade } = req.params;
-      const subjects = await this.getSubjectsByClass.execute(grade);
-      res.status(200).json(subjects);
-      return;
+      const subjects = await this.getSubjectsByGradeUseCase.execute(grade);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Subjects fetched successfully',
+        data: subjects,
+      } as IApiResponse<SubjectEntity[]>);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(400).json({ message: error.message });
-      }
-      return;
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
-  async fetchSubjectsByClassId(req: Request, res: Response) {
+
+  async fetchSubjectsByClassId(req: Request, res: Response): Promise<void> {
     try {
       const { classId } = req.params;
-      const subjects =
-        await this.fetchSubjectsByClassIdUseCase.execute(classId);
-      res.status(200).json(subjects);
-      return;
+      const subjects = await this.fetchSubjectsByClassIdUseCase.execute(classId);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Subjects fetched successfully',
+        data: subjects,
+      } as IApiResponse<SubjectEntity[]>);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(400).json({ message: error.message });
-      }
-      return;
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
-  async deleteSubject(req: Request, res: Response) {
+
+  async deleteSubject(req: Request, res: Response): Promise<void> {
     try {
       const { classGrade, subjectId } = req.params;
-      await this.deleteSubjectUseCase.execute(classGrade, subjectId);
-      res
-        .status(HttpStatus.OK)
-        .json({ message: 'successfully deleted the subject' });
-      return;
+      const message = await this.deleteSubjectUseCase.execute(classGrade, subjectId);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message,
+      } as IApiResponse<never>);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(400).json({ message: error.message });
-      }
-      return;
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
-  async updateSubject(req: Request, res: Response) {
+
+  async updateSubject(req: Request, res: Response): Promise<void> {
     try {
       const { classGrade, subjectId } = req.params;
       const { subjectName, teachers, notes } = req.body;
 
-      const subjectData = {
+      const subjectData: Partial<SubjectEntity> = {
         subjectName,
-        teachers,
-        notes,
+        teachers: teachers?.map((id: string) => new Types.ObjectId(id)) ?? [],
+        notes: notes?.filter((note: string) => note.trim()) ?? [],
       };
-      const result = await this.updateSubjectUseCase.execute(
-        classGrade,
-        subjectId,
-        subjectData
-      );
-      res
-        .status(HttpStatus.OK)
-        .json({ message: 'successfully deleted the subject', data: result });
-      return;
+
+      const updatedSubject = await this.updateSubjectUseCase.execute(classGrade, subjectId, subjectData);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Subject updated successfully',
+        data: updatedSubject,
+      } as IApiResponse<SubjectEntity>);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(400).json({ message: error.message });
-      }
-      return;
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
 }

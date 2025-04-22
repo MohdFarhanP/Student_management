@@ -1,74 +1,81 @@
 import { SubjectEntity } from '../../../domain/entities/subject';
-import { ISubject } from '../../../domain/interface/ISubject';
 import { SubjectModel } from '../../database/models/subjectModel';
 import { Types } from 'mongoose';
+import { ISubjectRepository } from '../../../domain/interface/ISubjectRepository';
 
-export class SubjectRepository {
-  // async findAllSubjects(): Promise<SubjectEntity[]> {
-  //   try {
-  //     const subjects = await SubjectModel.find();
-  //     return subjects.map((s) =>
-  //       SubjectEntity.create(s.id, s.subjectName, s.teachers, s.notes)
-  //     );
-  //   } catch (error) {
-  //     console.error('Error fetching subjects:', error);
-  //     throw new Error('Failed to fetch subjects');
-  //   }
-  // }
-
-  // async findById(id: string): Promise<SubjectEntity | null> {
-  //   try {
-  //     const subject = await SubjectModel.findById(id);
-  //     if (!subject) return null;
-  //     return SubjectEntity.create(
-  //       subject.id,
-  //       subject.subjectName,
-  //       subject.teachers,
-  //       subject.notes
-  //     );
-  //   } catch (error) {
-  //     console.error('Error finding subject by ID:', error);
-  //     throw new Error('Failed to retrieve subject');
-  //   }
-  // }
-
-  async create(subjectData: SubjectEntity): Promise<ISubject> {
+export class SubjectRepository implements ISubjectRepository {
+  async create(subjectData: SubjectEntity): Promise<SubjectEntity> {
     try {
       const subject = await SubjectModel.create(subjectData);
-      return subject;
+      return SubjectEntity.create({
+        id: subject._id.toString(),
+        subjectName: subject.subjectName,
+        teachers: subject.teachers,
+        notes: subject.notes,
+      });
     } catch (error) {
-      console.error('Error creating subject:', error);
-      throw new Error('Failed to create subject');
+      throw new Error(`Failed to create subject: ${(error as Error).message}`);
     }
   }
+
   async findByName(subjectName: string): Promise<SubjectEntity | null> {
-    return await SubjectModel.findOne({ subjectName });
-  }
-  async findByIds(subjectIds: Types.ObjectId[]) {
-    return await SubjectModel.find({
-      _id: { $in: subjectIds.map((id) => id) },
-    });
+    try {
+      const subject = await SubjectModel.findOne({ subjectName }).lean();
+      if (!subject) return null;
+      return SubjectEntity.create({
+        id: subject._id.toString(),
+        subjectName: subject.subjectName,
+        teachers: subject.teachers,
+        notes: subject.notes,
+      });
+    } catch (error) {
+      throw new Error(`Failed to find subject by name: ${(error as Error).message}`);
+    }
   }
 
-  async update(
-    id: string,
-    subjectData: Partial<SubjectEntity>
-  ): Promise<ISubject | null> {
+  async findByIds(subjectIds: Types.ObjectId[]): Promise<SubjectEntity[]> {
     try {
-      const result = await SubjectModel.findByIdAndUpdate(
+      const subjects = await SubjectModel.find({
+        _id: { $in: subjectIds },
+      }).lean();
+      return subjects.map((subject) =>
+        SubjectEntity.create({
+          id: subject._id.toString(),
+          subjectName: subject.subjectName,
+          teachers: subject.teachers,
+          notes: subject.notes,
+        })
+      );
+    } catch (error) {
+      throw new Error(`Failed to find subjects by IDs: ${(error as Error).message}`);
+    }
+  }
+
+  async update(id: string, subjectData: Partial<SubjectEntity>): Promise<SubjectEntity | null> {
+    try {
+      const updatedSubject = await SubjectModel.findByIdAndUpdate(
         id,
         { $set: subjectData },
         { new: true }
-      );
-      return result;
+      ).lean();
+      if (!updatedSubject) return null;
+      return SubjectEntity.create({
+        id: updatedSubject._id.toString(),
+        subjectName: updatedSubject.subjectName,
+        teachers: updatedSubject.teachers,
+        notes: updatedSubject.notes,
+      });
     } catch (error) {
-      console.error('Error updating subject:', error);
-      throw new Error('Failed to update subject');
+      throw new Error(`Failed to update subject: ${(error as Error).message}`);
     }
   }
 
   async delete(id: string): Promise<boolean> {
-    const deleted = await SubjectModel.findByIdAndDelete(id);
-    return !!deleted;
+    try {
+      const deleted = await SubjectModel.findByIdAndDelete(id);
+      return !!deleted;
+    } catch (error) {
+      throw new Error(`Failed to delete subject: ${(error as Error).message}`);
+    }
   }
 }

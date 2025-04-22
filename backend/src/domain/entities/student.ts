@@ -29,7 +29,7 @@ export class Student implements IStudent {
     this.email = data.email || '';
     this.roleNumber = data.roleNumber || '';
     this.dob = data.dob || '';
-    this.gender = data.gender || Gender.Male;
+    this.gender = data.gender || Gender.Male; // Use Gender enum
     this.age = data.age || 0;
     this.class = data.class || null;
     this.password = data.password;

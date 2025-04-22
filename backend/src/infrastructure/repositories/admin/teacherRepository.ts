@@ -1,17 +1,19 @@
 import { TeacherModel } from '../../database/models/teacherModel';
-import { ITeacherRepository } from '../../../domain/interface/ITeacherRepository';
+import { ITeacherRepository } from '../../../domain/interface/admin/ITeacherRepository';
 import { Teacher } from '../../../domain/entities/teacher';
 import { ClassModel } from '../../database/models/classModel';
 import { SubjectModel } from '../../database/models/subjectModel';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { ObjectId } from '../../../types';
-import { ITeacher, Day } from '../../../domain/types/interfaces';
+import { ITeacher } from '../../../domain/types/interfaces';
+import { Gender } from '../../../domain/types/enums';
+import { Day } from '../../../domain/types/enums';
 
 interface PopulatedTeacher {
   _id: string | mongoose.Types.ObjectId;
   name: string;
   email: string;
-  gender: 'Male' | 'Female';
+  gender: Gender;
   phoneNo: number;
   empId: string;
   assignedClass?: { name: string } | null;
@@ -32,27 +34,16 @@ export class TeacherRepository implements ITeacherRepository {
 
     const processedTeachers = await Promise.all(
       teachers.map(async (teacher) => {
-        if (
-          teacher.assignedClass &&
-          typeof teacher.assignedClass === 'string'
-        ) {
-          const classDoc = await ClassModel.findOne({
-            name: teacher.assignedClass,
-          });
-          if (!classDoc)
-            throw new Error(`Class '${teacher.assignedClass}' not found`);
+        if (teacher.assignedClass && typeof teacher.assignedClass === 'string') {
+          const classDoc = await ClassModel.findOne({ name: teacher.assignedClass });
+          if (!classDoc) throw new Error(`Class '${teacher.assignedClass}' not found`);
           teacher.assignedClass = classDoc._id;
         }
-
         if (teacher.subject && typeof teacher.subject === 'string') {
-          const subjectDoc = await SubjectModel.findOne({
-            subjectName: teacher.subject,
-          });
-          if (!subjectDoc)
-            throw new Error(`Subject '${teacher.subject}' not found`);
+          const subjectDoc = await SubjectModel.findOne({ subjectName: teacher.subject });
+          if (!subjectDoc) throw new Error(`Subject '${teacher.subject}' not found`);
           teacher.subject = subjectDoc._id;
         }
-
         return teacher;
       })
     );
@@ -62,7 +53,6 @@ export class TeacherRepository implements ITeacherRepository {
 
   async getAllByLimit(page: number, limit: number): Promise<{ data: Teacher[]; totalCount: number }> {
     const skip = (page - 1) * limit;
-
     const rawTeachersData = await TeacherModel.find({ isDeleted: false })
       .skip(skip)
       .limit(limit)
@@ -74,44 +64,51 @@ export class TeacherRepository implements ITeacherRepository {
 
     const teachersData = rawTeachersData as unknown as PopulatedTeacher[];
 
-    const teachers = teachersData.map((t) => {
-      return new Teacher({
-        id: t._id.toString(),
-        name: t.name,
-        email: t.email,
-        gender: t.gender,
-        phoneNo: t.phoneNo,
-        empId: t.empId,
-        assignedClass: t.assignedClass ? t.assignedClass.name : null,
-        subject: t.subject ? t.subject.subjectName : null,
-        dateOfBirth: t.dateOfBirth,
-        profileImage: t.profileImage || '',
-        specialization: t.specialization || '',
-        experienceYears: t.experienceYears || 0,
-        qualification: t.qualification || '',
-      });
-    });
+    const teachers = teachersData.map((t) => new Teacher({
+      id: t._id.toString(),
+      name: t.name,
+      email: t.email,
+      gender: t.gender,
+      phoneNo: t.phoneNo,
+      empId: t.empId,
+      assignedClass: t.assignedClass ? t.assignedClass.name : null,
+      subject: t.subject ? t.subject.subjectName : null,
+      dateOfBirth: t.dateOfBirth,
+      profileImage: t.profileImage || '',
+      specialization: t.specialization || '',
+      experienceYears: t.experienceYears || 0,
+      qualification: t.qualification || '',
+      availability: t.availability,
+    }));
 
     const totalCount = await TeacherModel.countDocuments({ isDeleted: false });
     return { data: teachers, totalCount };
   }
 
-  async getAll(): Promise<{ data: Partial<Teacher>[] }> {
+  async getAll(): Promise<{ data: Teacher[] }> {
     const rawTeachersData = await TeacherModel.find({ isDeleted: false })
-      .select('_id name')
+      .select('-password')
+      .populate('assignedClass', 'name')
+      .populate('subject', 'subjectName')
       .lean();
 
-    const teachers = rawTeachersData.map((t) => ({
+    const teachersData = rawTeachersData as unknown as PopulatedTeacher[];
+
+    const teachers = teachersData.map((t) => new Teacher({
       id: t._id.toString(),
       name: t.name,
-      specialization: t.specialization,
-      availability: {
-        [Day.Monday]: [],
-        [Day.Tuesday]: [],
-        [Day.Wednesday]: [],
-        [Day.Thursday]: [],
-        [Day.Friday]: [],
-      },
+      email: t.email,
+      gender: t.gender,
+      phoneNo: t.phoneNo,
+      empId: t.empId,
+      assignedClass: t.assignedClass ? t.assignedClass.name : null,
+      subject: t.subject ? t.subject.subjectName : null,
+      dateOfBirth: t.dateOfBirth,
+      profileImage: t.profileImage || '',
+      specialization: t.specialization || '',
+      experienceYears: t.experienceYears || 0,
+      qualification: t.qualification || '',
+      availability: t.availability,
     }));
 
     return { data: teachers };
@@ -134,9 +131,7 @@ export class TeacherRepository implements ITeacherRepository {
       gender: teacherData.gender,
       phoneNo: teacherData.phoneNo,
       empId: teacherData.empId,
-      assignedClass: teacherData.assignedClass
-        ? teacherData.assignedClass.name
-        : null,
+      assignedClass: teacherData.assignedClass ? teacherData.assignedClass.name : null,
       subject: teacherData.subject ? teacherData.subject.subjectName : null,
       dateOfBirth: teacherData.dateOfBirth,
       profileImage: teacherData.profileImage || '',
@@ -148,92 +143,152 @@ export class TeacherRepository implements ITeacherRepository {
   }
 
   async getByEmail(email: string): Promise<Teacher | null> {
-    const teacher = await TeacherModel.findOne({ email, isDeleted: false });
-    return teacher ? new Teacher(teacher) : null;
-  }
+    const rawTeacher = await TeacherModel.findOne({ email, isDeleted: false })
+      .populate('assignedClass', 'name')
+      .populate('subject', 'subjectName')
+      .lean();
 
-  async save(teacher: Teacher): Promise<void> {
-    try {
-      await TeacherModel.findByIdAndUpdate(teacher.id, {
-        availability: teacher.availability,
-      });
-    } catch (error) {
-      throw new Error(`Failed to save teacher: ${(error as Error).message}`);
-    }
+    if (!rawTeacher) return null;
+
+    const teacherData = rawTeacher as unknown as PopulatedTeacher;
+
+    return new Teacher({
+      id: teacherData._id.toString(),
+      name: teacherData.name,
+      email: teacherData.email,
+      gender: teacherData.gender,
+      phoneNo: teacherData.phoneNo,
+      empId: teacherData.empId,
+      assignedClass: teacherData.assignedClass ? teacherData.assignedClass.name : null,
+      subject: teacherData.subject ? teacherData.subject.subjectName : null,
+      dateOfBirth: teacherData.dateOfBirth,
+      profileImage: teacherData.profileImage || '',
+      specialization: teacherData.specialization || '',
+      experienceYears: teacherData.experienceYears || 0,
+      qualification: teacherData.qualification || '',
+      availability: teacherData.availability,
+    });
   }
 
   async update(id: string, data: Partial<ITeacher>): Promise<Teacher> {
+    if (data.subject && typeof data.subject === 'string') {
+      const subjectDoc = await SubjectModel.findOne({ subjectName: data.subject });
+      if (!subjectDoc) throw new Error(`Subject '${data.subject}' not found`);
+      data.subject = subjectDoc._id;
+    }
+    if (data.assignedClass && typeof data.assignedClass === 'string') {
+      const classDoc = await ClassModel.findOne({ name: data.assignedClass });
+      if (!classDoc) throw new Error(`Class '${data.assignedClass}' not found`);
+      data.assignedClass = classDoc._id;
+    }
+    if (data.gender && typeof data.gender === 'string') {
+      if (data.gender !== Gender.Male && data.gender !== Gender.Female) {
+        throw new Error(`Invalid gender value: '${data.gender}'`);
+      }
+      data.gender = data.gender as Gender;
+    }
     const updatedTeacher = await TeacherModel.findByIdAndUpdate(
       id,
       { $set: data },
       { new: true, runValidators: true }
-    ).lean();
+    )
+      .populate('assignedClass', 'name')
+      .populate('subject', 'subjectName')
+      .lean();
 
-    if (!updatedTeacher) {
-      throw new Error('Teacher not found or update failed');
-    }
+    if (!updatedTeacher) throw new Error('Teacher not found or update failed');
+
+    const teacherData = updatedTeacher as unknown as PopulatedTeacher;
 
     return new Teacher({
-      id: updatedTeacher._id.toString(),
-      name: updatedTeacher.name,
-      email: updatedTeacher.email,
-      gender: updatedTeacher.gender,
-      phoneNo: updatedTeacher.phoneNo,
-      empId: updatedTeacher.empId,
-      assignedClass: updatedTeacher.assignedClass,
-      subject: updatedTeacher.subject,
-      dateOfBirth: updatedTeacher.dateOfBirth,
-      profileImage: updatedTeacher.profileImage,
-      specialization: updatedTeacher.specialization,
-      experienceYears: updatedTeacher.experienceYears,
-      qualification: updatedTeacher.qualification,
+      id: teacherData._id.toString(),
+      name: teacherData.name,
+      email: teacherData.email,
+      gender: teacherData.gender,
+      phoneNo: teacherData.phoneNo,
+      empId: teacherData.empId,
+      assignedClass: teacherData.assignedClass ? teacherData.assignedClass.name : null,
+      subject: teacherData.subject ? teacherData.subject.subjectName : null,
+      dateOfBirth: teacherData.dateOfBirth,
+      profileImage: teacherData.profileImage || '',
+      specialization: teacherData.specialization || '',
+      experienceYears: teacherData.experienceYears || 0,
+      qualification: teacherData.qualification || '',
+      availability: teacherData.availability,
     });
   }
 
   async create(data: Partial<ITeacher>): Promise<Teacher> {
     if (data.subject && typeof data.subject === 'string') {
-      const subjectDoc = await SubjectModel.findOne({
-        subjectName: data.subject,
-      });
-      if (!subjectDoc) {
-        throw new Error(`Subject '${data.subject}' not found`);
-      }
+      const subjectDoc = await SubjectModel.findOne({ subjectName: data.subject });
+      if (!subjectDoc) throw new Error(`Subject '${data.subject}' not found`);
       data.subject = subjectDoc._id;
     }
-
     if (data.assignedClass && typeof data.assignedClass === 'string') {
-      const classDoc = await ClassModel.findOne({
-        name: data.assignedClass,
-      });
-      if (!classDoc) {
-        throw new Error(`Class '${data.assignedClass}' not found`);
-      }
+      const classDoc = await ClassModel.findOne({ name: data.assignedClass });
+      if (!classDoc) throw new Error(`Class '${data.assignedClass}' not found`);
       data.assignedClass = classDoc._id;
     }
-
+    if (data.gender && typeof data.gender === 'string') {
+      if (data.gender !== Gender.Male && data.gender !== Gender.Female) {
+        throw new Error(`Invalid gender value: '${data.gender}'`);
+      }
+      data.gender = data.gender as Gender;
+    }
     const newTeacher = await TeacherModel.create(data);
+    const populatedTeacher = await TeacherModel.findById(newTeacher._id)
+      .populate('assignedClass', 'name')
+      .populate('subject', 'subjectName')
+      .lean();
+
+    if (!populatedTeacher) throw new Error('Failed to create teacher');
+
+    const teacherData = populatedTeacher as unknown as PopulatedTeacher;
+
     return new Teacher({
-      id: newTeacher._id.toString(),
-      name: newTeacher.name,
-      email: newTeacher.email,
-      gender: newTeacher.gender,
-      phoneNo: newTeacher.phoneNo,
-      empId: newTeacher.empId,
-      assignedClass: newTeacher.assignedClass,
-      subject: newTeacher.subject,
-      dateOfBirth: newTeacher.dateOfBirth,
-      profileImage: newTeacher.profileImage,
-      specialization: newTeacher.specialization,
-      experienceYears: newTeacher.experienceYears,
-      qualification: newTeacher.qualification,
-      availability: newTeacher.availability,
+      id: teacherData._id.toString(),
+      name: teacherData.name,
+      email: teacherData.email,
+      gender: teacherData.gender,
+      phoneNo: teacherData.phoneNo,
+      empId: teacherData.empId,
+      assignedClass: teacherData.assignedClass ? teacherData.assignedClass.name : null,
+      subject: teacherData.subject ? teacherData.subject.subjectName : null,
+      dateOfBirth: teacherData.dateOfBirth,
+      profileImage: teacherData.profileImage || '',
+      specialization: teacherData.specialization || '',
+      experienceYears: teacherData.experienceYears || 0,
+      qualification: teacherData.qualification || '',
+      availability: teacherData.availability,
     });
+  }
+  
+  async save(teacher: Teacher): Promise<void> {
+    const updateData = {
+      name: teacher.name,
+      email: teacher.email,
+      empId: teacher.empId,
+      dateOfBirth: teacher.dateOfBirth,
+      gender: teacher.gender,
+      phoneNo: teacher.phoneNo,
+      assignedClass: teacher.assignedClass ? new Types.ObjectId(teacher.assignedClass) : null,
+      subject: teacher.subject ? new Types.ObjectId(teacher.subject) : null,
+      profileImage: teacher.profileImage,
+      specialization: teacher.specialization,
+      experienceYears: teacher.experienceYears,
+      qualification: teacher.qualification,
+      availability: teacher.availability,
+    };
+
+    await TeacherModel.findByIdAndUpdate(
+      new Types.ObjectId(teacher.id),
+      { $set: updateData },
+      { runValidators: true }
+    );
   }
 
   async delete(id: string): Promise<void> {
     const result = await TeacherModel.findByIdAndUpdate(id, { isDeleted: true });
-    if (!result) {
-      throw new Error('Teacher not found or already deleted');
-    }
+    if (!result) throw new Error('Teacher not found or already deleted');
   }
 }

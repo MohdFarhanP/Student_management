@@ -1,59 +1,42 @@
 import { Request, Response } from 'express';
 import HttpStatus from '../../../utils/httpStatus';
 import { MarkAttendanceUseCase } from '../../../application/useCases/teacher/markAttendanceUseCase';
-import { AttendanceRepository } from '../../../infrastructure/repositories/teacher/attendanceRepository';
-import ManageTimetable from '../../../infrastructure/services/ManageTimetable';
-import TimetableRepository from '../../../infrastructure/repositories/admin/timeTableRepository';
-import { TeacherRepository } from '../../../infrastructure/repositories/admin/teacherRepository';
-import mongoose from 'mongoose';
 import { ViewAttendanceUseCase } from '../../../application/useCases/student/ViewAttendanceUseCase';
+import { IAttendanceController } from '../../../domain/interface/teacher/IAttendanceController';
+import { IApiResponse } from '../../../domain/types/interfaces';
+import { Attendance } from '../../../domain/entities/attendance';
+import { IUser } from '../../../domain/types/interfaces';
+import mongoose from 'mongoose';
 
-export class AttendanceController {
-  private markAttendanceUseCase: MarkAttendanceUseCase;
-  private viewAttendanceUseCase: ViewAttendanceUseCase;
-
-  constructor() {
-    const attendanceRepository = new AttendanceRepository();
-    const timetableRepository = new TimetableRepository();
-    const teacherRepository = new TeacherRepository();
-    const manageTimetable = new ManageTimetable(
-      timetableRepository,
-      teacherRepository
-    );
-    this.markAttendanceUseCase = new MarkAttendanceUseCase(
-      attendanceRepository,
-      manageTimetable
-    );
-    this.viewAttendanceUseCase = new ViewAttendanceUseCase(
-      attendanceRepository
-    );
-  }
+export class AttendanceController implements IAttendanceController {
+  constructor(
+    private markAttendanceUseCase: MarkAttendanceUseCase,
+    private viewAttendanceUseCase: ViewAttendanceUseCase
+  ) {}
 
   async markAttendance(req: Request, res: Response): Promise<void> {
-    const { classId } = req.params;
-    const { studentId, date, period, status, day } = req.body;
-    const teacherId = (req.user as { id: string }).id;
-
     try {
+      const { classId } = req.params;
+      const { studentId, date, period, status, day } = req.body;
+      const user = req.user as IUser | undefined;
+
+      if (!user?.id || !mongoose.Types.ObjectId.isValid(user.id)) {
+        throw new Error('Unauthorized: Valid teacher ID required');
+      }
       if (!mongoose.Types.ObjectId.isValid(classId)) {
-        throw new Error('Invalid classId format');
+        throw new Error('Invalid class ID format');
       }
       if (!mongoose.Types.ObjectId.isValid(studentId)) {
-        throw new Error('Invalid studentId format');
+        throw new Error('Invalid student ID format');
       }
       if (!['present', 'absent'].includes(status)) {
-        throw new Error('Invalid status. Must be "present" or "absent"');
+        throw new Error('Invalid status: Must be "present" or "absent"');
       }
-      if (!period || !Number.isInteger(period) || period < 1 || period > 6) {
-        throw new Error('Invalid period. Must be an integer between 1 and 6');
+      if (!Number.isInteger(period) || period < 1 || period > 6) {
+        throw new Error('Invalid period: Must be an integer between 1 and 6');
       }
-      if (
-        !day ||
-        !['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(day)
-      ) {
-        throw new Error(
-          'Invalid day. Must be one of: Monday, Tuesday, Wednesday, Thursday, Friday'
-        );
+      if (!['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(day)) {
+        throw new Error('Invalid day: Must be Monday, Tuesday, Wednesday, Thursday, or Friday');
       }
       const parsedDate = new Date(date);
       if (isNaN(parsedDate.getTime())) {
@@ -66,44 +49,52 @@ export class AttendanceController {
         parsedDate,
         period,
         status,
-        teacherId,
+        user.id,
         day
       );
-      res
-        .status(HttpStatus.OK)
-        .json({ message: 'Attendance marked successfully' });
-      return;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-      } else {
-        res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .json({ message: 'An unexpected error occurred' });
-      }
-      return;
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Attendance marked successfully',
+      } as IApiResponse<never>);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      const status = message.includes('Unauthorized') || message.includes('Invalid')
+        ? HttpStatus.BAD_REQUEST
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+      res.status(status).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
 
   async viewAttendance(req: Request, res: Response): Promise<void> {
-    const { studentId } = req.params;
-
     try {
+      const { studentId } = req.params;
+      const user = req.user as IUser | undefined;
+
+      if (!user?.id || !mongoose.Types.ObjectId.isValid(user.id)) {
+        throw new Error('Unauthorized: Valid teacher ID required');
+      }
       if (!mongoose.Types.ObjectId.isValid(studentId)) {
-        throw new Error('Invalid studentId format');
+        throw new Error('Invalid student ID format');
       }
 
-      const attendanceRecords =
-        await this.viewAttendanceUseCase.execute(studentId);
-      res.status(HttpStatus.OK).json(attendanceRecords);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
-      } else {
-        res
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .json({ message: 'An unexpected error occurred' });
-      }
+      const attendanceRecords = await this.viewAttendanceUseCase.execute(studentId);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Attendance records fetched successfully',
+        data: attendanceRecords,
+      } as IApiResponse<Attendance[]>);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      const status = message.includes('Unauthorized') || message.includes('Invalid')
+        ? HttpStatus.BAD_REQUEST
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+      res.status(status).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
 }

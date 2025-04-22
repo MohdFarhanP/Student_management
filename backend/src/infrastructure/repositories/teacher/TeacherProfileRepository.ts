@@ -4,114 +4,90 @@ import { ITeacherProfileRepository } from '../../../domain/interface/teacher/ITe
 import mongoose from 'mongoose';
 import { ClassModel } from '../../database/models/classModel';
 import { SubjectModel } from '../../database/models/subjectModel';
-
-interface PopulatedTeacher extends Document {
-  _id: mongoose.Types.ObjectId;
-  name: string;
-  email: string;
-  empId: string;
-  dateOfBirth: string;
-  phoneNo: number;
-  gender: 'Male' | 'Female';
-  assignedClass?: { name: string } | null;
-  subject?: { name: string } | null;
-  profileImage?: string;
-  specialization?: string;
-  experienceYears?: number;
-  qualification?: string;
-}
-interface PopulatedClass {
-  _id: string | mongoose.Types.ObjectId;
-  name: string;
-}
-
-interface PopulatedSubject {
-  _id: string | mongoose.Types.ObjectId;
-  subjectName: string;
-}
-
-function isPopulatedClass(value: unknown): value is PopulatedClass {
-  return typeof value === 'object' && value !== null && 'name' in value;
-}
-
-function isPopulatedSubject(value: unknown): value is PopulatedSubject {
-  return typeof value === 'object' && value !== null && 'subjectName' in value;
-}
+import { Gender } from '../../../domain/types/enums';
 
 export class TeacherProfileRepository implements ITeacherProfileRepository {
   async getProfile(email: string): Promise<Teacher | null> {
-    const rawTeacher = await TeacherModel.findOne({ email })
+    const rawTeacher = await TeacherModel
+      .findOne({ email })
       .select('-password')
       .populate('assignedClass', 'name')
-      .populate('subject', 'name')
+      .populate('subject', 'subjectName')
       .lean();
 
     if (!rawTeacher) return null;
 
-    const teacherData = rawTeacher as unknown as PopulatedTeacher;
+    const classData = rawTeacher.assignedClass as unknown as { name: string } | null;
+    const subjectData = rawTeacher.subject as unknown as { subjectName: string } | null;
     return new Teacher({
-      id: teacherData._id.toString(),
-      name: teacherData.name,
-      email: teacherData.email,
-      empId: teacherData.empId,
-      dateOfBirth: teacherData.dateOfBirth,
-      gender: teacherData.gender,
-      assignedClass: teacherData.assignedClass
-        ? teacherData.assignedClass.name
-        : null,
-      subject: teacherData.subject ? teacherData.subject.name : null,
-      profileImage: teacherData.profileImage,
-      phoneNo: teacherData.phoneNo,
-      specialization: teacherData.specialization,
-      experienceYears: teacherData.experienceYears,
-      qualification: teacherData.qualification,
+      id: rawTeacher._id.toString(),
+      name: rawTeacher.name,
+      email: rawTeacher.email,
+      empId: rawTeacher.empId,
+      dateOfBirth: rawTeacher.dateOfBirth,
+      gender: rawTeacher.gender === 'Male' ? Gender.Male : Gender.Female,
+      phoneNo: rawTeacher.phoneNo,
+      assignedClass: classData ? classData.name : null,
+      subject: subjectData ? subjectData.subjectName : null,
+      profileImage: rawTeacher.profileImage,
+      specialization: rawTeacher.specialization,
+      experienceYears: rawTeacher.experienceYears,
+      qualification: rawTeacher.qualification,
     });
   }
 
   async updateProfile(profile: Partial<Teacher>): Promise<Teacher | null> {
+    if (!profile.email) {
+      throw new Error('Email is required to update profile');
+    }
+
+    const updateData: any = { ...profile };
+
     if (profile.subject && typeof profile.subject === 'string') {
-      const subjectDoc = await SubjectModel.findOne({
-        subjectName: profile.subject,
-      });
+      const subjectDoc = await SubjectModel.findOne({ subjectName: profile.subject });
       if (!subjectDoc) {
         throw new Error(`Subject '${profile.subject}' not found`);
       }
-      profile.subject = subjectDoc._id;
+      updateData.subject = subjectDoc._id;
     }
 
     if (profile.assignedClass && typeof profile.assignedClass === 'string') {
-      const classDoc = await ClassModel.findOne({
-        name: profile.assignedClass,
-      });
+      const classDoc = await ClassModel.findOne({ name: profile.assignedClass });
       if (!classDoc) {
         throw new Error(`Class '${profile.assignedClass}' not found`);
       }
-      profile.assignedClass = classDoc._id;
+      updateData.assignedClass = classDoc._id;
     }
 
-    const updatedTeacher = await TeacherModel.findOneAndUpdate(
-      { email: profile.email },
-      profile,
-      { new: true, runValidators: true }
-    )
+    const rawTeacher = await TeacherModel
+      .findOneAndUpdate(
+        { email: profile.email },
+        updateData,
+        { new: true, runValidators: true }
+      )
       .select('-password')
-      .populate('subject', 'subjectName')
       .populate('assignedClass', 'name')
-      .exec();
+      .populate('subject', 'subjectName')
+      .lean();
 
-    if (!updatedTeacher) {
-      throw new Error('Teacher not found');
-    }
+    if (!rawTeacher) return null;
 
+    const classData = rawTeacher.assignedClass as unknown as { name: string } | null;
+    const subjectData = rawTeacher.subject as unknown as { subjectName: string } | null;
     return new Teacher({
-      ...updatedTeacher.toObject(),
-      subject: isPopulatedSubject(updatedTeacher.subject)
-        ? updatedTeacher.subject.subjectName
-        : (updatedTeacher.subject ?? null),
-
-      assignedClass: isPopulatedClass(updatedTeacher.assignedClass)
-        ? updatedTeacher.assignedClass.name
-        : (updatedTeacher.assignedClass ?? null),
+      id: rawTeacher._id.toString(),
+      name: rawTeacher.name,
+      email: rawTeacher.email,
+      empId: rawTeacher.empId,
+      dateOfBirth: rawTeacher.dateOfBirth,
+      gender: rawTeacher.gender === 'Male' ? Gender.Male : Gender.Female,
+      phoneNo: rawTeacher.phoneNo,
+      assignedClass: classData ? classData.name : null,
+      subject: subjectData ? subjectData.subjectName : null,
+      profileImage: rawTeacher.profileImage,
+      specialization: rawTeacher.specialization,
+      experienceYears: rawTeacher.experienceYears,
+      qualification: rawTeacher.qualification,
     });
   }
 }

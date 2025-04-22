@@ -1,7 +1,7 @@
-import { INote } from './INote';
+import { Note } from "../entities/note";
 
 export interface INoteRepository {
-  save(note: INote): Promise<INote>;
-  findById(id: string): Promise<INote | null>;
-  findAll(): Promise<INote[]>;
+  save(note: Note): Promise<Note>;
+  findById(id: string): Promise<Note | null>;
+  findAll(): Promise<Note[]>;
 }
