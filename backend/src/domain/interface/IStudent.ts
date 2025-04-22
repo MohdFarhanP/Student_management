@@ -22,6 +22,7 @@ export interface IStudent extends Document {
   };
   refreshToken?: string;
   isInitialLogin?: boolean;
+  isDeleted:boolean;
   createdAt: Date;
   updatedAt: Date;
 }

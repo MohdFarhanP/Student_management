@@ -22,6 +22,7 @@ const TeacherSchema = new Schema<ITeacher>(
     experienceYears: { type: Number, default: 0 },
     qualification: { type: String, default: '' },
     isInitialLogin: { type: Boolean, default: true },
+    isDeleted: {type: Boolean, default:false},
     availability: {
       type: Object,
       required: true,

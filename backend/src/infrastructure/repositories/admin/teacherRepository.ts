@@ -62,7 +62,7 @@ export class TeacherRepository implements ITeacherRepository {
   async getAllByLimit(page: number, limit: number) {
     const skip = (page - 1) * limit;
 
-    const rawTeachersData = await TeacherModel.find()
+    const rawTeachersData = await TeacherModel.find({isDeleted:false})
       .skip(skip)
       .limit(limit)
       .select('-password')
@@ -90,11 +90,11 @@ export class TeacherRepository implements ITeacherRepository {
       });
     });
 
-    const totalCount = await TeacherModel.countDocuments();
+    const totalCount = await TeacherModel.countDocuments({isDeleted:false});
     return { data: teachers, totalCount };
   }
   async getAll(): Promise<{ data: Teacher[] }> {
-    const rawTeachersData = await TeacherModel.find().select('_id name').lean();
+    const rawTeachersData = await TeacherModel.find({isDeleted:false}).select('_id name').lean();
 
     const teachers = rawTeachersData.map((t) => ({
       id: t._id.toString(),
@@ -122,7 +122,7 @@ export class TeacherRepository implements ITeacherRepository {
     return { data: teachers };
   }
   async getById(teacherId: ObjectId | string): Promise<Teacher> {
-    const rawTeacher = await TeacherModel.findById(teacherId)
+    const rawTeacher = await TeacherModel.findOne({id:teacherId,isDeleted:false})
       .populate('assignedClass', 'name')
       .populate('subject', 'subjectName')
       .lean();
@@ -226,13 +226,13 @@ export class TeacherRepository implements ITeacherRepository {
     });
   }
   async delete(id: string): Promise<void> {
-    const result = await TeacherModel.findByIdAndDelete(id);
+    const result = await TeacherModel.findByIdAndUpdate(id,{isDeleted:true});
     if (!result) {
       throw new Error('Teacher not found or already deleted');
     }
   }
   async getByEmail(email: string): Promise<Teacher | null> {
-    const teacher = await TeacherModel.findOne({ email });
+    const teacher = await TeacherModel.findOne({ email ,isDeleted:false});
     return teacher ? new Teacher(teacher) : null;
   }
 }

@@ -17,6 +17,7 @@ export interface ITeacher extends Document {
   qualification?: string;
   refreshToken?: string;
   isInitialLogin?: boolean;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
   availability: { [day: string]: number[] };
