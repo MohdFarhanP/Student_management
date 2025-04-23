@@ -1,18 +1,22 @@
-import { INotification } from '../interface/INotification';
+import { INotification } from '../types/interfaces';
+import { Role, RecipientType } from '../types/enums';
 
 export class NotificationEntity implements INotification {
   id: string;
   title: string;
   message: string;
-  recipientType: 'global' | 'role' | 'Student';
+  recipientType: RecipientType;
   recipientIds?: string[];
   senderId: string;
-  senderRole: 'Admin' | 'Teacher';
+  senderRole: Role;
   isRead: boolean;
   createdAt: Date;
   scheduledAt?: string;
 
   constructor(notification: INotification) {
+    if (!notification.id || !notification.title || !notification.message || !notification.senderId || !notification.senderRole) {
+      throw new Error('Missing required notification fields');
+    }
     this.id = notification.id;
     this.title = notification.title;
     this.message = notification.message;
@@ -24,7 +28,7 @@ export class NotificationEntity implements INotification {
     this.createdAt = notification.createdAt instanceof Date
       ? notification.createdAt
       : new Date(notification.createdAt);
-    this.scheduledAt = notification.scheduledAt; // Should be string or undefined
-    console.log('NotificationEntity created with scheduledAt:', this.scheduledAt); // Debug log
+    this.scheduledAt = notification.scheduledAt;
+    console.log('NotificationEntity created with scheduledAt:', this.scheduledAt);
   }
 }

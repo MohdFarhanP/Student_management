@@ -1,51 +1,45 @@
-import cron from 'node-cron';
 import { Server as SocketIOServer } from 'socket.io';
-import { NotificationRepository } from '../repositories/notification/notificationReopository';
-import { INotification } from '../../domain/interface/INotification';
+import { INotificationRepository } from '../../domain/interface/INotificationRepository';
+import { INotificationScheduler } from '../../domain/interface/INotificationScheduler';
+import { RecipientType } from '../../domain/types/enums';
 
-export class NotificationScheduler {
+export class NotificationScheduler implements INotificationScheduler {
+  private intervalId?: NodeJS.Timeout;
+
   constructor(
     private io: SocketIOServer,
-    private notificationRepository: NotificationRepository
+    private notificationRepository: INotificationRepository
   ) {}
 
   start() {
-    cron.schedule('0 * * * *', async () => {
+    this.intervalId = setInterval(async () => {
       try {
-        const now = new Date();
-        const utcNow = new Date(now.toISOString()); // Normalize to UTC
-        console.log(`Checking scheduled notifications at ${utcNow}`);
-        const notifications = await this.notificationRepository.findScheduled(utcNow);
-        console.log(`Found ${notifications.length} scheduled notifications`);
-        console.log(`This is the notification scheduled ${notifications}`);
+        const currentTime = new Date();
+        const notifications = await this.notificationRepository.findScheduled(currentTime);
         for (const notification of notifications) {
-          console.log(`Sending notification ${notification.id} scheduled for ${notification.scheduledAt}`);
-          this.sendNotification(notification);
-          await this.notificationRepository.markAsRead(
-            notification.id,
-            notification.senderId
-          );
+          if (notification.recipientType === RecipientType.Global) {
+            this.io.emit('notification', notification);
+          } else if (notification.recipientType === RecipientType.Role) {
+            notification.recipientIds?.forEach((role) => {
+              this.io.to(`role-${role}`).emit('notification', notification);
+            });
+          } else if (notification.recipientType === RecipientType.Student) {
+            notification.recipientIds?.forEach((userId) => {
+              this.io.to(`user-${userId}`).emit('notification', notification);
+            });
+          }
+          await this.notificationRepository.markAsRead(notification.id, notification.senderId);
         }
       } catch (error) {
-        console.error(
-          'Error in notification scheduler:',
-          error instanceof Error ? error.message : 'Unknown error'
-        );
+        console.error('Error processing scheduled notifications:', error);
       }
-    });
+    }, 60000); // Run every minute
   }
 
-  private sendNotification(notification: INotification) {
-    if (notification.recipientType === 'global') {
-      this.io.emit('notification', notification);
-    } else if (notification.recipientType === 'role') { 
-      notification.recipientIds?.forEach((role) => {
-        this.io.to(`role-${role}`).emit('notification', notification);
-      });
-    } else if (notification.recipientType === 'Student') {
-      notification.recipientIds?.forEach((userId) => {
-        this.io.to(`user-${userId}`).emit('notification', notification);
-      });
+  stop() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = undefined;
     }
   }
 }

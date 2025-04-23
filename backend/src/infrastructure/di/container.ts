@@ -4,7 +4,7 @@ import { StudentExcelParser } from '../parsers/studentExcelParser';
 import { TeacherExcelParser } from '../parsers/teacherExcelParser';
 import { BulkUploadStudentUseCase } from '../../application/useCases/admin/student/bulkUploadStudentUseCase';
 import { BulkUploadTeacherUseCase } from '../../application/useCases/admin/teacher/bulkUploadTeachersUseCase';
-import { BulkUploadController } from '../../controllers/admin/bulkUploadController';
+import { BulkUploadController } from '../../interfaces/controllers/admin/bulkUploadController';
 import { IStudentRepository } from '../../domain/interface/admin/IStudentRepository';
 import { ITeacherRepository } from '../../domain/interface/admin/ITeacherRepository';
 import { IExcelParser } from '../../domain/interface/admin/IExcelParser';
@@ -21,19 +21,19 @@ import { GetClassesUseCase } from '../../application/useCases/admin/class/getAll
 import { UpdateClassUseCase } from '../../application/useCases/admin/class/updateUseCase';
 import { GetClassNameUseCase } from '../../application/useCases/admin/class/getClassNames';
 import { GetStudentsByClassUseCase } from '../../application/useCases/admin/class/getStudentsByClass';
-import { ClassController } from '../../controllers/admin/classController';
+import { ClassController } from '../../interfaces/controllers/admin/classController';
 import { CreateSubjectUseCase } from '../../application/useCases/admin/subject/createSubjectUseCase';
 import { FetchSubjectsByClassIdUseCase } from '../../application/useCases/admin/subject/fetchSubjectsByClassIdUseCase';
 import { GetSubjectsByGradeUseCase } from '../../application/useCases/admin/subject/getSubjectUseCase';
 import { DeleteSubjectUseCase } from '../../application/useCases/admin/subject/deleteSubjectUseCase';
 import { UpdateSubjectUseCase } from '../../application/useCases/admin/subject/updateSubjectUseCase';
-import { SubjectController } from '../../controllers/admin/subjectController';
-import { StudentController } from '../../controllers/admin/studentsController';
+import { SubjectController } from '../../interfaces/controllers/admin/subjectController';
+import { StudentController } from '../../interfaces/controllers/admin/studentsController';
 import { AddStudentUseCase } from '../../application/useCases/admin/student/addStudentUseCase';
 import { DeleteStudentUseCase } from '../../application/useCases/admin/student/deleteStudentUseCase';
 import { EditStudentUseCase } from '../../application/useCases/admin/student/editStudentUseCase';
 import { GetAllStudentsUseCase } from '../../application/useCases/admin/student/getAllStudentsUseCase';
-import { GetStudentProfileUseCase as AdminGetStudentProfileUseCase } from '../../application/useCases/admin/student/getStudentProfileUseCase';
+import { GetStudentProfileUseCase as AdminGetStudentProfileUseCase  } from '../../application/useCases/student/GetStudentProfileUseCase';
 import { AuthService } from '../../application/services/authService';
 import { IClassRepository } from '../../domain/interface/admin/IClassRepository';
 import { ISubjectRepository } from '../../domain/interface/ISubjectRepository';
@@ -57,7 +57,7 @@ import { IEditStudentUseCase } from '../../domain/interface/IEditStudentUseCase'
 import { IGetAllStudentsUseCase } from '../../domain/interface/IGetAllStudentsUseCase';
 import { IGetStudentProfileUseCase as IAdminGetStudentProfileUseCase } from '../../domain/interface/IGetStudentProfileUseCase';
 import { ITokenService } from '../../domain/interface/ITokenService';
-import { TeacherController } from '../../controllers/admin/teachersController';
+import { TeacherController } from '../../interfaces/controllers/admin/teachersController';
 import { AddTeacherUseCase } from '../../application/useCases/admin/teacher/addTeacherUseCase';
 import { DeleteTeacherUseCase } from '../../application/useCases/admin/teacher/deleteTeacherUseCase';
 import { EditTeacherUseCase } from '../../application/useCases/admin/teacher/editTeacherUseCase';
@@ -69,57 +69,87 @@ import { IDeleteTeacherUseCase } from '../../domain/interface/IDeleteTeacherUseC
 import { IEditTeacherUseCase } from '../../domain/interface/IEditTeacherUseCase';
 import { IGetAllTeachersUseCase } from '../../domain/interface/IGetAllTeachersUseCase';
 import { IGetTeachersByLimitUseCase } from '../../domain/interface/IGetTeachersByLimitUseCase';
-import { TimetableController } from '../../controllers/admin/timetableController';
-import { ManageTimetableUseCase } from '../../application/useCases/admin/timetable/manageTimetableUseCase';
-import { TimetableRepository } from '../repositories/admin/timetableRepository';
+import { TimetableController } from '../../interfaces/controllers/admin/timeTableController';
+import { ManageTimetableUseCase } from '../../application/useCases/admin/timeTable/ManageTimetableUseCase';
+import { TimetableRepository } from '../repositories/admin/timeTableRepository';
 import { ITimetableController } from '../../domain/interface/ITimetableController';
 import { IManageTimetableUseCase } from '../../domain/interface/IManageTimetableUseCase';
 import { ITimetableRepository } from '../../domain/interface/admin/ITimetableRepository';
-import { UpdateTeacherAvailabilityUseCase } from '../../application/useCases/admin/teacher/updateTeacherAvailabilityUseCase';
+import { UpdateTeacherAvailabilityUseCase } from '../../application/useCases/admin/timeTable/updateTeacherAvailabilityUseCase';
 import { IUpdateTeacherAvailabilityUseCase } from '../../domain/interface/IUpdateTeacherAvailabilityUseCase';
-import { StudentProfileController } from '../../controllers/student/studentProfileController';
+import { StudentProfileController } from '../../interfaces/controllers/student/studentProfileController';
 import { GetStudentProfileUseCase } from '../../application/useCases/student/GetStudentProfileUseCase';
 import { UpdateStudentProfileImageUseCase } from '../../application/useCases/student/UpdateStudentProfileImageUseCase';
 import { StudentProfileRepository } from '../repositories/student/StudentProfileRepository';
-import { IStudentProfileController } from '../../domain/interface/student/IStudentProfileController';
-import { IGetStudentProfileUseCase } from '../../domain/interface/student/IGetStudentProfileUseCase';
+import { IStudentProfileController } from '../../domain/interface/IStudentProfileController';
+import { IGetStudentProfileUseCase } from '../../domain/interface/IGetStudentProfileUseCase';
 import { IStudentProfileRepository } from '../../domain/interface/student/IStudentProfileRepository';
-import { TeacherProfileController } from '../../controllers/teacher/teacherProfileController';
+import { TeacherProfileController } from '../../interfaces/controllers/teacher/teacherProfileController';
 import { GetTeacherProfileUseCase } from '../../application/useCases/teacher/getTeacherProfileUseCase';
 import { UpdateTeacherProfileUseCase } from '../../application/useCases/teacher/updateTeacherProfileUseCase';
 import { TeacherProfileRepository } from '../repositories/teacher/TeacherProfileRepository';
-import { ITeacherProfileController } from '../../domain/interface/teacher/ITeacherProfileController';
-import { IGetTeacherProfileUseCase } from '../../domain/interface/teacher/IGetTeacherProfileUseCase';
-import { IUpdateTeacherProfileUseCase } from '../../domain/interface/teacher/IUpdateTeacherProfileUseCase';
+import { ITeacherProfileController } from '../../domain/interface/ITeacherProfileController';
+import { IGetTeacherProfileUseCase } from '../../domain/interface/IGetTeacherProfileUseCase';
+import { IUpdateTeacherProfileUseCase } from '../../domain/interface/IUpdateTeacherProfileUseCase';
 import { ITeacherProfileRepository } from '../../domain/interface/teacher/ITeacherProfileRepository';
-import { AttendanceController } from '../../controllers/teacher/attendanceControllers';
+import { AttendanceController } from '../../interfaces/controllers/teacher/attendanceControllers';
 import { IAttendanceController } from '../../domain/interface/teacher/IAttendanceController';
 import { MarkAttendanceUseCase } from '../../application/useCases/teacher/markAttendanceUseCase';
-import { ViewAttendanceUseCase } from '../../application/useCases/teacher/viewAttendanceUseCase';
-import { IMarkAttendanceUseCase } from '../../domain/interface/teacher/IMarkAttendanceUseCase';
-import { IViewAttendanceUseCase } from '../../domain/interface/teacher/IViewAttendanceUseCase';
-import { AttendanceRepository } from '../repositories/teacher/AttendanceRepository';
-import { IAttendanceRepository } from '../../domain/interface/teacher/IAttendanceRepository';
+import { ViewAttendanceUseCase } from '../../application/useCases/student/ViewAttendanceUseCase';
+import { IMarkAttendanceUseCase } from '../../domain/interface/IMarkAttendanceUseCase';
+import { IViewAttendanceUseCase } from '../../domain/interface/IViewAttendanceUseCase';
+import { AttendanceRepository } from '../repositories/teacher/attendanceRepository';
+import { IAttendanceRepository } from '../../domain/interface/IAttendanceRepository';
 import { TimetableService } from '../services/TimetableService';
-import { ITimetableService } from '../../domain/interface/teacher/ITimetableService';
-import { NoteController } from '../../controllers/noteController';
-import { INoteController } from '../../domain/interface/notes/INoteController';
-import { UploadNoteUseCase } from '../../application/useCases/notes/uploadNoteUseCase';
-import { DownloadNoteUseCase } from '../../application/useCases/notes/downloadNoteUseCase';
-import { ListNotesUseCase } from '../../application/useCases/notes/listNotesUseCase';
-import { IUploadNoteUseCase } from '../../domain/interface/notes/IUploadNoteUseCase';
-import { IDownloadNoteUseCase } from '../../domain/interface/notes/IDownloadNoteUseCase';
-import { IListNotesUseCase } from '../../domain/interface/notes/IListNotesUseCase';
-import { NoteRepository } from '../../infrastructure/repositories/notesRepository';
-import { INoteRepository } from '../../domain/interface/notes/INoteRepository';
+import { ITimetableService } from '../../domain/interface/ITimetableService';
+import { NoteController } from '../../interfaces/controllers/noteController';
+import { INoteController } from '../../domain/interface/INoteController';
+import { UploadNoteUseCase } from '../../application/useCases/teacher/uploadsNotesUseCase';
+import { DownloadNoteUseCase } from '../../application/useCases/student/downloadNotesUseCase';
+import { ListNotesUseCase } from '../../application/useCases/student/listNoteUseCase';
+import { IUploadNoteUseCase } from '../../domain/interface/IUploadNoteUseCase';
+import { IDownloadNoteUseCase } from '../../domain/interface/IDownloadNoteUseCase';
+import { IListNotesUseCase } from '../../domain/interface/IListNotesUseCase';
+import { NoteRepository } from '../repositories/notesRepository';
+import { INoteRepository } from '../../domain/interface/INotRepository';
 import { CloudinaryService } from '../services/CloudinaryService';
-import { ICloudinaryService } from '../../domain/interface/notes/ICloudinaryService';
+import { ICloudinaryService } from '../../domain/interface/ICloudinaryService';
+import { IUpdateStudentProfileImageUseCase } from '../../domain/interface/IUpdateStudentProfileImageUseCase';
+import { LoginUseCase } from '../../application/useCases/auth/LoginUseCase';
+import { LogoutUseCase } from '../../application/useCases/auth/LogoutUseCase';
+import { UpdatePasswordUseCase } from '../../application/useCases/auth/UpdatePasswordUseCase';
+import { RefreshTokenUseCase } from '../../application/useCases/auth/RefreshTokenUseCase';
+import { IUserController } from '../../domain/interface/IUserController';
+import { UserController } from '../../interfaces/controllers/UserController';
+import { UserRepository } from '../repositories/userRepository';
+import { MessageRepository } from '../repositories/message/messageRepository';
+import { SendMessage } from '../../application/useCases/message/sendMessage';
+import { ChatController } from '../../interfaces/controllers/chatController';
+import { SocketServer } from '../database/socketServer';
+import { Server as SocketIOServer } from 'socket.io';
+import { IMessageRepository } from '../../domain/interface/IMessageRepository';
+import { ISendMessageUseCase } from '../../domain/interface/ISendMessageUseCase';
+import { IChatController } from '../../domain/interface/IChatController';
+import { ISocketServer } from '../../domain/interface/ISocketServer';
+import { NotificationRepository } from '../repositories/notification/notificationReopository'; // Adjust path as needed
+import { SendNotification } from '../../application/useCases/notification/SendNotificationUseCase';
+import { NotificationScheduler } from '../services/notificationScheduler';
+import { INotificationScheduler } from '../../domain/interface/INotificationScheduler';
+import { NotificationController } from '../../interfaces/controllers/notification/notificationController';
+import { GetNotificationsUseCase } from '../../application/useCases/notification/GetNotificationsUseCase';
+import { MarkNotificationAsRead } from '../../application/useCases/notification/MarkNotificationAsReadUseCase';
+import { INotificationRepository } from '../../domain/interface/INotificationRepository';
+import { INotificationController } from '../../domain/interface/INotificationController';
+import { IGetNotificationsUseCase } from '../../domain/interface/IGetNotificationsUseCase';
+import { IMarkNotificationAsRead } from '../../domain/interface/IMarkNotificationAsRead';
+import { ISendNotificationUseCase } from '../../domain/interface/ISendNotificationUseCase';
+
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
   private dependencies: Map<string, any> = new Map();
 
-  private constructor() {
+  private constructor(io?: SocketIOServer) {
     // Services
     this.dependencies.set('ITokenService', new AuthService());
     this.dependencies.set(
@@ -141,6 +171,10 @@ export class DependencyContainer {
     this.dependencies.set('ITeacherProfileRepository', new TeacherProfileRepository());
     this.dependencies.set('IAttendanceRepository', new AttendanceRepository());
     this.dependencies.set('INoteRepository', new NoteRepository());
+    this.dependencies.set('IUserRepository', new UserRepository());
+    this.dependencies.set('IMessageRepository', new MessageRepository());
+    this.dependencies.set('INotificationRepository', new NotificationRepository());
+    this.dependencies.set('INotificationRepository', new NotificationRepository());
 
     // Parsers
     this.dependencies.set('StudentExcelParser', new StudentExcelParser());
@@ -160,6 +194,20 @@ export class DependencyContainer {
         this.dependencies.get('ITeacherRepository'),
         this.dependencies.get('TeacherExcelParser')
       )
+    );
+
+    // Use Cases (Notification)
+    this.dependencies.set(
+      'IGetNotificationsUseCase',
+      new GetNotificationsUseCase(this.dependencies.get('INotificationRepository'))
+    );
+    this.dependencies.set(
+      'IMarkNotificationAsRead',
+      new MarkNotificationAsRead(this.dependencies.get('INotificationRepository'))
+    );
+    this.dependencies.set(
+      'ISendNotificationUseCase',
+      new SendNotification(this.dependencies.get('INotificationRepository'))
     );
 
     // Use Cases (Class)
@@ -338,7 +386,45 @@ export class DependencyContainer {
       new ListNotesUseCase(this.dependencies.get('INoteRepository'))
     );
 
+    // Use Cases (Auth)
+    this.dependencies.set(
+      'ILoginUseCase',
+      new LoginUseCase(
+        this.dependencies.get('IUserRepository'),
+        this.dependencies.get('ITokenService')
+      )
+    );
+    this.dependencies.set(
+      'ILogoutUseCase',
+      new LogoutUseCase(
+        this.dependencies.get('ITokenService'),
+        this.dependencies.get('IUserRepository')
+      )
+    );
+    this.dependencies.set(
+      'IUpdatePasswordUseCase',
+      new UpdatePasswordUseCase(
+        this.dependencies.get('IUserRepository'),
+        this.dependencies.get('ITokenService')
+      )
+    );
+    this.dependencies.set(
+      'IRefreshTokenUseCase',
+      new RefreshTokenUseCase(
+        this.dependencies.get('ITokenService'),
+        this.dependencies.get('IUserRepository')
+      )
+    );
+
     // Controllers
+    this.dependencies.set(
+      'INotificationController',
+      new NotificationController(
+        this.dependencies.get('INotificationRepository'),
+        this.dependencies.get('IMarkNotificationAsRead'),
+        this.dependencies.get('IGetNotificationsUseCase')
+      )
+    );
     this.dependencies.set(
       'IBulkUploadController',
       new BulkUploadController(
@@ -421,13 +507,67 @@ export class DependencyContainer {
         this.dependencies.get('ICloudinaryService')
       )
     );
+    this.dependencies.set(
+      'IChatController',
+      new ChatController(this.dependencies.get('ISendMessageUseCase'))
+    );
+    this.dependencies.set(
+      'IUserController',
+      new UserController(
+        this.dependencies.get('ILoginUseCase'),
+        this.dependencies.get('ILogoutUseCase'),
+        this.dependencies.get('IUpdatePasswordUseCase'),
+        this.dependencies.get('IRefreshTokenUseCase')
+      )
+    );
+
+    // Services
+    this.dependencies.set(
+      'INotificationScheduler',
+      new NotificationScheduler(
+        io || new SocketIOServer(), 
+        this.dependencies.get('INotificationRepository')
+      )
+    );
+
+    this.dependencies.set(
+      'ISocketServer',
+      new SocketServer(
+        io || new SocketIOServer(),
+        this.dependencies.get('IMessageRepository'),
+        this.dependencies.get('ISendMessageUseCase'),
+        this.dependencies.get('INotificationRepository'),
+        this.dependencies.get('ISendNotificationUseCase'),
+        this.dependencies.get('INotificationScheduler')
+      )
+    );
   }
 
-  static getInstance(): DependencyContainer {
+  static getInstance(io?: SocketIOServer): DependencyContainer {
     if (!DependencyContainer.instance) {
-      DependencyContainer.instance = new DependencyContainer();
+      DependencyContainer.instance = new DependencyContainer(io);
     }
     return DependencyContainer.instance;
+  }
+
+  getNotificationController(): INotificationController {
+    return this.dependencies.get('INotificationController');
+  }
+
+  getGetNotificationsUseCase(): IGetNotificationsUseCase {
+    return this.dependencies.get('IGetNotificationsUseCase');
+  }
+
+  getNotificationRepository(): INotificationRepository {
+    return this.dependencies.get('INotificationRepository');
+  }
+
+  getSendNotificationUseCase(): ISendNotificationUseCase {
+    return this.dependencies.get('ISendNotificationUseCase');
+  }
+
+  getMarkNotificationAsRead(): IMarkNotificationAsRead {
+    return this.dependencies.get('IMarkNotificationAsRead');
   }
 
   getBulkUploadController(): IBulkUploadController {
@@ -468,6 +608,10 @@ export class DependencyContainer {
 
   getNoteController(): INoteController {
     return this.dependencies.get('INoteController');
+  }
+
+  getUserController(): IUserController {
+    return this.dependencies.get('IUserController');
   }
 
   getStudentRepository(): IStudentRepository {
@@ -648,6 +792,26 @@ export class DependencyContainer {
 
   getListNotesUseCase(): IListNotesUseCase {
     return this.dependencies.get('IListNotesUseCase');
+  }
+
+  getChatController(): IChatController {
+    return this.dependencies.get('IChatController');
+  }
+
+  getSocketServer(): ISocketServer {
+    return this.dependencies.get('ISocketServer');
+  }
+
+  getMessageRepository(): IMessageRepository {
+    return this.dependencies.get('IMessageRepository');
+  }
+
+  getSendMessageUseCase(): ISendMessageUseCase {
+    return this.dependencies.get('ISendMessageUseCase');
+  }
+
+  getNotificationScheduler(): INotificationScheduler {
+    return this.dependencies.get('INotificationScheduler');
   }
 
   // For testing: Allow overriding dependencies

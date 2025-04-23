@@ -1,5 +1,5 @@
-import { SendNotificationDTO } from '../../infrastructure/database/socketServer';
-import { INotification } from './INotification';
+import { SendNotificationDTO } from '../types/interfaces';
+import { INotification } from '../types/interfaces';
 
 export interface INotificationRepository {
   findScheduled(currentTime: Date): Promise<INotification[]>

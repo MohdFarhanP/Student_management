@@ -1,17 +1,22 @@
 import mongoose from 'mongoose';
-import { INotification } from '../../../domain/interface/INotification';
+import { INotification } from '../../../domain/types/interfaces';
+import { Role, RecipientType  } from '../../../domain/types/enums';
 
 const notificationSchema = new mongoose.Schema<INotification>({
   title: { type: String, required: true },
   message: { type: String, required: true },
   recipientType: {
     type: String,
-    enum: ['global', 'role', 'Student'],
+    enum: Object.values(RecipientType),
     required: true,
   },
-  recipientIds: [{ type: String }], // Optional array of user IDs or roles
+  recipientIds: [{ type: String }],
   senderId: { type: String, required: true },
-  senderRole: { type: String, enum: ['Admin', 'Teacher'], required: true },
+  senderRole: {
+    type: String,
+    enum: Object.values(Role),
+    required: true,
+  },
   isRead: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   scheduledAt: { type: String },

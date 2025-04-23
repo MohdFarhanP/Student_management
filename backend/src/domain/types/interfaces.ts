@@ -1,4 +1,4 @@
-import { Role, Gender, Day, Grade, Section, SubjectName } from './enums';
+import { Role, Gender, Day, Grade, Section, SubjectName, RecipientType, MediaType } from './enums';
 import mongoose, { ObjectId } from 'mongoose';
 
 // User entity (for authentication)
@@ -83,6 +83,20 @@ export interface ISubject {
   notes?: string[];
 }
 
+// Notification
+export interface INotification {
+  id: string;
+  title: string;
+  message: string;
+  recipientType: RecipientType;
+  recipientIds?: string[];
+  senderId: string;
+  senderRole: Role;
+  isRead: boolean;
+  createdAt: Date;
+  scheduledAt?: string;
+}
+
 export interface TimetableSlot {
   period: number;
   teacherId?: mongoose.Types.ObjectId | null;
@@ -120,3 +134,23 @@ export interface IApiResponse<T> {
   message: string;
   data?: T;
 }
+
+
+  export interface SendMessageDTO {
+    chatRoomId: string;
+    senderId: string;
+    senderRole: Role;
+    content?: string;
+    mediaUrl?: string;
+    mediaType?: MediaType;
+  }
+  
+  export interface SendNotificationDTO {
+    title: string;
+    message: string;
+    recipientType: RecipientType;
+    recipientIds?: string[];
+    senderId: string;
+    senderRole: Role;
+    scheduledAt?: Date;
+  }

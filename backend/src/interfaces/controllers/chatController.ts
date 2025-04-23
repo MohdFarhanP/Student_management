@@ -1,23 +1,27 @@
+// interfaces/controllers/chatController.ts
 import { Request, Response } from 'express';
-import { SendMessage } from '../../application/useCases/message/sendMessage';
-import { MessageRepository } from '../../infrastructure/repositories/message/messageRepository';
+import { IChatController } from '../../domain/interface/IChatController';
+import { ISendMessageUseCase } from '../../domain/interface/ISendMessageUseCase';
+import { AppError, ValidationError, UnauthorizedError } from '../../domain/errors';
+import HttpStatus from '../../utils/httpStatus';
 
-export class ChatController {
-  private sendMessageUseCase: SendMessage;
-
-  constructor() {
-    this.sendMessageUseCase = new SendMessage(new MessageRepository());
-  }
+export class ChatController implements IChatController {
+  constructor(private sendMessageUseCase: ISendMessageUseCase) {}
 
   async sendMessage(req: Request, res: Response) {
     try {
       const message = await this.sendMessageUseCase.execute(req.body);
-      res.json(message);
+      res.status(HttpStatus.OK).json(message);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        res.status(500).json({ error: error.message });
+      if (error instanceof ValidationError) {
+        res.status(HttpStatus.BAD_REQUEST).json({ error: error.message });
+      } else if (error instanceof UnauthorizedError) {
+        res.status(HttpStatus.UNAUTHORIZED).json({ error: error.message });
+      } else if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message });
       } else {
-        res.status(500).json({ error: 'An unexpected error occurred' });
+        console.error(error);
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'An unexpected error occurred' });
       }
     }
   }

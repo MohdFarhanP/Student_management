@@ -1,7 +1,20 @@
+import e from "express";
+
 export enum Role {
     Admin = 'Admin',
     Student = 'Student',
     Teacher = 'Teacher',
+  }
+
+  export enum MediaType {
+    Image = 'image',
+    Document = 'document',
+  }
+  
+  export enum RecipientType {
+    Global = 'global',
+    Role = 'role',
+    Student = 'Student',
   }
   
   export enum Gender {

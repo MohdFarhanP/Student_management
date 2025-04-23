@@ -1,8 +1,10 @@
+import { INotification } from '../../../domain/types/interfaces';
 import { INotificationRepository } from '../../../domain/interface/INotificationRepository';
-import { SendNotificationDTO } from '../../../infrastructure/database/socketServer';
-import { INotification } from '../../../domain/interface/INotification';
+import { ISendNotificationUseCase } from '../../../domain/interface/ISendNotificationUseCase';
+import { SendNotificationDTO } from '../../../domain/types/interfaces';
+import { ValidationError } from '../../../domain/errors';
 
-export class SendNotification {
+export class SendNotification implements ISendNotificationUseCase {
   constructor(private notificationRepository: INotificationRepository) {}
 
   async execute(notification: SendNotificationDTO): Promise<INotification> {
@@ -12,11 +14,10 @@ export class SendNotification {
       !notification.senderId ||
       !notification.senderRole
     ) {
-      throw new Error('Missing required notification fields');
+      throw new ValidationError('Missing required notification fields');
     }
-    // Validate scheduledAt if provided
     if (notification.scheduledAt && notification.scheduledAt < new Date()) {
-      throw new Error('Scheduled time cannot be in the past');
+      throw new ValidationError('Scheduled time cannot be in the past');
     }
     return await this.notificationRepository.save(notification);
   }

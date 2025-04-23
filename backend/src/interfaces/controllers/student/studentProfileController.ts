@@ -1,77 +1,57 @@
-import { Request, Response } from 'express';
-import HttpStatus from '../../../utils/httpStatus';
-import { GetStudentProfileUseCase } from '../../../application/useCases/student/GetStudentProfileUseCase';
-import { UpdateStudentProfileImageUseCase } from '../../../application/useCases/student/UpdateStudentProfileImageUseCase';
+import { IGetStudentProfileUseCase } from '../../../domain/interface/IGetStudentProfileUseCase';
+import { IUpdateStudentProfileImageUseCase } from '../../../domain/interface/IUpdateStudentProfileImageUseCase';
 import { IStudentProfileController } from '../../../domain/interface/IStudentProfileController';
-import { IApiResponse } from '../../../domain/types/interfaces';
+import { Request, Response } from 'express';
+import { IApiResponse,IUser } from '../../../domain/types/interfaces';
+import HttpStatus from '../../../utils/httpStatus';
 import { Student } from '../../../domain/entities/student';
-import { IUser } from '../../../domain/types/interfaces';
+import { BadRequestError } from '../../../domain/errors';
 
 export class StudentProfileController implements IStudentProfileController {
   constructor(
-    private getStudentProfileUseCase: GetStudentProfileUseCase,
-    private updateStudentProfileImageUseCase: UpdateStudentProfileImageUseCase
+    private getStudentProfileUseCase: IGetStudentProfileUseCase,
+    private updateStudentProfileImageUseCase: IUpdateStudentProfileImageUseCase
   ) {}
 
   async getProfile(req: Request, res: Response): Promise<void> {
     try {
-      const { email } = req.params;
-      if (!email || typeof email !== 'string' || !email.includes('@')) {
-        throw new Error('Valid email parameter is required');
-      }
       const user = req.user as IUser | undefined;
-      if (!user || user.email !== email) {
-        throw new Error('Unauthorized: You can only access your own profile');
+      if (!user?.email) {
+        throw new BadRequestError('User email is required');
       }
-      const profile = await this.getStudentProfileUseCase.execute(email);
-      if (!profile) {
-        throw new Error('Student profile not found');
-      }
+      const student = await this.getStudentProfileUseCase.execute(user.email);
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Profile fetched successfully',
-        data: profile,
+        data: student,
       } as IApiResponse<Student>);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      res.status(HttpStatus.BAD_REQUEST).json({
-        success: false,
-        message,
-      } as IApiResponse<never>);
+      const message = error instanceof Error ? error.message : 'Failed to fetch profile';
+      const status = error instanceof BadRequestError ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;
+      res.status(status).json({ success: false, message } as IApiResponse<never>);
     }
   }
 
   async updateProfileImage(req: Request, res: Response): Promise<void> {
     try {
-      const { email, profileImage } = req.body;
-      if (!email || typeof email !== 'string' || !email.includes('@')) {
-        throw new Error('Valid email is required');
-      }
-      if (!profileImage || typeof profileImage !== 'string') {
-        throw new Error('Valid profileImage URL is required');
-      }
       const user = req.user as IUser | undefined;
-      if (!user || user.email !== email) {
-        throw new Error('Unauthorized: You can only update your own profile');
+      const { profileImage } = req.body;
+      if (!user?.email) {
+        throw new BadRequestError('User email is required');
       }
-      const updatedProfile = await this.updateStudentProfileImageUseCase.execute(
-        email,
-        profileImage
-      );
-      if (!updatedProfile) {
-        throw new Error('Profile update failed');
+      if (!profileImage) {
+        throw new BadRequestError('Profile image URL is required');
       }
+      const student = await this.updateStudentProfileImageUseCase.execute(user.email, profileImage);
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Profile image updated successfully',
-        data: updatedProfile,
+        data: student,
       } as IApiResponse<Student>);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      res.status(HttpStatus.BAD_REQUEST).json({
-        success: false,
-        message,
-      } as IApiResponse<never>);
+      const message = error instanceof Error ? error.message : 'Failed to update profile image';
+      const status = error instanceof BadRequestError ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;
+      res.status(status).json({ success: false, message } as IApiResponse<never>);
     }
   }
 }

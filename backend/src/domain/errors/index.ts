@@ -1,33 +1,51 @@
+import HttpStatus from "../../utils/httpStatus";
+
 export class BadRequestError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = 'BadRequestError';
-    }
+  constructor(message: string) {
+    super(message);
+    this.name = 'BadRequestError';
   }
-  
-  export class NotFoundError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = 'NotFoundError';
-    }
+}
+
+export class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundError';
   }
-  
-  export class ConflictError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = 'ConflictError';
-    }
+}
+
+export class ConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ConflictError';
   }
-  
-  export class UnauthorizedError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = 'UnauthorizedError';
-    }
-  }
-  export class ForbiddenError extends Error {
-    constructor(message: string) {
+}
+
+export class ForbiddenError extends Error {
+  constructor(message: string) {
     super(message);
     this.name = 'ForbiddenError';
-    }
-    }
+  }
+}
+
+export class AppError extends Error {
+  constructor(
+    public message: string,
+    public statusCode: HttpStatus
+  ) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+export class ValidationError extends AppError {
+  constructor(message: string) {
+    super(message, HttpStatus.BAD_REQUEST);
+  }
+}
+
+export class UnauthorizedError extends AppError {
+  constructor(message: string) {
+    super(message, HttpStatus.UNAUTHORIZED);
+  }
+}

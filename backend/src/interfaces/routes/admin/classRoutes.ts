@@ -26,11 +26,11 @@ router.post(
   authenticateUser,
   subjectController.createSubject.bind(subjectController)
 );
-router.get(
-  '/:grade/subjects',
-  authenticateUser,
-  subjectController.getClassSubjects.bind(subjectController)
-);
+// router.get(
+//   '/:grade/subjects',
+//   authenticateUser,
+//   subjectController.getClassSubjects.bind(subjectController)
+// );
 router.get(
   '/:classId/students',
   authenticateUser,

@@ -1,36 +1,13 @@
-import express from 'express';
-import { INotificationRepository } from '../../../domain/interface/INotificationRepository';
-import { NotificationRepository } from '../../../infrastructure/repositories/notification/notificationReopository';
-import { MarkNotificationAsRead } from '../../../application/useCases/notification/MarkNotificationAsReadUseCase';
-import { NotificationController } from '../../controllers/notification/notificationController';
+import { Router } from 'express';
+import { INotificationController } from '../../../domain/interface/INotificationController';
 import { authenticateUser } from '../../middleware/authenticateUser';
-import { GetNotificationsUseCase } from '../../../application/useCases/notification/GetNotificationsUseCase';
+import { DependencyContainer } from '../../../infrastructure/di/container';
 
-const router = express.Router();
+const router = Router();
+const container = DependencyContainer.getInstance();
+const notificationController: INotificationController = container.getNotificationController();
 
-const notificationRepository: INotificationRepository =
-  new NotificationRepository();
-const markNotificationAsReadUseCase = new MarkNotificationAsRead(
-  notificationRepository
-);
-const getNotificationsUseCase = new GetNotificationsUseCase(
-  notificationRepository
-)
-const notificationController = new NotificationController(
-  notificationRepository,
-  markNotificationAsReadUseCase,
-  getNotificationsUseCase
-);
-
-router.get(
-  '/',
-  authenticateUser,
-  notificationController.getNotifications.bind(notificationController)
-);
-router.put(
-  '/:id/read',
-  authenticateUser,
-  notificationController.markAsRead.bind(notificationController)
-);
+router.get('/', authenticateUser, notificationController.getNotifications.bind(notificationController));
+router.put('/:id/read', authenticateUser, notificationController.markAsRead.bind(notificationController));
 
 export default router;
