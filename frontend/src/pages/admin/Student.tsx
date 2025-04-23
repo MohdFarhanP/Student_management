@@ -21,6 +21,7 @@ const Student = () => {
   useEffect(() => {
     const fetch = async () => {
       const { students, totalCount } = await getStudents(page, limit);
+      console.log("studentpage",students,totalCount)
       setStudents(students);
       setTotalCount(totalCount);
     };

@@ -27,8 +27,13 @@ export interface IStudent {
 const ADMIN_STUDENT_API_URL = '/admin/students';
 
 interface StudentsResponse {
+  message: string;
+  success: boolean;
+  data:{
   students: IStudent[];
   totalCount: number;
+  }
+  
 }
 
 export const getStudents = (page: number, limit: number) =>
@@ -39,7 +44,8 @@ export const getStudents = (page: number, limit: number) =>
     {
       params: { page, limit },
     }
-  );
+  )
+    .then((res)=> res.data );
 
 export const addStudent = (data: Partial<IStudent>) =>
   apiRequest<{ data: IStudent }, Partial<IStudent>>(
@@ -51,12 +57,12 @@ export const addStudent = (data: Partial<IStudent>) =>
 export const editStudent = (studentId: string, data: Partial<IStudent>) =>
   apiRequest<IStudent, Partial<IStudent>>(
     'put',
-    `${ADMIN_STUDENT_API_URL}/studentById/${studentId}`,
+    `${ADMIN_STUDENT_API_URL}/${studentId}`,
     data
   );
 
 export const deleteStudent = (studentId: string) =>
   apiRequest<{ message: string }, string>(
     'delete',
-    `${ADMIN_STUDENT_API_URL}/studentById/${studentId}`
+    `${ADMIN_STUDENT_API_URL}/${studentId}`
   );

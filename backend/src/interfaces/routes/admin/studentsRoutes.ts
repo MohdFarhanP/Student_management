@@ -8,8 +8,8 @@ const studentController = container.getStudentController();
 
 router.get('/students', authenticateUser, studentController.getStudents.bind(studentController));
 router.post('/student', authenticateUser, studentController.addStudent.bind(studentController));
-router.put('/student/:studentId', authenticateUser, studentController.editStudent.bind(studentController));
-router.delete('/student/:studentId', authenticateUser, studentController.deleteStudent.bind(studentController));
+router.put('/:studentId', authenticateUser, studentController.editStudent.bind(studentController));
+router.delete('/:studentId', authenticateUser, studentController.deleteStudent.bind(studentController));
 router.get('/profile/:email', authenticateUser, studentController.getProfile.bind(studentController));
 
 export default router;

@@ -19,7 +19,7 @@ export interface User {
 
 interface LoginResponse {
   message: string;
-  user: User;
+  data: User;
 }
 
 export interface TokenResponse {
@@ -36,14 +36,14 @@ export const adminLogin = (data: ICredentials) =>
     'post',
     `${AUTH_API_URL}/login`,
     data
-  ).then((res) => res.user);
+  ).then((res) => res.data);
 
 export const updateUserPassword = (password: string) =>
   apiRequest<LoginResponse, UpdateUserPasswordParams>(
     'put',
     `${AUTH_API_URL}/update-password`,
     { password }
-  ).then((res) => res.user);
+  ).then((res) => res.data);
 
 export const adminLogout = () =>
   apiRequest<void>('post', `${AUTH_API_URL}/logout`);
