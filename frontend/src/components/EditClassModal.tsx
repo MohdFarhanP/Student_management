@@ -34,14 +34,26 @@ const EditClassModal = ({ classData }: { classData: IClassData }) => {
   }, [classData]);
 
   useEffect(() => {
+    let isMounted = true;
+  
     const fetchTeachers = async () => {
-      const responseTeachers = await getTeachersNames();
-      if (responseTeachers) {
-        setTeachers(responseTeachers);
+      try {
+        const responseTeachers = await getTeachersNames();
+        if (isMounted && responseTeachers) {
+          setTeachers(responseTeachers);
+        }
+      } catch (error) {
+        console.error("Failed to fetch teachers:", error);
       }
     };
+  
     fetchTeachers();
+  
+    return () => {
+      isMounted = false;
+    };
   }, []);
+  
 
   useEffect(() => {
     if (formData.grade && formData.section) {

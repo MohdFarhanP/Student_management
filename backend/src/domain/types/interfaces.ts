@@ -63,16 +63,18 @@ export interface ITeacher {
 // Class entity
 export interface IClass {
   id?: string;
+  _id?: mongoose.Types.ObjectId;
   name: string;
   section: Section;
   teachers: mongoose.Types.ObjectId[];
   timetable: mongoose.Types.ObjectId | null;
   students: mongoose.Types.ObjectId[];
   totalStudents: number;
-  tutor: mongoose.Types.ObjectId;
+  tutor: mongoose.Types.ObjectId | null;
   roomNo: string;
   subjects: mongoose.Types.ObjectId[];
   grade: Grade;
+  isDeleted?: boolean;
 }
 
 // Subject entity
@@ -153,4 +155,15 @@ export interface IApiResponse<T> {
     senderId: string;
     senderRole: Role;
     scheduledAt?: Date;
+  }
+  
+  // DTO for frontend
+  export interface IClassData {
+    _id: string;
+    name: string;
+    grade: string;
+    section: string;
+    roomNo: string;
+    tutor: string | null;
+    totalStudents: number;
   }

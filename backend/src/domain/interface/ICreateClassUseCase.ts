@@ -1,5 +1,5 @@
-import { ClassEntity } from '../../domain/entities/class';
+import { IClass } from '../types/interfaces';
 
 export interface ICreateClassUseCase {
-  execute(classData: Omit<ClassEntity, 'id'>): Promise<string>;
+  execute(classData: Partial<IClass>): Promise<string>;
 }

@@ -28,6 +28,15 @@ interface Class {
   name: string;
 }
 
+interface ClassResponse {
+  success: boolean;
+  message: string;
+  data:{
+    classes: IClassData[]
+    totalCount?: number
+  }
+}
+
 export const addClass = (data: IClassData) =>
   apiRequest<{ message: string }, IClassData>(
     'post',
@@ -39,12 +48,13 @@ export const addClass = (data: IClassData) =>
   });
 
 export const getClasses = (page: number, limit: number) =>
-  apiRequest<{ classes: IClassData[]; totalCount: number }>(
+  apiRequest<ClassResponse>(
     'get',
     `${ADMIN_CLASS_API_URL}/classdata`,
     undefined,
     { params: { page, limit } }
-  );
+  )
+    .then((res)=>res.data);
 export const getStudentsByClass = (classId: string) => {
   console.log('classId checking in from getStudentsByClass', classId);
   return apiRequest<Student[]>(

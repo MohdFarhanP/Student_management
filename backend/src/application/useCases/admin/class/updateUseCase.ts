@@ -1,18 +1,19 @@
 import { ClassEntity } from '../../../../domain/entities/class';
 import { IClassRepository } from '../../../../domain/interface/admin/IClassRepository';
 import { IUpdateClassUseCase } from '../../../../domain/interface/IUpdateClassUseCase';
+import { IClass } from '../../../../domain/types/interfaces';
 
 export class UpdateClassUseCase implements IUpdateClassUseCase {
   constructor(private classRepository: IClassRepository) {}
 
-  async execute(classId: string, updatedData: Partial<ClassEntity>): Promise<string> {
+  async execute(classId: string, updatedData: Partial<IClass>): Promise<string> {
     try {
       const existingClass = await this.classRepository.findById(classId);
       if (!existingClass) {
         throw new Error('Class not found');
       }
 
-      const filteredUpdates = Object.fromEntries(
+      const filteredUpdates: Partial<IClass> = Object.fromEntries(
         Object.entries(updatedData).filter(
           ([key, value]) =>
             value !== undefined &&

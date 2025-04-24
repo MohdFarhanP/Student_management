@@ -1,5 +1,5 @@
-import { ClassEntity } from '../../domain/entities/class';
+import { IClassData } from "../types/interfaces";
 
 export interface IGetClassesUseCase {
-  execute(page: number, limit: number): Promise<{ data: ClassEntity[]; totalCount: number }>;
+  execute(page: number, limit: number): Promise<{ data: IClassData[]; totalCount: number }>;
 }

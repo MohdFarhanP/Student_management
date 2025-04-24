@@ -4,14 +4,18 @@ import { ITeacher } from '../../pages/admin/Teacher';
 const ADMIN_TEACHER_API_URL = '/admin/teacher';
 
 interface TeachersResponse {
-  teachers: ITeacher[];
-  totalCount?: number;
+  message: string;
+  success: boolean;
+  data:{
+    teachers: ITeacher[] | Partial<ITeacher>[];
+    totalCount?: number;
+  }
 }
 
 export const getTeachersNames = () =>
   apiRequest<{ teachers: ITeacher[] }>(
     'get',
-    `${ADMIN_TEACHER_API_URL}/allTeachers`
+    `${ADMIN_TEACHER_API_URL}/all`
   ).then((res) => res.teachers);
 
 export const getTeachers = (page: number, limit: number) =>
@@ -22,24 +26,26 @@ export const getTeachers = (page: number, limit: number) =>
     {
       params: { page, limit },
     }
-  );
+  )
+    .then((res)=> res.data);
 
 export const editTeacher = (teacherId: string, data: ITeacher) =>
-  apiRequest<ITeacher, ITeacher>(
+  apiRequest<TeachersResponse, ITeacher>(
     'put',
-    `${ADMIN_TEACHER_API_URL}/teacherById/${teacherId}`,
+    `${ADMIN_TEACHER_API_URL}/${teacherId}`,
     data
-  );
+  )
+    .then((res)=> res.data);
 
 export const addTeacher = (data: Partial<ITeacher>) =>
-  apiRequest<ITeacher, Partial<ITeacher>>(
+  apiRequest<TeachersResponse, Partial<ITeacher>>(
     'post',
-    `${ADMIN_TEACHER_API_URL}/addTeacher`,
+    `${ADMIN_TEACHER_API_URL}/teacher`,
     data
   );
 
 export const deleteTeacher = (teacherId: string) =>
   apiRequest<{ message: string }>(
     'delete',
-    `${ADMIN_TEACHER_API_URL}/teacherById/${teacherId}`
+    `${ADMIN_TEACHER_API_URL}/${teacherId}`
   );

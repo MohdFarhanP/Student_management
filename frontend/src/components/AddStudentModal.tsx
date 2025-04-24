@@ -246,20 +246,6 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
             </div>
             <div>
               <label className="block text-sm font-medium text-black">
-                Profile Image
-              </label>
-              <input
-                type="text"
-                name="profileImage"
-                value={formData.profileImage || ''}
-                onChange={handleChange}
-                placeholder="Image URL"
-                className="mt-1 w-full rounded-md border p-2 text-black"
-                disabled={isSubmitting}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-black">
                 House Name
               </label>
               <input

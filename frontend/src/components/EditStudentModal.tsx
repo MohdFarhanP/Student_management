@@ -99,7 +99,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="relative w-full max-w-3xl rounded-lg bg-white shadow-lg">
-        <div className="flex items-center justify-between border-b pb-4">
+        <div className="flex items-center justify-between border-b p-6">
           <h3 className="text-xl font-semibold text-black">Edit Student</h3>
           <button
             onClick={onClose}

@@ -31,7 +31,9 @@ export class EditTeacherUseCase implements IEditTeacherUseCase {
         teacherData.subject = subjectDoc.id;
       }
       if (teacherData.assignedClass && typeof teacherData.assignedClass === 'string') {
+        console.log('assinged class in teacher data',teacherData.assignedClass)
         const classDoc = await this.classRepository.findByName(teacherData.assignedClass);
+        console.log('editClassUseCase getting class doc from repo :',classDoc)
         if (!classDoc) {
           throw new Error(`Class '${teacherData.assignedClass}' not found`);
         }

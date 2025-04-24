@@ -28,18 +28,12 @@ export class Teacher implements ITeacher {
     this.phoneNo = data.phoneNo || 0;
     this.empId = data.empId || '';
     this.assignedClass = data.assignedClass || null;
-    this.subject = data.subject || null;
+    this.subject = data.subject || undefined;
     this.dateOfBirth = data.dateOfBirth || '';
     this.profileImage = data.profileImage || '';
     this.specialization = data.specialization || '';
     this.experienceYears = data.experienceYears || 0;
     this.qualification = data.qualification || '';
-    this.availability = data.availability || {
-      [Day.Monday]: [],
-      [Day.Tuesday]: [],
-      [Day.Wednesday]: [],
-      [Day.Thursday]: [],
-      [Day.Friday]: [],
-    };
+    this.availability = data.availability || undefined;
   }
 }

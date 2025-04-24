@@ -78,7 +78,6 @@ export class TeacherRepository implements ITeacherRepository {
       specialization: t.specialization || '',
       experienceYears: t.experienceYears || 0,
       qualification: t.qualification || '',
-      availability: t.availability,
     }));
 
     const totalCount = await TeacherModel.countDocuments({ isDeleted: false });
@@ -166,7 +165,6 @@ export class TeacherRepository implements ITeacherRepository {
       specialization: teacherData.specialization || '',
       experienceYears: teacherData.experienceYears || 0,
       qualification: teacherData.qualification || '',
-      availability: teacherData.availability,
     });
   }
 
@@ -176,8 +174,10 @@ export class TeacherRepository implements ITeacherRepository {
       if (!subjectDoc) throw new Error(`Subject '${data.subject}' not found`);
       data.subject = subjectDoc._id;
     }
-    if (data.assignedClass && typeof data.assignedClass === 'string') {
-      const classDoc = await ClassModel.findOne({ name: data.assignedClass });
+    if (data.assignedClass) {
+      console.log('assignedClass',data.assignedClass)
+      const classDoc = await ClassModel.findById(data.assignedClass);
+      console.log('this is classDoc from teacher repo', classDoc);
       if (!classDoc) throw new Error(`Class '${data.assignedClass}' not found`);
       data.assignedClass = classDoc._id;
     }
@@ -208,13 +208,11 @@ export class TeacherRepository implements ITeacherRepository {
       phoneNo: teacherData.phoneNo,
       empId: teacherData.empId,
       assignedClass: teacherData.assignedClass ? teacherData.assignedClass.name : null,
-      subject: teacherData.subject ? teacherData.subject.subjectName : null,
       dateOfBirth: teacherData.dateOfBirth,
       profileImage: teacherData.profileImage || '',
       specialization: teacherData.specialization || '',
       experienceYears: teacherData.experienceYears || 0,
       qualification: teacherData.qualification || '',
-      availability: teacherData.availability,
     });
   }
 
@@ -259,7 +257,6 @@ export class TeacherRepository implements ITeacherRepository {
       specialization: teacherData.specialization || '',
       experienceYears: teacherData.experienceYears || 0,
       qualification: teacherData.qualification || '',
-      availability: teacherData.availability,
     });
   }
   
@@ -277,7 +274,6 @@ export class TeacherRepository implements ITeacherRepository {
       specialization: teacher.specialization,
       experienceYears: teacher.experienceYears,
       qualification: teacher.qualification,
-      availability: teacher.availability,
     };
 
     await TeacherModel.findByIdAndUpdate(

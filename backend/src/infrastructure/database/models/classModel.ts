@@ -12,7 +12,8 @@ const ClassSchema = new mongoose.Schema<IClass>({
   tutor: { type: Schema.Types.ObjectId, ref: 'Teacher', required: true },
   roomNo: { type: String, required: true },
   subjects: { type: [Schema.Types.ObjectId], ref: 'Subject', default: [] },
-  grade: { type: String, required: true, enum: Object.values(Grade) }, 
+  grade: { type: String, required: true, enum: Object.values(Grade) },
+  isDeleted: { type: Boolean, default: false },
 });
 
 export const ClassModel = mongoose.model('Class', ClassSchema);
