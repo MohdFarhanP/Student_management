@@ -53,14 +53,26 @@ export enum Role {
   }
 
   export enum SubjectName {
-    Math = 'Math',
-    Science = 'Science',
+    Malayalam = 'Malayalam',
+    Tamil = 'Tamil',
+    Kannada = 'Kannada',
+    Urdu = 'Urdu',
+    Gujarati = 'Gujarati',
+    Sanskrit = 'Sanskrit',
+    Arabic = 'Arabic',
+    Hindi = 'Hindi',
     English = 'English',
-    History = 'History',
-    Geography = 'Geography',
+    Math = 'Math',
     Physics = 'Physics',
     Chemistry = 'Chemistry',
     Biology = 'Biology',
+    Science = 'Science',
+    History = 'History',
+    Geography = 'Geography',
+    Civics = 'Civics',
+    Economics = 'Economics',
     ComputerScience = 'ComputerScience',
     Literature = 'Literature',
+    GeneralKnowledge = 'GeneralKnowledge',
   }
+  

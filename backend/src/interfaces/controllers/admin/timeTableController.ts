@@ -145,7 +145,7 @@ export class TimetableController implements ITimetableController {
       res.status(HttpStatus.OK).json({
         success: true,
         message: timetable.schedule ? 'Timetable fetched successfully' : 'No timetable found',
-        data: timetable,
+        data: timetable.toJSON(),
       } as IApiResponse<Timetable>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';

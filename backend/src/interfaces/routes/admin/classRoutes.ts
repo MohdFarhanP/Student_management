@@ -16,7 +16,7 @@ router.get(
   subjectController.fetchSubjectsByClassId.bind(subjectController)
 );
 router.get(
-  '/classnames',
+  '/class',
   authenticateUser,
   classController.getAllClassNames.bind(classController)
 );
@@ -26,11 +26,11 @@ router.post(
   authenticateUser,
   subjectController.createSubject.bind(subjectController)
 );
-// router.get(
-//   '/:grade/subjects',
-//   authenticateUser,
-//   subjectController.getClassSubjects.bind(subjectController)
-// );
+router.get(
+  '/:grade/subjects',
+  authenticateUser,
+  subjectController.getSubjectsByGrade.bind(subjectController)
+);
 router.get(
   '/:classId/students',
   authenticateUser,

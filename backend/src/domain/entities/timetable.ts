@@ -19,6 +19,13 @@ export class Timetable {
     return { ...this._schedule }; // Return a shallow copy to prevent external mutation
   }
 
+  toJSON() {
+    return {
+      classId: this.classId,
+      schedule: this.schedule,
+    };
+  }
+
   private normalizeSchedule(schedule?: TimetableSchedule): TimetableSchedule {
     const defaultSlots: TimetableSlot[] = Array(6)
       .fill(null)
@@ -35,7 +42,6 @@ export class Timetable {
     if (schedule) {
       for (const day of Object.values(Day)) {
         if (schedule[day] && Array.isArray(schedule[day])) {
-          // Ensure exactly 6 slots, preserving valid slots
           const existingSlots = schedule[day].filter(
             (slot) => slot.period >= 1 && slot.period <= 6
           );

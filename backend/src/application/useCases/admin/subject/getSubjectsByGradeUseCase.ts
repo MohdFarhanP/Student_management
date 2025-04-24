@@ -17,7 +17,7 @@ export class GetSubjectsByGradeUseCase implements IGetSubjectsByGradeUseCase {
       }
 
       const subjectIds = [...new Set(existingClasses.flatMap((cls) => cls.subjects))];
-      return await this.subjectRepository.findByIds(subjectIds);
+      return  await this.subjectRepository.findByIds(subjectIds);
     } catch (error) {
       throw error instanceof Error ? error : new Error('Failed to fetch subjects');
     }

@@ -107,7 +107,6 @@ export class TeacherRepository implements ITeacherRepository {
       specialization: t.specialization || '',
       experienceYears: t.experienceYears || 0,
       qualification: t.qualification || '',
-      availability: t.availability,
     }));
 
     return { data: teachers };

@@ -102,6 +102,7 @@ export interface INotification {
 export interface TimetableSlot {
   period: number;
   teacherId?: mongoose.Types.ObjectId | null;
+  teacherName?: string;
   subject?: string | null;
 }
 
@@ -115,6 +116,7 @@ export interface TimetableSchedule {
 
 export interface TimetableData {
   classId: ObjectId;
+  className?: string;
   schedule: TimetableSchedule;
 }
 
@@ -145,6 +147,11 @@ export interface IApiResponse<T> {
     content?: string;
     mediaUrl?: string;
     mediaType?: MediaType;
+  }
+  
+  export interface TeacherNameDTO {
+    id: string;
+    name: string;
   }
   
   export interface SendNotificationDTO {

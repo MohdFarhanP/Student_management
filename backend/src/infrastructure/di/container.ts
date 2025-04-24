@@ -24,7 +24,7 @@ import { GetStudentsByClassUseCase } from '../../application/useCases/admin/clas
 import { ClassController } from '../../interfaces/controllers/admin/classController';
 import { CreateSubjectUseCase } from '../../application/useCases/admin/subject/createSubjectUseCase';
 import { FetchSubjectsByClassIdUseCase } from '../../application/useCases/admin/subject/fetchSubjectsByClassIdUseCase';
-import { GetSubjectsByGradeUseCase } from '../../application/useCases/admin/subject/getSubjectUseCase';
+import { GetSubjectsByGradeUseCase } from '../../application/useCases/admin/subject/getSubjectsByGradeUseCase';
 import { DeleteSubjectUseCase } from '../../application/useCases/admin/subject/deleteSubjectUseCase';
 import { UpdateSubjectUseCase } from '../../application/useCases/admin/subject/updateSubjectUseCase';
 import { SubjectController } from '../../interfaces/controllers/admin/subjectController';

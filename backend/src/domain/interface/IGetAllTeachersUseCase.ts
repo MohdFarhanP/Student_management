@@ -1,5 +1,5 @@
-import { Teacher } from '../entities/teacher';
+import { TeacherNameDTO } from '../types/interfaces';
 
 export interface IGetAllTeachersUseCase {
-  execute(): Promise<Teacher[]>;
+  execute(): Promise<TeacherNameDTO[]>;
 }

@@ -5,7 +5,7 @@ export class SubjectEntity {
   constructor(
     public id: string,
     public subjectName: SubjectName,
-    public teachers: Types.ObjectId[],
+    public teachers: Types.ObjectId[] | string[],
     public notes: string[] = []
   ) {}
 
@@ -15,6 +15,6 @@ export class SubjectEntity {
     teachers = [],
     notes = [],
   }: Partial<SubjectEntity>): SubjectEntity {
-    return new SubjectEntity(id, subjectName, teachers as Types.ObjectId[], notes);
+    return new SubjectEntity(id, subjectName, teachers, notes);
   }
 }

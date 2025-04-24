@@ -6,7 +6,7 @@ import { IAddTeacherUseCase } from '../../../domain/interface/IAddTeacherUseCase
 import { IEditTeacherUseCase } from '../../../domain/interface/IEditTeacherUseCase';
 import { IDeleteTeacherUseCase } from '../../../domain/interface/IDeleteTeacherUseCase';
 import { ITeacherController } from '../../../domain/interface/ITeacherController';
-import { IApiResponse } from '../../../domain/types/interfaces';
+import { IApiResponse, TeacherNameDTO } from '../../../domain/types/interfaces';
 import { ITeacher } from '../../../domain/types/interfaces';
 import { Teacher } from '../../../domain/entities/teacher';
 
@@ -54,7 +54,7 @@ export class TeacherController implements ITeacherController {
           success: true,
           message: 'No teachers found',
           data: [],
-        } as IApiResponse<Teacher[]>);
+        } as IApiResponse<TeacherNameDTO[]>);
         return;
       }
       res.status(HttpStatus.OK).json({
