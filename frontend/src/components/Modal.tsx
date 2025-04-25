@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { CiCirclePlus } from 'react-icons/ci';
 import { createClass } from '../redux/slices/classSlice';
+import { fetchTeachers } from '../redux/slices/classSlice';
 import { IClassData } from '../api/admin/classApi';
-import { getTeachersNames } from '../api/admin/teacherApi';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../redux/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '../redux/store';
 
 interface FormFields {
   name?: string;
@@ -13,13 +13,10 @@ interface FormFields {
   roomNo?: string;
   tutor?: string;
 }
-interface Teacher {
-  name: string;
-  id: string;
-}
+
+
 const Modal = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [formData, setFormData] = useState<IClassData>({
     name: '',
     grade: '',
@@ -34,17 +31,16 @@ const Modal = () => {
     roomNo: '',
     tutor: '',
   });
+
   const dispatch = useDispatch<AppDispatch>();
+  const teachers = useSelector((state: RootState) => state.classes.teachers);
+  const teacherStatus = useSelector((state: RootState) => state.classes.teacherStatus);
 
   useEffect(() => {
-    const fetchTeachers = async () => {
-      const responseTeachers = await getTeachersNames();
-      if (responseTeachers) {
-        setTeachers(responseTeachers);
-      }
-    };
-    fetchTeachers();
-  }, []);
+    if (teacherStatus === 'idle') {
+      dispatch(fetchTeachers()); 
+    }
+  }, [dispatch, teacherStatus]);
 
   useEffect(() => {
     if (formData.grade && formData.section) {
@@ -103,7 +99,6 @@ const Modal = () => {
         roomNo: '',
         tutor: '',
       });
-
       toggleModal();
     }
   };

@@ -35,7 +35,7 @@ const PERIOD_DURATIONS = [
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
 const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
-  const [timetable, setTimetable] = useState<TimetableData | null>(null);
+  const [timetable, setTimetable] = useState<TimetableData>();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,8 +59,9 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
           fetchTimetable(classId),
           getTeachersNames(),
         ]);
+        console.log('this way timetable data getting ',timetableData)
         setTimetable(timetableData);
-        setTeachers(teachersData);
+        setTeachers(teachersData ?? []);
       } catch (err: unknown) {
         if (err instanceof AxiosError) {
           setError(err.message || 'Failed to fetch timetable or teachers');
@@ -178,6 +179,7 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
                 </td>
               ) : (
                 DAYS.map((day) => {
+                  
                   const slot = timetable.schedule[day]?.find(
                     (s: TimetableSlot) => s.period === period
                   );

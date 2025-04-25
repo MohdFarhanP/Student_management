@@ -3,8 +3,10 @@ import { toast } from 'react-toastify';
 import { store } from '../redux/store';
 import { refreshToken, logoutUser } from '../redux/slices/authSlice';
 
+const AXIOS_BASE_URL = import.meta.env.VITE_AXIOS_BASE_URL;
+
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: AXIOS_BASE_URL,
   withCredentials: true,
 });
 

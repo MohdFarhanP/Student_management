@@ -1,4 +1,3 @@
-// src/components/ClassTable.tsx
 import React from 'react';
 
 interface ClassTableProps {

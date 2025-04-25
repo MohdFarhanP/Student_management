@@ -24,17 +24,25 @@ export interface Teacher {
   specialization: string;
   experienceYears: number;
   qualification: string;
-  availability: Availability;
+  availability?: Availability;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data?: T;
 }
 
 export const teachersProfileFetch = (email: string) =>
-  apiRequest<Teacher>('get', `${TEACHER_API_URL}/profile`, undefined, {
+  apiRequest<ApiResponse<Teacher>>('get', `${TEACHER_API_URL}/profile`, undefined, {
     params: { email },
-  });
+  })
+    .then((res)=> res.data);
 
 export const updateTeacherProfileApi = (profile: Partial<Teacher>) =>
-  apiRequest<Teacher, Partial<Teacher>>(
+  apiRequest<ApiResponse<Teacher>, Partial<Teacher>>(
     'patch',
     `${TEACHER_API_URL}/profile`,
     profile
-  );
+  )
+    .then((res)=> res.data);

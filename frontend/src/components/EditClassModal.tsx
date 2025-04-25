@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { IClassData } from '../api/admin/classApi';
-import { getTeachersNames } from '../api/admin/teacherApi';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../redux/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../redux/store';
 import { editClass } from '../redux/slices/classSlice';
+import { fetchTeachers } from '../redux/slices/classSlice';
 
 interface FormFields {
   name?: string;
@@ -12,13 +12,9 @@ interface FormFields {
   roomNo?: string;
   tutor?: string;
 }
-interface Teacher {
-  name: string;
-  id: string;
-}
+
 const EditClassModal = ({ classData }: { classData: IClassData }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [formData, setFormData] = useState<IClassData>(classData);
   const [errors, setErrors] = useState<FormFields>({
     name: '',
@@ -28,31 +24,18 @@ const EditClassModal = ({ classData }: { classData: IClassData }) => {
     tutor: '',
   });
   const dispatch = useDispatch<AppDispatch>();
+  const teachers = useSelector((state: RootState) => state.classes.teachers);
+  const teacherStatus = useSelector((state: RootState) => state.classes.teacherStatus);
 
   useEffect(() => {
     setFormData(classData);
   }, [classData]);
 
   useEffect(() => {
-    let isMounted = true;
-  
-    const fetchTeachers = async () => {
-      try {
-        const responseTeachers = await getTeachersNames();
-        if (isMounted && responseTeachers) {
-          setTeachers(responseTeachers);
-        }
-      } catch (error) {
-        console.error("Failed to fetch teachers:", error);
-      }
-    };
-  
-    fetchTeachers();
-  
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    if (teacherStatus === 'idle') {
+      dispatch(fetchTeachers()); 
+    }
+  }, [dispatch, teacherStatus]);
   
 
   useEffect(() => {

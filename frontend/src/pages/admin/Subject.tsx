@@ -9,23 +9,17 @@ import {
   getSubjectsByClass,
   updateSubject,
   deleteSubject,
+  ISubject,
 } from '../../api/admin/subjectApi';
 import { AxiosError } from 'axios';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const Subject = () => {
   const [selectedClass, setSelectedClass] = useState<string>('');
-  const [subjects, setSubjects] = useState<
-    { _id: string; subjectName: string; teachers: string[]; notes: string[] }[]
-  >([]);
+  const [subjects, setSubjects] = useState<ISubject[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedSubject, setSelectedSubject] = useState<{
-    _id: string;
-    subjectName: string;
-    teachers: string[];
-    notes: string[];
-  } | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<ISubject | null>(null);
 
   useEffect(() => {
     if (!selectedClass) return;
@@ -65,17 +59,13 @@ const Subject = () => {
     }
   };
 
-  const handleEditSubject = (subject: {
-    _id: string;
-    subjectName: string;
-    teachers: string[];
-    notes: string[];
-  }) => {
+  const handleEditSubject = (subject: ISubject) => {
     setSelectedSubject(subject);
     setIsEditModalOpen(true);
   };
 
   const handleUpdateSubject = async (updatedSubject: {
+    id: string;
     subjectName: string;
     teachers: string[];
     notes: File[];
@@ -85,11 +75,11 @@ const Subject = () => {
     try {
       const result = await updateSubject(
         selectedClass,
-        selectedSubject._id,
+        selectedSubject.id,
         updatedSubject
       );
       setSubjects((prev) =>
-        prev.map((sub) => (sub._id === selectedSubject._id ? result : sub))
+        prev.map((sub) => (sub.id === selectedSubject.id ? result : sub))
       );
       setIsEditModalOpen(false);
       setSelectedSubject(null);
@@ -107,7 +97,7 @@ const Subject = () => {
     if (window.confirm('Are you sure you want to delete this subject?')) {
       try {
         await deleteSubject(selectedClass, subjectId);
-        setSubjects((prev) => prev.filter((sub) => sub._id !== subjectId));
+        setSubjects((prev) => prev.filter((sub) => sub.id !== subjectId));
         toast.success('Subject deleted successfully!');
       } catch (error: unknown) {
         if (error instanceof AxiosError) {
@@ -130,7 +120,7 @@ const Subject = () => {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {subjects.map((subject) => (
             <div
-              key={subject._id}
+              key={subject.id}
               className="w-full max-w-[180px] rounded-2xl bg-blue-200 p-5 shadow-lg transition duration-300 hover:shadow-xl"
             >
               <div className="flex items-center justify-between">
@@ -146,7 +136,7 @@ const Subject = () => {
                     <FaEdit size={16} />
                   </button>
                   <button
-                    onClick={() => handleDeleteSubject(subject._id)}
+                    onClick={() => handleDeleteSubject(subject.id)}
                     className="text-black transition duration-200 hover:text-red-600"
                     title="Delete Subject"
                   >
@@ -179,7 +169,7 @@ const Subject = () => {
                   subject.teachers.length > 0 ? (
                       subject.teachers.map((teacher, index) => (
                         <li key={index} className="truncate text-sm text-black">
-                          {teacher}
+                          {typeof teacher === 'string' ? teacher : teacher.name}
                         </li>
                       ))
                     ) : (

@@ -4,22 +4,29 @@ import { ITeacher } from '../../pages/admin/Teacher';
 const ADMIN_TEACHER_API_URL = '/admin/teacher';
 
 interface TeachersResponse {
-  message: string;
-  success: boolean;
-  data:{
     teachers: ITeacher[] | Partial<ITeacher>[];
     totalCount?: number;
-  }
+}
+
+interface TeacherName {
+  id: string;
+  name: string;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data?: T;
 }
 
 export const getTeachersNames = () =>
-  apiRequest<{ teachers: ITeacher[] }>(
+  apiRequest<ApiResponse<TeacherName[]>>(
     'get',
     `${ADMIN_TEACHER_API_URL}/all`
-  ).then((res) => res.teachers);
+  ).then((res) => res.data);
 
 export const getTeachers = (page: number, limit: number) =>
-  apiRequest<TeachersResponse>(
+  apiRequest<ApiResponse<TeachersResponse>>(
     'get',
     `${ADMIN_TEACHER_API_URL}/teachers`,
     undefined,
@@ -30,7 +37,7 @@ export const getTeachers = (page: number, limit: number) =>
     .then((res)=> res.data);
 
 export const editTeacher = (teacherId: string, data: ITeacher) =>
-  apiRequest<TeachersResponse, ITeacher>(
+  apiRequest<ApiResponse<TeachersResponse>, ITeacher>(
     'put',
     `${ADMIN_TEACHER_API_URL}/${teacherId}`,
     data
@@ -38,14 +45,14 @@ export const editTeacher = (teacherId: string, data: ITeacher) =>
     .then((res)=> res.data);
 
 export const addTeacher = (data: Partial<ITeacher>) =>
-  apiRequest<TeachersResponse, Partial<ITeacher>>(
+  apiRequest<ApiResponse<TeachersResponse>, Partial<ITeacher>>(
     'post',
     `${ADMIN_TEACHER_API_URL}/teacher`,
     data
   );
 
 export const deleteTeacher = (teacherId: string) =>
-  apiRequest<{ message: string }>(
+  apiRequest<ApiResponse<void>>(
     'delete',
     `${ADMIN_TEACHER_API_URL}/${teacherId}`
   );

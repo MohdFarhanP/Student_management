@@ -19,6 +19,28 @@ interface Teacher {
   id: string;
 }
 
+const SUBJECT_OPTIONS = [
+  'Malayalam',
+  'Tamil',
+  'Kannada',
+  'Urdu',
+  'Gujarati',
+  'Sanskrit',
+  'Arabic',
+  'Hindi',
+  'English',
+  'Mathematics',
+  'Physics',
+  'Chemistry',
+  'Biology',
+  'History',
+  'Geography',
+  'Civics',
+  'Economics',
+  'General Knowledge',
+];
+
+
 const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   isOpen,
   onClose,
@@ -79,11 +101,11 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
     setNotesFiles((prevFiles) => [...prevFiles, ...files]);
   };
 
-  const handleTeacherSelection = (teacher: string) => {
+  const handleTeacherSelection = (teacherId: string) => {
     setSelectedTeachers((prev) =>
-      prev.includes(teacher)
-        ? prev.filter((t) => t !== teacher)
-        : [...prev, teacher]
+      prev.includes(teacherId)
+        ? prev.filter((t) => t !== teacherId)
+        : [...prev, teacherId]
     );
     setErrors((prev) => ({ ...prev, teachers: undefined }));
   };
@@ -132,19 +154,23 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
           <label className="block text-sm font-medium text-gray-700">
             Subject Name
           </label>
-          <input
-            type="text"
+          <select
             value={subjectName}
             onChange={(e) => {
               setSubjectName(e.target.value);
               setErrors((prev) => ({ ...prev, subjectName: undefined }));
             }}
-            className={`mt-1 w-full rounded-md border p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none ${
-              errors.subjectName ? 'border-red-500' : 'border-gray-300'
-            }`}
-            placeholder="Enter subject name"
+            className="mt-1 w-full rounded-md border p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none"
             disabled={loading}
-          />
+          >
+            <option value="">Select a subject</option>
+            {SUBJECT_OPTIONS.map((subject) => (
+              <option key={subject} value={subject}>
+                {subject}
+              </option>
+            ))}
+          </select>
+
           {errors.subjectName && (
             <p className="mt-1 text-sm text-red-500">{errors.subjectName}</p>
           )}
@@ -159,9 +185,9 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
               <button
                 key={teacher.id}
                 type="button"
-                onClick={() => handleTeacherSelection(teacher.name)}
+                onClick={() => handleTeacherSelection(teacher.id)}
                 className={`rounded-md px-3 py-1 text-sm ${
-                  selectedTeachers.includes(teacher.name)
+                  selectedTeachers.includes(teacher.id)
                     ? 'bg-black text-white'
                     : 'bg-gray-200 text-gray-800'
                 }`}

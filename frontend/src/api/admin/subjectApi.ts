@@ -9,10 +9,10 @@ export interface ISubjectData {
   notes: File[] | null;
 }
 
-export interface Subject {
-  _id: string;
+export interface ISubject {
+  id: string;
   subjectName: string;
-  teachers: string[];
+  teachers: { _id: string ,name: string }[];
   notes: string[];
 }
 
@@ -22,34 +22,40 @@ export interface FinalSubjectData {
   notes: string[];
 }
 
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data?: T;
+}
+
 export const addSubject = async (cls: string, subjectData: ISubjectData) => {
   const uploadedNotes = subjectData.notes
-    ? await Promise.all(
-        subjectData.notes.map((file) => uploadToCloudinary(file))
-      )
+    ? await Promise.all(subjectData.notes.map((file) => uploadToCloudinary(file)))
     : [];
-  const validNotes = uploadedNotes.filter(
-    (url): url is string => typeof url === 'string'
-  );
+  const validNotes = uploadedNotes.filter((url): url is string => typeof url === 'string');
   const finalSubjectData: FinalSubjectData = {
     ...subjectData,
     notes: validNotes,
   };
-  return apiRequest<Subject, FinalSubjectData>(
+  return apiRequest<ApiResponse<ISubject>, FinalSubjectData>(
     'post',
     `${ADMIN_SUBJECT_API}/${cls}/subjects`,
     finalSubjectData,
     {
       headers: { 'Content-Type': 'application/json' },
     }
-  );
+  ).then((res) => res.data);
 };
 
 export const getSubjectsByClass = (cls: string) =>
-  apiRequest<Subject[]>('get', `${ADMIN_SUBJECT_API}/${cls}/subjects`);
+  apiRequest<ApiResponse<ISubject[]>>('get', `${ADMIN_SUBJECT_API}/${cls}/subjects`)
+    .then((res) => {
+      console.log('this is the res.data from getsubjectByclass from fronted api ',res.data)
+      return res.data});
 
 export const fetchSubjectsByClassId = (classId: string) =>
-  apiRequest<Subject[]>('get', `${ADMIN_SUBJECT_API}/${classId}/subject`);
+  apiRequest<ApiResponse<ISubject[]>>('get', `${ADMIN_SUBJECT_API}/${classId}/subject`)
+    .then((res) => res.data);
 
 export const updateSubject = async (
   classGrade: string,
@@ -59,22 +65,18 @@ export const updateSubject = async (
   const uploadedNotes = subject.notes
     ? await Promise.all(subject.notes.map((file) => uploadToCloudinary(file)))
     : [];
-  const validNotes = uploadedNotes.filter(
-    (url): url is string => typeof url === 'string'
-  );
+  const validNotes = uploadedNotes.filter((url): url is string => typeof url === 'string');
   const finalSubjectData = { ...subject, notes: validNotes };
-  return apiRequest<Subject, FinalSubjectData>(
+  return apiRequest<ApiResponse<ISubject>, FinalSubjectData>(
     'put',
     `${ADMIN_SUBJECT_API}/${classGrade}/subjects/${subjectId}`,
     finalSubjectData,
     {
       headers: { 'Content-Type': 'application/json' },
     }
-  );
+  ).then((res) => res.data);
 };
 
 export const deleteSubject = (classGrade: string, subjectId: string) =>
-  apiRequest<{ message: string }>(
-    'delete',
-    `${ADMIN_SUBJECT_API}/${classGrade}/subjects/${subjectId}`
-  );
+  apiRequest<ApiResponse<void>>('delete', `${ADMIN_SUBJECT_API}/${classGrade}/subjects/${subjectId}`)
+    .then((res) => res.data);

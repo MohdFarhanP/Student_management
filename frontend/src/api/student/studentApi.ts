@@ -43,19 +43,25 @@ interface UpdateProfileImgParams {
   profileImage: string;
   email: string;
 }
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data?: T;
+}
 
 export const studentsProfileFetch = (email: string) =>
-  apiRequest<StudentProfile>('get', `${STUDENT_API_URL}/profile/${email}`);
-
+  apiRequest<ApiResponse<StudentProfile>>('get', `${STUDENT_API_URL}/profile/${email}`)
+    .then((res)=> res.data);
 export const fetchAttendance = (id: string) =>
-  apiRequest<Attendance[]>('get', `${STUDENT_API_URL}/attendance/${id}`);
+  apiRequest<ApiResponse<Attendance[]>>('get', `${STUDENT_API_URL}/attendance/${id}`)
+    .then((res)=> res.data);
 
 export const updateProfileImg = (imgUrl: string, email: string) =>
-  apiRequest<StudentProfile, UpdateProfileImgParams>(
+  apiRequest<ApiResponse<StudentProfile>, UpdateProfileImgParams>(
     'patch',
     `${STUDENT_API_URL}/profile/image`,
     { email, profileImage: imgUrl }
   ).then((res) => {
     toast.success('Profile image updated successfully');
-    return res;
+    return res.data;
   });

@@ -42,7 +42,7 @@ const AssignEditModal: React.FC<AssignEditModalProps> = ({
     const fetchSubjects = async () => {
       try {
         const subjectsData = await fetchSubjectsByClassId(classId);
-        setSubjects(subjectsData);
+        setSubjects(subjectsData ?? []);
       } catch (err: unknown) {
         if (err instanceof AxiosError) console.log(err?.message);
       }

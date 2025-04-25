@@ -1,5 +1,5 @@
 export interface INote {
-    _id: string;
+    id: string;
     title: string;
     fileUrl: string;
     uploadedBy: string;

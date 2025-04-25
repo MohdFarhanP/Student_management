@@ -3,17 +3,14 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ImSpinner2 } from 'react-icons/im';
 import { getTeachersNames } from '../api/admin/teacherApi';
+import { ISubject } from '../api/admin/subjectApi';
 
 interface EditSubjectModalProps {
-  subject: {
-    _id: string;
-    subjectName: string;
-    teachers: string[];
-    notes: string[];
-  };
+  subject: ISubject;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (subject: {
+    id: string;
     subjectName: string;
     teachers: string[];
     notes: File[];
@@ -25,6 +22,27 @@ interface Teacher {
   id: string;
 }
 
+const SUBJECT_OPTIONS = [
+  'Malayalam',
+  'Tamil',
+  'Kannada',
+  'Urdu',
+  'Gujarati',
+  'Sanskrit',
+  'Arabic',
+  'Hindi',
+  'English',
+  'Mathematics',
+  'Physics',
+  'Chemistry',
+  'Biology',
+  'History',
+  'Geography',
+  'Civics',
+  'Economics',
+  'General Knowledge',
+];
+
 const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
   subject,
   isOpen,
@@ -32,7 +50,7 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
   onSubmit,
 }) => {
   const [subjectName, setSubjectName] = useState(subject.subjectName);
-  const [selectedTeachers, setSelectedTeachers] = useState<string[]>(subject.teachers);
+  const [selectedTeachers, setSelectedTeachers] = useState<string[]>(subject.teachers.map((t)=> t._id));
   const [existingNotes, setExistingNotes] = useState<string[]>(subject.notes);
   const [newNotesFiles, setNewNotesFiles] = useState<File[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -45,6 +63,7 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
         const responseTeachers = await getTeachersNames();
         if (responseTeachers) {
           setTeachers(responseTeachers);
+          console.log('Fetched teachers:', responseTeachers);
         }
       } catch (error) {
         console.error('Error fetching teachers:', error);
@@ -52,9 +71,8 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
       }
     };
     fetchTeachers();
-
+    setSelectedTeachers(subject.teachers.map(t => t._id));
     setSubjectName(subject.subjectName);
-    setSelectedTeachers(subject.teachers);
     setExistingNotes(subject.notes);
     setNewNotesFiles([]);
     setErrors({});
@@ -65,7 +83,6 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
   const validateForm = () => {
     const newErrors: { subjectName?: string; teachers?: string } = {};
 
-    // Validate subjectName
     const trimmedSubjectName = subjectName.trim();
     if (!trimmedSubjectName) {
       newErrors.subjectName = 'Subject name is required.';
@@ -77,7 +94,6 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
       newErrors.subjectName = 'Subject name can only contain letters, numbers, spaces, hyphens, or underscores.';
     }
 
-    // Validate selectedTeachers
     if (selectedTeachers.length === 0) {
       newErrors.teachers = 'At least one teacher must be selected.';
     }
@@ -98,11 +114,12 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
     setNewNotesFiles((prevFiles) => [...prevFiles, ...files]);
   };
 
-  const handleTeacherSelection = (teacher: string) => {
+  const handleTeacherSelection = (teacherId: string) => {
+    const normalizedTeacherId = teacherId.toLowerCase();
     setSelectedTeachers((prev) =>
-      prev.includes(teacher)
-        ? prev.filter((t) => t !== teacher)
-        : [...prev, teacher]
+      prev.map((id) => id.toLowerCase()).includes(normalizedTeacherId)
+        ? prev.filter((id) => id.toLowerCase() !== normalizedTeacherId)
+        : [...prev, teacherId]
     );
     setErrors((prev) => ({ ...prev, teachers: undefined }));
   };
@@ -123,6 +140,7 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
     setLoading(true);
     try {
       await onSubmit({
+        id: subject.id,
         subjectName: subjectName.trim(),
         teachers: selectedTeachers,
         notes: newNotesFiles,
@@ -157,19 +175,22 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
           <label className="block text-sm font-medium text-gray-700">
             Subject Name
           </label>
-          <input
-            type="text"
+          <select
             value={subjectName}
             onChange={(e) => {
               setSubjectName(e.target.value);
               setErrors((prev) => ({ ...prev, subjectName: undefined }));
             }}
-            className={`mt-1 w-full rounded-md border p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none ${
-              errors.subjectName ? 'border-red-500' : 'border-gray-300'
-            }`}
-            placeholder="Enter subject name"
+            className="mt-1 w-full rounded-md border p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none"
             disabled={loading}
-          />
+          >
+            <option value="">Select a subject</option>
+            {SUBJECT_OPTIONS.map((subject) => (
+              <option key={subject} value={subject}>
+                {subject}
+              </option>
+            ))}
+          </select>
           {errors.subjectName && (
             <p className="mt-1 text-sm text-red-500">{errors.subjectName}</p>
           )}
@@ -180,21 +201,26 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
             Select Teachers
           </label>
           <div className="mt-1 flex flex-wrap gap-2">
-            {teachers.map((teacher) => (
-              <button
-                key={teacher.id}
-                type="button"
-                onClick={() => handleTeacherSelection(teacher.name)}
-                className={`rounded-md px-3 py-1 text-sm ${
-                  selectedTeachers.includes(teacher.name)
-                    ? 'bg-black text-white'
-                    : 'bg-gray-200 text-gray-800'
-                }`}
-                disabled={loading}
-              >
-                {teacher.name}
-              </button>
-            ))}
+            {teachers.map((teacher) => {
+              const isSelected = selectedTeachers
+                .map((id) => id.toLowerCase())
+                .includes(teacher.id.toLowerCase());
+              return (
+                <button
+                  key={teacher.id}
+                  type="button"
+                  onClick={() => handleTeacherSelection(teacher.id)}
+                  className={`rounded-md px-3 py-1 text-sm transition-colors duration-200 ${
+                    isSelected
+                      ? 'bg-black text-white hover:bg-gray-800'
+                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                  }`}
+                  disabled={loading}
+                >
+                  {teacher.name}
+                </button>
+              );
+            })}
           </div>
           {errors.teachers && (
             <p className="mt-1 text-sm text-red-500">{errors.teachers}</p>

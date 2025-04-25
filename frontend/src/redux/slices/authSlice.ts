@@ -33,6 +33,10 @@ export const loginUser = createAsyncThunk(
   ) => {
     try {
       const response = await adminLogin(credentials);
+      console.log('login user data ',response)
+      if (!response) {
+        throw new Error('No user data returned');
+      }
       return response;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Login failed';
@@ -46,6 +50,9 @@ export const updatePassword = createAsyncThunk(
   async (password: string, { rejectWithValue }) => {
     try {
       const response = await updateUserPassword(password);
+      if (!response) {
+        throw new Error('No user data returned');
+      }
       return response;
     } catch (error: unknown) {
       const message =
@@ -64,6 +71,9 @@ User,
   async (args, { rejectWithValue }) => {
     try {
       const response = await refreshUserToken(args?.showErrorToast);
+      if (!response) {
+        throw new Error('No user data returned');
+      }
       return response;
     } catch (error: unknown) {
       console.error('refreshToken: error=', error);
@@ -80,8 +90,7 @@ export const checkAuthOnLoad = createAsyncThunk(
     try {
       const response = await dispatch(refreshToken({ showErrorToast: false })).unwrap();
       return response;
-    } catch (error) {
-      console.warn('checkAuthOnLoad: refreshToken failed silently.',error);
+    } catch {
       return null;
     }
   }

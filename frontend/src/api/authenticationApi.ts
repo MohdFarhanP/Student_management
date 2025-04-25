@@ -17,39 +17,34 @@ export interface User {
   isInitialLogin?: boolean;
 }
 
-interface LoginResponse {
-  message: string;
-  data: User;
-}
-
-export interface TokenResponse {
-  message: string;
-  user: User;
-}
-
 interface UpdateUserPasswordParams {
   password: string;
 }
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data?: T;
+}
 
 export const adminLogin = (data: ICredentials) =>
-  apiRequest<LoginResponse, ICredentials>(
+  apiRequest<ApiResponse<User>, ICredentials>(
     'post',
     `${AUTH_API_URL}/login`,
     data
   ).then((res) => res.data);
 
 export const updateUserPassword = (password: string) =>
-  apiRequest<LoginResponse, UpdateUserPasswordParams>(
+  apiRequest<ApiResponse<User>, UpdateUserPasswordParams>(
     'put',
     `${AUTH_API_URL}/update-password`,
     { password }
   ).then((res) => res.data);
 
 export const adminLogout = () =>
-  apiRequest<void>('post', `${AUTH_API_URL}/logout`);
+  apiRequest<ApiResponse<void>>('post', `${AUTH_API_URL}/logout`);
 
 export const refreshUserToken = (showErrorToast = true) =>
-  apiRequest<TokenResponse>('post', `${AUTH_API_URL}/refresh-token`,
+  apiRequest<ApiResponse<User>>('post', `${AUTH_API_URL}/refresh-token`,
     undefined,
     {showErrorToast},
-  ).then((res) => res.user);
+  ).then((res) => res.data);

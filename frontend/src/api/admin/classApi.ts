@@ -28,17 +28,14 @@ interface Class {
   name: string;
 }
 
-interface ClassResponse {
+interface ApiResponse<T> {
   success: boolean;
   message: string;
-  data:{
-    classes: IClassData[]
-    totalCount?: number
-  }
+  data?: T;
 }
 
 export const addClass = (data: IClassData) =>
-  apiRequest<{ message: string }, IClassData>(
+  apiRequest<ApiResponse<Student>, IClassData>(
     'post',
     `${ADMIN_CLASS_API_URL}/class`,
     data
@@ -48,30 +45,32 @@ export const addClass = (data: IClassData) =>
   });
 
 export const getClasses = (page: number, limit: number) =>
-  apiRequest<ClassResponse>(
+  apiRequest<ApiResponse<IClassData[]>>(
     'get',
     `${ADMIN_CLASS_API_URL}/classdata`,
     undefined,
     { params: { page, limit } }
   )
     .then((res)=>res.data);
+
 export const getStudentsByClass = (classId: string) => {
   console.log('classId checking in from getStudentsByClass', classId);
-  return apiRequest<Student[]>(
+  return apiRequest<ApiResponse<Student[]>>(
     'get',
     `${ADMIN_CLASS_API_URL}/${classId}/students`,
     undefined
-  );
+  ).then((res)=> res.data);
 };
 
 export const getClassNames = () =>
-  apiRequest<{ classNames: string[] }>(
+  apiRequest<ApiResponse<IClassData[]>>(
     'get',
-    `${ADMIN_CLASS_API_URL}/classNames`
-  );
+    `${ADMIN_CLASS_API_URL}/class`
+  )
+    .then((res)=> res.data);
 
 export const updateClass = (data: IClassData) =>
-  apiRequest<{ message: string }, IClassData>(
+  apiRequest<ApiResponse<void>, IClassData>(
     'put',
     `${ADMIN_CLASS_API_URL}/update/${data._id}`,
     data
@@ -81,4 +80,5 @@ export const updateClass = (data: IClassData) =>
   });
 
 export const fetchClasses = () =>
-  apiRequest<Class[]>('get', `${ADMIN_CLASS_API_URL}/classlist`);
+  apiRequest<ApiResponse<Class[]>>('get', `${ADMIN_CLASS_API_URL}/classlist`)
+    .then((res)=> res?.data);

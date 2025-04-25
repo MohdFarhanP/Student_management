@@ -8,19 +8,19 @@ import StudentSidebar from '../../components/StudentSidebar';
 const NoteList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { notes, loading, error } = useSelector((state: RootState) => state.notes);
+  const DOWNLOAD_URL = import.meta.env.VITE_NOTE_DOWNLOAD_URL;
 
   useEffect(() => {
     dispatch(fetchNotes());
   }, [dispatch]);
 
   const handleDownload = (noteId: string, title: string) => {
-    // Create a temporary <a> element to trigger the download
     const link = document.createElement('a');
-    link.href = `http://localhost:5000/api/notes/download/${noteId}`; // Backend endpoint
-    link.download = `${title}.pdf`; // Set the desired filename (assuming PDF extension)
+    link.href = `${DOWNLOAD_URL}/${noteId}`;
+    link.download = `${title}.pdf`;
     document.body.appendChild(link);
-    link.click(); // Simulate click to start download
-    document.body.removeChild(link); // Clean up
+    link.click();
+    document.body.removeChild(link);
   };
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -32,12 +32,12 @@ const NoteList: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {notes.map((note:INote) => (
             <div
-              key={note._id}
+              key={note.id}
               className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow flex flex-col"
             >
               <h3 className="text-lg font-medium truncate mb-3">{note.title}</h3>
               <button
-                onClick={() => handleDownload(note._id, note.title)}
+                onClick={() => handleDownload(note.id, note.title)}
                 className="mt-auto bg-green-500 dark:bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition-colors"
               >
                 Download

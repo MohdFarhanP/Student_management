@@ -16,41 +16,49 @@ type DeleteSlotData = {
   period: number;
 };
 
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data?: T;
+};
+
+
 export const fetchTimetable = (classId: string) =>
-  apiRequest<TimetableData>('get', `${ADMIN_TIMETABLE_API}/${classId}`);
+  apiRequest<ApiResponse<TimetableData>>('get', `${ADMIN_TIMETABLE_API}/${classId}`)
+    .then((res)=> res.data);
 
 export const updateTimetableSlot = (
   classId: string,
   data: AssignTeacherFormData
 ) =>
-  apiRequest<TimetableData, AssignTeacherFormData>(
+  apiRequest<ApiResponse<TimetableData>, AssignTeacherFormData>(
     'put',
-    `${ADMIN_TIMETABLE_API}/${classId}/update`,
+    `${ADMIN_TIMETABLE_API}/${classId}/slot`,
     data
   ).then((res) => {
     toast.success('Timetable slot updated successfully!');
-    return res;
+    return res.data;
   });
 
 export const deleteTimetableSlot = (classId: string, data: DeleteSlotData) =>
-  apiRequest<TimetableData, DeleteSlotData>(
+  apiRequest<ApiResponse<TimetableData>, DeleteSlotData>(
     'delete',
     `${ADMIN_TIMETABLE_API}/${classId}/slot`,
     data
   ).then((res) => {
     toast.success('Timetable slot deleted successfully!');
-    return res;
+    return res.data;
   });
 
 export const assignTeacherToClass = (
   classId: string,
   data: AssignTeacherFormData
 ) =>
-  apiRequest<TimetableData, AssignTeacherFormData>(
+  apiRequest<ApiResponse<TimetableData>, AssignTeacherFormData>(
     'put',
     `${ADMIN_TIMETABLE_API}/${classId}/assign`,
     data
   ).then((res) => {
     toast.success('Teacher assigned successfully!');
-    return res;
+    return res.data;
   });
