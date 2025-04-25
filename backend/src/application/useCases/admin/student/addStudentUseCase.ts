@@ -1,6 +1,6 @@
 import { IStudentRepository } from '../../../../domain/interface/admin/IStudentRepository';
 import { IStudent } from '../../../../domain/types/interfaces';
-import { ITokenService } from '../../../../domain/interface/ITokenService';
+import { IAuthService } from '../../../../domain/interface/IAuthService';
 import { sendDefaultPasswordEmail } from '../../../../utils/emailService';
 import { Student } from '../../../../domain/entities/student';
 import { IAddStudentUseCase } from '../../../../domain/interface/IAddStudentUseCase';
@@ -9,7 +9,7 @@ import crypto from 'crypto';
 export class AddStudentUseCase implements IAddStudentUseCase {
   constructor(
     private studentRepo: IStudentRepository,
-    private authService: ITokenService
+    private authService: IAuthService
   ) {}
 
   async execute(studentData: Partial<IStudent>): Promise<Student> {

@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { ITokenService } from '../../domain/interface/ITokenService';
+import { IAuthService } from '../../domain/interface/IAuthService';
 import { Role } from '../../domain/types/enums';
 
-export class AuthService implements ITokenService {
+export class AuthService implements IAuthService {
   private jwtSecret = process.env.JWT_SECRET || 'secret_key';
   private refreshSecret = process.env.JWT_REFRESH_SECRET || 'refresh_secret';
 
@@ -28,10 +28,12 @@ export class AuthService implements ITokenService {
   }
 
   verifyRefreshToken(token: string): { email: string; role: Role } {
-    return jwt.verify(token, this.refreshSecret) as {
+    const obj = jwt.verify(token, this.refreshSecret) as {
       email: string;
       role: Role;
     };
+    console.log('verifiy refreshtocken from authService ',obj)
+    return obj;
   }
   verifyToken(token: string): { id: string; email: string; role: Role } {
     return jwt.verify(token, this.jwtSecret) as {

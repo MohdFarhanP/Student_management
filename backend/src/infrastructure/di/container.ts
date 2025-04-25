@@ -56,7 +56,7 @@ import { IDeleteStudentUseCase } from '../../domain/interface/IDeleteStudentUseC
 import { IEditStudentUseCase } from '../../domain/interface/IEditStudentUseCase';
 import { IGetAllStudentsUseCase } from '../../domain/interface/IGetAllStudentsUseCase';
 import { IGetStudentProfileUseCase as IAdminGetStudentProfileUseCase } from '../../domain/interface/IGetStudentProfileUseCase';
-import { ITokenService } from '../../domain/interface/ITokenService';
+import { IAuthService } from '../../domain/interface/IAuthService';
 import { TeacherController } from '../../interfaces/controllers/admin/teachersController';
 import { AddTeacherUseCase } from '../../application/useCases/admin/teacher/addTeacherUseCase';
 import { DeleteTeacherUseCase } from '../../application/useCases/admin/teacher/deleteTeacherUseCase';

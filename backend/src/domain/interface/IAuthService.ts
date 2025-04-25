@@ -1,6 +1,6 @@
 import { Role } from '../types/enums';
 
-export interface ITokenService {
+export interface IAuthService {
   comparePasswords(plainText: string, hashedPassword: string): Promise<boolean>;
   hashPassword(password: string): Promise<string>;
   generateToken(payload: { id: string; email: string; role: Role }): string;

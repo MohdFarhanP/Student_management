@@ -1,6 +1,6 @@
 import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
 import { ITeacher } from '../../../../domain/types/interfaces';
-import { ITokenService } from '../../../../domain/interface/ITokenService';
+import { IAuthService } from '../../../../domain/interface/IAuthService';
 import { sendDefaultPasswordEmail } from '../../../../utils/emailService';
 import { Teacher } from '../../../../domain/entities/teacher';
 import { IAddTeacherUseCase } from '../../../../domain/interface/IAddTeacherUseCase';
@@ -10,7 +10,7 @@ import crypto from 'crypto';
 export class AddTeacherUseCase implements IAddTeacherUseCase {
   constructor(
     private teacherRepository: ITeacherRepository,
-    private authService: ITokenService
+    private authService: IAuthService
   ) {}
 
   async execute(teacherData: Partial<ITeacher>): Promise<Teacher> {

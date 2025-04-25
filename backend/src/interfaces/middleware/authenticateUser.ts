@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthService } from "../../application/services/authService";
-import { ITokenService } from "../../domain/interface/ITokenService";
+import { IAuthService } from "../../domain/interface/IAuthService";
 import HttpStatus from "../../utils/httpStatus";
 
 
-const tokenService: ITokenService = new AuthService();
+const authService: IAuthService = new AuthService();
 
 export const authenticateUser = (
   req: Request,
@@ -20,7 +20,7 @@ export const authenticateUser = (
   }
 
   try {
-    const decoded = tokenService.verifyToken(token) as {
+    const decoded = authService.verifyToken(token) as {
       id: string;
       email: string;
       role: string;

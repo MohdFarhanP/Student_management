@@ -1,5 +1,5 @@
 import { IUserRepository } from '../../../domain/interface/IUserRepository';
-import { ITokenService } from '../../../domain/interface/ITokenService';
+import { IAuthService } from '../../../domain/interface/IAuthService';
 import { Role } from '../../../domain/types/enums';
 import { ITokenResponse } from '../../../domain/types/interfaces';
 import { ILoginUseCase } from '../../../domain/interface/ILoginUseCase';
@@ -7,7 +7,7 @@ import { ILoginUseCase } from '../../../domain/interface/ILoginUseCase';
 export class LoginUseCase implements ILoginUseCase {
   constructor(
     private userRepository: IUserRepository,
-    private tokenService: ITokenService
+    private authService: IAuthService
   ) {}
 
   async execute(email: string, password: string, role: Role): Promise<ITokenResponse> {
@@ -16,16 +16,16 @@ export class LoginUseCase implements ILoginUseCase {
       throw new Error('Invalid credentials');
     }
 
-    if (!(await this.tokenService.comparePasswords(password, user.password))) {
+    if (!(await this.authService.comparePasswords(password, user.password))) {
       throw new Error('Invalid credentials');
     }
 
-    const token = this.tokenService.generateToken({
+    const token = this.authService.generateToken({
       id: user.id,
       email: user.email,
       role,
     });
-    const refreshToken = this.tokenService.generateRefreshToken({
+    const refreshToken = this.authService.generateRefreshToken({
       email: user.email,
       role,
     });

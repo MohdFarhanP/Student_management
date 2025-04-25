@@ -106,6 +106,7 @@ export class UserController implements IUserController {
   async refreshToken(req: Request, res: Response): Promise<void> {
     try {
       const refreshToken = req.cookies.refresh_token;
+      console.log("hitting refresh token in user controller ",refreshToken);
       if (!refreshToken) {
         res.status(HttpStatus.UNAUTHORIZED).json({
           success: false,

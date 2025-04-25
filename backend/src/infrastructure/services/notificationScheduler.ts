@@ -33,7 +33,7 @@ export class NotificationScheduler implements INotificationScheduler {
       } catch (error) {
         console.error('Error processing scheduled notifications:', error);
       }
-    }, 60000); // Run every minute
+    }, 60000);
   }
 
   stop() {

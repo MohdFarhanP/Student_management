@@ -20,7 +20,7 @@ const app = express();
 const server = new Server(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: process.env.FRONTEND_CLINT_URL,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -38,7 +38,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.FRONTEND_CLINT_URL,
     credentials: true,
   })
 );
