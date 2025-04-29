@@ -1,25 +1,21 @@
 import { IStudentProfileRepository } from '../../../domain/interface/student/IStudentProfileRepository';
 import { IUpdateStudentProfileImageUseCase } from '../../../domain/interface/IUpdateStudentProfileImageUseCase';
-import { Student } from '../../../domain/entities/student';
-import { BadRequestError, NotFoundError } from '../../../domain/errors';
+import { IStorageService } from '../../../domain/interface/IStorageService';
 
 export class UpdateStudentProfileImageUseCase implements IUpdateStudentProfileImageUseCase {
-  constructor(private studentRepository: IStudentProfileRepository) {}
+  constructor(
+    private readonly studentProfileRepository: IStudentProfileRepository,
+    private readonly storageService: IStorageService
+  ) {}
 
-  async execute(email: string, profileImage: string): Promise<Student> {
-    if (!email || !email.includes('@')) {
-      throw new BadRequestError('Valid email is required');
-    }
-    if (!profileImage || typeof profileImage !== 'string') {
-      throw new BadRequestError('Valid profileImage URL is required');
-    }
-    const updatedProfile = await this.studentRepository.updateProfileImage(
-      email,
-      profileImage
-    );
-    if (!updatedProfile) {
-      throw new NotFoundError('Student profile not found or update failed');
-    }
-    return updatedProfile;
+  async execute(studentId: string, file: File): Promise<string> {
+    const { signedUrl, fileUrl } = await this.storageService.generatePresignedUrl(file.name, file.type);
+    await fetch(signedUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type },
+      body: file,
+    });
+    await this.studentProfileRepository.updateProfileImage(studentId, fileUrl);
+    return fileUrl;
   }
 }

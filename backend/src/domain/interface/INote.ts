@@ -4,4 +4,5 @@ export interface INote {
   fileUrl: string; // Cloudinary URL
   uploadedBy: string; // Teacher ID
   createdAt: Date;
+  updatedAt: Date,
 }

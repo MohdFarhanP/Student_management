@@ -1,4 +1,4 @@
-import { Note } from "../entities/note";
+import { Note } from '../entities/note';
 
 export interface INoteRepository {
   save(note: Note): Promise<Note>;

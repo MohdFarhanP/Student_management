@@ -34,7 +34,7 @@ import { DeleteStudentUseCase } from '../../application/useCases/admin/student/d
 import { EditStudentUseCase } from '../../application/useCases/admin/student/editStudentUseCase';
 import { GetAllStudentsUseCase } from '../../application/useCases/admin/student/getAllStudentsUseCase';
 import { GetStudentProfileUseCase as AdminGetStudentProfileUseCase  } from '../../application/useCases/student/GetStudentProfileUseCase';
-import { AuthService } from '../../application/services/authService';
+import { AuthService } from '../../application/services/AuthService';
 import { IClassRepository } from '../../domain/interface/admin/IClassRepository';
 import { ISubjectRepository } from '../../domain/interface/ISubjectRepository';
 import { IClassController } from '../../domain/interface/IClassController';
@@ -104,7 +104,7 @@ import { TimetableService } from '../services/TimetableService';
 import { ITimetableService } from '../../domain/interface/ITimetableService';
 import { NoteController } from '../../interfaces/controllers/noteController';
 import { INoteController } from '../../domain/interface/INoteController';
-import { UploadNoteUseCase } from '../../application/useCases/teacher/uploadsNotesUseCase';
+import { UploadNoteUseCase } from '../../application/useCases/teacher/UploadNoteUseCase';
 import { DownloadNoteUseCase } from '../../application/useCases/student/downloadNotesUseCase';
 import { ListNotesUseCase } from '../../application/useCases/student/listNoteUseCase';
 import { IUploadNoteUseCase } from '../../domain/interface/IUploadNoteUseCase';
@@ -143,7 +143,14 @@ import { INotificationController } from '../../domain/interface/INotificationCon
 import { IGetNotificationsUseCase } from '../../domain/interface/IGetNotificationsUseCase';
 import { IMarkNotificationAsRead } from '../../domain/interface/IMarkNotificationAsRead';
 import { ISendNotificationUseCase } from '../../domain/interface/ISendNotificationUseCase';
-
+import { IFileValidationService } from '../../domain/interface/IFileValidationService';
+import { FileValidationService } from '../../application/services/FileValidationService';
+import { IStorageService } from '../../domain/interface/IStorageService';
+import { S3StorageService } from '../services/S3StorageService';
+import { IGeneratePresignedUrlUseCase } from '../../domain/interface/IGeneratePresignedUrlUseCase';
+import { GeneratePresignedUrlUseCase } from '../../application/useCases/GeneratePresignedUrlUseCase';
+import { IPresignedUrlController } from '../../domain/interface/IPresignedUrlController';
+import { PresignedUrlController } from '../../interfaces/controllers/PresignedUrlController';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -151,7 +158,7 @@ export class DependencyContainer {
 
   private constructor(io?: SocketIOServer) {
     // Services
-    this.dependencies.set('ITokenService', new AuthService());
+    this.dependencies.set('IAuthService', new AuthService());
     this.dependencies.set(
       'ITimetableService',
       new TimetableService(
@@ -159,7 +166,8 @@ export class DependencyContainer {
         this.dependencies.get('ITeacherRepository') || new TeacherRepository()
       )
     );
-    this.dependencies.set('ICloudinaryService', new CloudinaryService());
+    this.dependencies.set('IStorageService', new S3StorageService()); 
+    this.dependencies.set('IFileValidationService', new FileValidationService());
 
     // Repositories
     this.dependencies.set('IStudentRepository', new StudentRepository());
@@ -278,7 +286,7 @@ export class DependencyContainer {
       'IAddStudentUseCase',
       new AddStudentUseCase(
         this.dependencies.get('IStudentRepository'),
-        this.dependencies.get('ITokenService')
+        this.dependencies.get('IAuthService')
       )
     );
     this.dependencies.set(
@@ -303,7 +311,7 @@ export class DependencyContainer {
       'IAddTeacherUseCase',
       new AddTeacherUseCase(
         this.dependencies.get('ITeacherRepository'),
-        this.dependencies.get('ITokenService')
+        this.dependencies.get('IAuthService')
       )
     );
     this.dependencies.set(
@@ -348,7 +356,10 @@ export class DependencyContainer {
     );
     this.dependencies.set(
       'IUpdateStudentProfileImageUseCase',
-      new UpdateStudentProfileImageUseCase(this.dependencies.get('IStudentProfileRepository'))
+      new UpdateStudentProfileImageUseCase(
+        this.dependencies.get('IStudentProfileRepository'),
+        this.dependencies.get('IStorageService') 
+      )
     );
 
     // Use Cases (Teacher - Teacher Module)
@@ -375,7 +386,9 @@ export class DependencyContainer {
     // Use Cases (Notes)
     this.dependencies.set(
       'IUploadNoteUseCase',
-      new UploadNoteUseCase(this.dependencies.get('INoteRepository'))
+      new UploadNoteUseCase(
+        this.dependencies.get('INoteRepository'),
+      )
     );
     this.dependencies.set(
       'IDownloadNoteUseCase',
@@ -391,13 +404,13 @@ export class DependencyContainer {
       'ILoginUseCase',
       new LoginUseCase(
         this.dependencies.get('IUserRepository'),
-        this.dependencies.get('ITokenService')
+        this.dependencies.get('IAuthService')
       )
     );
     this.dependencies.set(
       'ILogoutUseCase',
       new LogoutUseCase(
-        this.dependencies.get('ITokenService'),
+        this.dependencies.get('IAuthService'),
         this.dependencies.get('IUserRepository')
       )
     );
@@ -405,13 +418,13 @@ export class DependencyContainer {
       'IUpdatePasswordUseCase',
       new UpdatePasswordUseCase(
         this.dependencies.get('IUserRepository'),
-        this.dependencies.get('ITokenService')
+        this.dependencies.get('IAuthService')
       )
     );
     this.dependencies.set(
       'IRefreshTokenUseCase',
       new RefreshTokenUseCase(
-        this.dependencies.get('ITokenService'),
+        this.dependencies.get('IAuthService'),
         this.dependencies.get('IUserRepository')
       )
     );
@@ -504,7 +517,7 @@ export class DependencyContainer {
         this.dependencies.get('IUploadNoteUseCase'),
         this.dependencies.get('IDownloadNoteUseCase'),
         this.dependencies.get('IListNotesUseCase'),
-        this.dependencies.get('ICloudinaryService')
+        this.dependencies.get('IStorageService')
       )
     );
     this.dependencies.set(
@@ -548,6 +561,22 @@ export class DependencyContainer {
       DependencyContainer.instance = new DependencyContainer(io);
     }
     return DependencyContainer.instance;
+  }
+
+  getPresignedUrlController(): IPresignedUrlController {
+    return this.dependencies.get('IPresignedUrlController');
+  }
+
+  getFileValidationService(): IFileValidationService {
+    return this.dependencies.get('IFileValidationService');
+  }
+
+  getStorageService(): IStorageService {
+    return this.dependencies.get('IStorageService');
+  }
+
+  getGeneratePresignedUrlUseCase(): IGeneratePresignedUrlUseCase {
+    return this.dependencies.get('IGeneratePresignedUrlUseCase');
   }
 
   getNotificationController(): INotificationController {

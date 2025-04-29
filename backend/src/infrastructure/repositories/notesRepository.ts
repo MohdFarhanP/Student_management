@@ -1,7 +1,7 @@
 import { INoteRepository } from '../../domain/interface/INotRepository';
 import { NoteModel } from '../database/models/notesModel';
 import { Note } from '../../domain/entities/note';
-import { BadRequestError } from '../../domain/errors';
+
 
 export class NoteRepository implements INoteRepository {
   async save(note: Note): Promise<Note> {

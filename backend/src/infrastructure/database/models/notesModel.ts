@@ -6,6 +6,7 @@ const noteSchema = new Schema<INote>({
   fileUrl: { type: String, required: true },
   uploadedBy: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
 export const NoteModel = model<INote>('Note', noteSchema);

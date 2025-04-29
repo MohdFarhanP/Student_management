@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { IUploadNoteUseCase } from '../../domain/interface/IUploadNoteUseCase';
 import { IDownloadNoteUseCase } from '../../domain/interface/IDownloadNoteUseCase';
-import { IListNotesUseCase } from '../../domain/interface/IListNotesUseCase'; 
+import { IListNotesUseCase } from '../../domain/interface/IListNotesUseCase';
 import { INoteController } from '../../domain/interface/INoteController';
 import { IApiResponse, IUser } from '../../domain/types/interfaces';
 import HttpStatus from '../../utils/httpStatus';
-import { BadRequestError, ForbiddenError, NotFoundError } from '../../domain/errors/index';
+import { BadRequestError, ForbiddenError, NotFoundError } from '../../domain/errors';
 import { Role } from '../../domain/types/enums';
-import { ICloudinaryService } from '../../domain/interface/ICloudinaryService';
+import { IStorageService } from '../../domain/interface/IStorageService';
 import { Note } from '../../domain/entities/note';
 
 export class NoteController implements INoteController {
@@ -15,7 +15,7 @@ export class NoteController implements INoteController {
     private uploadNoteUseCase: IUploadNoteUseCase,
     private downloadNoteUseCase: IDownloadNoteUseCase,
     private listNotesUseCase: IListNotesUseCase,
-    private cloudinaryService: ICloudinaryService
+    private storageService: IStorageService
   ) {}
 
   async uploadNote(req: Request, res: Response): Promise<void> {
@@ -61,11 +61,10 @@ export class NoteController implements INoteController {
 
       const { noteId } = req.params;
       const note = await this.downloadNoteUseCase.execute(noteId);
-      const { stream, contentType } = await this.cloudinaryService.getFileStream(note.fileUrl);
-
-      res.setHeader('Content-Disposition', `attachment; filename="${note.title}"`);
-      res.setHeader('Content-Type', contentType);
-      stream.pipe(res);
+      // Extract S3 key from fileUrl
+      const fileKey = note.fileUrl.split(`https://${this.storageService.bucketName}.s3.${this.storageService.region}.amazonaws.com/`)[1];
+      const downloadUrl = await this.storageService.generatePresignedDownloadUrl(fileKey);
+      res.redirect(downloadUrl);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to download note';
       const status =

@@ -4,10 +4,21 @@ import { Note } from '../../../domain/entities/note';
 import { BadRequestError } from '../../../domain/errors';
 
 export class UploadNoteUseCase implements IUploadNoteUseCase {
-  constructor(private noteRepository: INoteRepository) {}
+  constructor(private readonly noteRepository: INoteRepository) {}
 
   async execute(title: string, fileUrl: string, uploadedBy: string): Promise<Note> {
-    const note = Note.create({ title, fileUrl, uploadedBy });
+    if (!title || !fileUrl || !uploadedBy) {
+      throw new BadRequestError('Title, fileUrl, and uploadedBy are required');
+    }
+
+    const note = Note.create({
+      id: '', // ID will be set by repository
+      title,
+      fileUrl,
+      uploadedBy,
+      createdAt: new Date(),
+    });
+
     return this.noteRepository.save(note);
   }
 }

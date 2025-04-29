@@ -76,3 +76,11 @@ export enum Role {
     GeneralKnowledge = 'GeneralKnowledge',
   }
   
+  export enum FileType {
+    PDF = 'application/pdf',
+    DOC = 'application/msword',
+    DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    JPEG = 'image/jpeg',
+    PNG = 'image/png',
+    GIF = 'image/gif',
+  }
