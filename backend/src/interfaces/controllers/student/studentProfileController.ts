@@ -36,6 +36,7 @@ export class StudentProfileController implements IStudentProfileController {
     try {
       const user = req.user as IUser | undefined;
       const { profileImage } = req.body;
+      console.log('this is profile image url form frontend in student profile controller ', profileImage);
       if (!user?.email) {
         throw new BadRequestError('User email is required');
       }
@@ -47,7 +48,7 @@ export class StudentProfileController implements IStudentProfileController {
         success: true,
         message: 'Profile image updated successfully',
         data: student,
-      } as IApiResponse<Student>);
+      } as IApiResponse<string>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update profile image';
       const status = error instanceof BadRequestError ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;

@@ -9,6 +9,11 @@ export enum FileType {
     GIF = 'image/gif',
   }
   
+  interface PresignedUrlResponse {
+    signedUrl: string;
+    fileUrl: string;
+  }
+
 export const uploadToS3 = async (file: File): Promise<string> => {
   const allowedTypes = Object.values(FileType);
   const maxSize = 10 * 1024 * 1024; // 10MB
@@ -22,13 +27,21 @@ export const uploadToS3 = async (file: File): Promise<string> => {
   }
 
   try {
+    
+    const fileHash = await computeFileHash(file);
+    console.log('File hash:', fileHash);
+    const fileName = file.name || `file-${Date.now()}`;
+    console.log('Uploading file:', fileName, 'Type:', file.type, 'Hash:', fileHash, 'Size:', file.size);
     // Request pre-signed URL from backend
-    const response = await axios.post('http://localhost:3000/generate-presigned-url', {
+    const response = await axios.post<PresignedUrlResponse>('http://localhost:5000/api/generate-presigned-url/', {
       fileName: file.name,
       fileType: file.type,
+      fileHash,
+      fileSize: file.size
     });
 
     const { signedUrl, fileUrl } = response.data;
+    console.log(`singnedUrl : ${signedUrl},  fileUrl will be : ${fileUrl}`)
 
     // Upload file to S3 using pre-signed URL
     await axios.put(signedUrl, file, {
@@ -39,6 +52,16 @@ export const uploadToS3 = async (file: File): Promise<string> => {
 
     return fileUrl;
   } catch (error) {
-    throw new Error(`S3 upload failed: ${error.message}`);
-  }
+    if (error instanceof Error) {
+      throw new Error(`S3 upload failed: ${error.message}`);
+    } else {
+      throw new Error('S3 upload failed: Unknown error');
+    }  }
+};
+
+const computeFileHash = async (file: File): Promise<string> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 };

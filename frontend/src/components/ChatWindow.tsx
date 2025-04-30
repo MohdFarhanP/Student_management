@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import MessageBubble from './MessageBubble';
 import { Message } from '../types/message';
 import { RootState } from '../redux/store';
-import { uploadToCloudinary } from '../utils/cloudinaryUpload';
+import { uploadToS3 } from '../services/UploadToS3';
 
 interface ChatWindowProps {
   messages: Message[];
@@ -39,7 +39,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
     if (file && isTeacher) {
       try {
-        mediaUrl = await uploadToCloudinary(file);
+        mediaUrl = await uploadToS3(file);
         if (!mediaUrl) {
           setUploadError('Upload failed');
           return;

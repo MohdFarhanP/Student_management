@@ -8,8 +8,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import StudentSidebar from '../../components/StudentSidebar';
 import { RiImageEditLine } from 'react-icons/ri';
-import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
 import defaultImage from '../../assets/profile.jpg';
+import { uploadToS3 } from '../../services/UploadToS3';
 
 const StudentProfile: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -39,7 +39,7 @@ const StudentProfile: React.FC = () => {
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const uploadedUrl = await uploadToCloudinary(file);
+      const uploadedUrl = await uploadToS3(file);
       if (uploadedUrl) {
         setProfileImage(uploadedUrl);
         dispatch(

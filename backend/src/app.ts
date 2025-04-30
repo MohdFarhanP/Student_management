@@ -13,6 +13,7 @@ import studentRoutes from './interfaces/routes/student/student';
 import teacherRoutes from './interfaces/routes/teacher/teacherRoutes';
 import notificationRoutes from './interfaces/routes/notification/notificationRoutes';
 import noteRoutes from './interfaces/routes/noteRoutes';
+import PresignedUrlRoute  from './interfaces/routes/presignedUrl';
 import { AppError, BadRequestError, ConflictError, ForbiddenError, NotFoundError } from './domain/errors';
 import HttpStatus from './utils/httpStatus';
 
@@ -51,6 +52,7 @@ app.use('/api/teacher', teacherRoutes);
 app.use('/api/chat', chatRouter);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/notes', noteRoutes);
+app.use('/api/generate-presigned-url',PresignedUrlRoute);
 
 
 // Global Error Handling Middleware

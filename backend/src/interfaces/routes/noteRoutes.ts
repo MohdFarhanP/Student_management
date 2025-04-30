@@ -1,8 +1,8 @@
-import express, { Router } from 'express';
+import { Router } from 'express';
 import { DependencyContainer } from '../../infrastructure/di/container';
 import { authenticateUser } from '../middleware/authenticateUser';
 
-const router: Router = express.Router();
+const router: Router = Router();
 const container = DependencyContainer.getInstance();
 const noteController = container.getNoteController();
 

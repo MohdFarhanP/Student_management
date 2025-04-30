@@ -8,8 +8,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import TeacherSidebar from '../../components/TeacherSidebar';
 import { IoCameraOutline } from 'react-icons/io5';
-import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
 import defaultImg from '../../assets/profile.jpg';
+import { uploadToS3 } from '../../services/UploadToS3';
 
 interface TeacherProfile {
   id?: string;
@@ -75,7 +75,7 @@ const TeacherProfile: React.FC = () => {
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const uploadedUrl = await uploadToCloudinary(file);
+      const uploadedUrl = await uploadToS3(file);
       console.log(
         'this is the url for uploading to the database ',
         uploadedUrl

@@ -8,6 +8,7 @@ export class NoteRepository implements INoteRepository {
     const newNote = new NoteModel({
       title: note.title,
       fileUrl: note.fileUrl,
+      fileHash: note.fileHash,
       uploadedBy: note.uploadedBy,
       createdAt: note.createdAt,
     });
@@ -16,8 +17,22 @@ export class NoteRepository implements INoteRepository {
       id: savedNote._id.toString(),
       title: savedNote.title,
       fileUrl: savedNote.fileUrl,
+      fileHash: savedNote.fileHash,
       uploadedBy: savedNote.uploadedBy,
       createdAt: savedNote.createdAt,
+    });
+  }
+  
+  async findByHash(fileHash: string): Promise<Note | null> {
+    const note = await NoteModel.findOne({ fileHash });
+    if (!note) return null;
+    return Note.create({
+      id: note._id.toString(),
+      title: note.title,
+      fileUrl: note.fileUrl,
+      fileHash: note.fileHash,
+      uploadedBy: note.uploadedBy,
+      createdAt: note.createdAt,
     });
   }
 
@@ -28,6 +43,7 @@ export class NoteRepository implements INoteRepository {
       id: doc._id.toString(),
       title: doc.title,
       fileUrl: doc.fileUrl,
+      fileHash: doc.fileHash,
       uploadedBy: doc.uploadedBy,
       createdAt: doc.createdAt,
     });
@@ -40,6 +56,7 @@ export class NoteRepository implements INoteRepository {
         id: doc._id.toString(),
         title: doc.title,
         fileUrl: doc.fileUrl,
+        fileHash: doc.fileHash,
         uploadedBy: doc.uploadedBy,
         createdAt: doc.createdAt,
       })

@@ -1,5 +1,5 @@
 import { apiRequest } from '../apiClient';
-import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
+import { uploadToS3 } from '../../services/UploadToS3';
 
 const ADMIN_SUBJECT_API = `/admin/classes`;
 
@@ -30,7 +30,7 @@ interface ApiResponse<T> {
 
 export const addSubject = async (cls: string, subjectData: ISubjectData) => {
   const uploadedNotes = subjectData.notes
-    ? await Promise.all(subjectData.notes.map((file) => uploadToCloudinary(file)))
+    ? await Promise.all(subjectData.notes.map((file) => uploadToS3(file)))
     : [];
   const validNotes = uploadedNotes.filter((url): url is string => typeof url === 'string');
   const finalSubjectData: FinalSubjectData = {
@@ -63,7 +63,7 @@ export const updateSubject = async (
   subject: { subjectName: string; teachers: string[]; notes: File[] }
 ) => {
   const uploadedNotes = subject.notes
-    ? await Promise.all(subject.notes.map((file) => uploadToCloudinary(file)))
+    ? await Promise.all(subject.notes.map((file) => uploadToS3(file)))
     : [];
   const validNotes = uploadedNotes.filter((url): url is string => typeof url === 'string');
   const finalSubjectData = { ...subject, notes: validNotes };

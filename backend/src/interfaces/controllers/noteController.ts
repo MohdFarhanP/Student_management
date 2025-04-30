@@ -25,12 +25,12 @@ export class NoteController implements INoteController {
         throw new ForbiddenError('Only teachers can upload notes');
       }
 
-      const { title, fileUrl } = req.body;
-      if (!title || !fileUrl) {
-        throw new BadRequestError('Title and fileUrl are required');
+      const { title, fileUrl, fileHash } = req.body;
+      if (!title || !fileUrl || !fileHash) {
+        throw new BadRequestError('Title, fileHash and fileUrl are required');
       }
-
-      const note = await this.uploadNoteUseCase.execute(title, fileUrl, user.id);
+      console.log('Uploading note:', { title, fileUrl, fileHash });
+      const note = await this.uploadNoteUseCase.execute(title, fileUrl,fileHash, user.id);
       res.status(HttpStatus.CREATED).json({
         success: true,
         message: 'Note uploaded successfully',
@@ -38,6 +38,7 @@ export class NoteController implements INoteController {
           id: note.id,
           title: note.title,
           fileUrl: note.fileUrl,
+          fileHash: note.fileHash,
           uploadedBy: note.uploadedBy,
           createdAt: note.createdAt,
         },

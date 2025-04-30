@@ -167,7 +167,7 @@ export class DependencyContainer {
       )
     );
     this.dependencies.set('IStorageService', new S3StorageService()); 
-    this.dependencies.set('IFileValidationService', new FileValidationService());
+    this.dependencies.set('IFileValidationService', new FileValidationService(this.dependencies.get('INotRepository')));
 
     // Repositories
     this.dependencies.set('IStudentRepository', new StudentRepository());
@@ -429,6 +429,16 @@ export class DependencyContainer {
       )
     );
 
+    // Use Cases (S3 Pre-signed URL)
+    this.dependencies.set(
+      'IGeneratePresignedUrlUseCase',
+      new GeneratePresignedUrlUseCase(
+        this.dependencies.get('IFileValidationService'),
+        this.dependencies.get('IStorageService'),
+        this.dependencies.get('INoteRepository')
+      )
+    );
+
     // Controllers
     this.dependencies.set(
       'INotificationController',
@@ -532,6 +542,10 @@ export class DependencyContainer {
         this.dependencies.get('IUpdatePasswordUseCase'),
         this.dependencies.get('IRefreshTokenUseCase')
       )
+    );
+    this.dependencies.set(
+      'IPresignedUrlController',
+      new PresignedUrlController(this.dependencies.get('IGeneratePresignedUrlUseCase'))
     );
 
     // Services

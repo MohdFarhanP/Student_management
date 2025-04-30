@@ -10,11 +10,13 @@ export class UpdateStudentProfileImageUseCase implements IUpdateStudentProfileIm
 
   async execute(studentId: string, file: File): Promise<string> {
     const { signedUrl, fileUrl } = await this.storageService.generatePresignedUrl(file.name, file.type);
+    console.log('this is the genarated presigned url , ', signedUrl,' fileturl ',fileUrl)
     await fetch(signedUrl, {
       method: 'PUT',
       headers: { 'Content-Type': file.type },
       body: file,
     });
+    
     await this.studentProfileRepository.updateProfileImage(studentId, fileUrl);
     return fileUrl;
   }

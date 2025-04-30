@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { uploadNote } from '../../redux/slices/noteSlice';
-import { uploadToCloudinary } from '../../utils/cloudinaryUpload';
 import { AppDispatch, RootState } from '../../redux/store';
 import { toast } from 'react-toastify';
 import TeacherSidebar from '../../components/TeacherSidebar';
+import { uploadToS3 } from '../../services/UploadToS3';
 
 const NoteUpload: React.FC = () => {
   const [title, setTitle] = useState('');
@@ -22,13 +22,20 @@ const NoteUpload: React.FC = () => {
 
     setLocalError(null);
     try {
-      const fileUrl = await uploadToCloudinary(file);
+      const fileUrl = await uploadToS3(file);
+      console.log('Sending to /notes/upload:', { title, fileUrl });
       await dispatch(uploadNote({ title, fileUrl })).unwrap();
       toast.success('Note uploaded successfully');
       setTitle('');
       setFile(null);
-    } catch (err) {
-      setLocalError(err instanceof Error ? err.message : 'Failed to upload note');
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      const message = err.message || 'Failed to upload note';
+      if (message.includes('already exists') && err.response?.data?.data?.fileUrl) {
+        setLocalError(`File already exists at: ${err.response.data.data.fileUrl}`);
+      } else {
+        setLocalError(message);
+      }
     }
   };
 

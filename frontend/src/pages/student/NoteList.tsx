@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchNotes } from '../../redux/slices/noteSlice';
+import { downloadNote, fetchNotes } from '../../redux/slices/noteSlice';
 import { AppDispatch, RootState } from '../../redux/store';
 import { INote } from '../../types/notes';
 import StudentSidebar from '../../components/StudentSidebar';
@@ -8,20 +8,15 @@ import StudentSidebar from '../../components/StudentSidebar';
 const NoteList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { notes, loading, error } = useSelector((state: RootState) => state.notes);
-  const DOWNLOAD_URL = import.meta.env.VITE_NOTE_DOWNLOAD_URL;
 
   useEffect(() => {
     dispatch(fetchNotes());
   }, [dispatch]);
 
-  const handleDownload = (noteId: string, title: string) => {
-    const link = document.createElement('a');
-    link.href = `${DOWNLOAD_URL}/${noteId}`;
-    link.download = `${title}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = (noteId: string) => {
+    dispatch(downloadNote(noteId));
   };
+
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <StudentSidebar />
@@ -37,7 +32,7 @@ const NoteList: React.FC = () => {
             >
               <h3 className="text-lg font-medium truncate mb-3">{note.title}</h3>
               <button
-                onClick={() => handleDownload(note.id, note.title)}
+                onClick={() => handleDownload(note.id)}
                 className="mt-auto bg-green-500 dark:bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition-colors"
               >
                 Download

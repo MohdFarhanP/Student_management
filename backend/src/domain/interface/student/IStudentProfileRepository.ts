@@ -5,5 +5,5 @@ export interface IStudentProfileRepository {
   updateProfileImage(
     email: string,
     profileImage: string
-  ): Promise<Student | null>;
+  ): Promise<void>;
 }
