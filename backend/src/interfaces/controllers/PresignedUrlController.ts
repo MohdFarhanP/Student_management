@@ -9,12 +9,14 @@ export class PresignedUrlController implements IPresignedUrlController {
 
   async handle(req: Request, res: Response): Promise<void> {
     try {
+      console.log('hitting the handle fn in presigned controller ');
       const { fileName, fileType, fileHash, fileSize } = req.body;
-      if (!fileName || !fileType || !fileHash) {
-        throw new Error('fileName, fileType, and fileHash are required');
+      if (!fileName || !fileType || !fileHash || fileSize == null) {
+        throw new Error('fileName, fileType, fileHash, and fileSize are required');
       }
       console.log('Generating pre-signed URL:', { fileName, fileType, fileHash, fileSize });
       const result = await this.generatePresignedUrlUseCase.execute(fileName, fileType, fileHash, fileSize);
+      console.log(" handle fun in presigned controller result will be ", result);
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Pre-signed URL generated successfully',

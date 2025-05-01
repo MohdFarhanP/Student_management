@@ -14,7 +14,13 @@ export enum FileType {
     fileUrl: string;
   }
 
-export const uploadToS3 = async (file: File): Promise<string> => {
+  interface ApiResponse<T> {
+    success: boolean;
+    message: string;
+    data?: T;
+  }
+  
+export const uploadToS3 = async (file: File): Promise<{ fileUrl: string; fileHash: string }> => {
   const allowedTypes = Object.values(FileType);
   const maxSize = 10 * 1024 * 1024; // 10MB
 
@@ -33,14 +39,16 @@ export const uploadToS3 = async (file: File): Promise<string> => {
     const fileName = file.name || `file-${Date.now()}`;
     console.log('Uploading file:', fileName, 'Type:', file.type, 'Hash:', fileHash, 'Size:', file.size);
     // Request pre-signed URL from backend
-    const response = await axios.post<PresignedUrlResponse>('http://localhost:5000/api/generate-presigned-url/', {
+    const response = await axios.post<ApiResponse<PresignedUrlResponse>>('http://localhost:5000/api/generate-presigned-url/', {
       fileName: file.name,
       fileType: file.type,
       fileHash,
-      fileSize: file.size
-    });
-
-    const { signedUrl, fileUrl } = response.data;
+      fileSize: file.size,
+    },
+    {withCredentials:true});
+    
+    console.log('in frontend response form backend ',response.data.data)
+    const { signedUrl, fileUrl } = response.data.data!;
     console.log(`singnedUrl : ${signedUrl},  fileUrl will be : ${fileUrl}`)
 
     // Upload file to S3 using pre-signed URL
@@ -50,7 +58,7 @@ export const uploadToS3 = async (file: File): Promise<string> => {
       },
     });
 
-    return fileUrl;
+    return {fileUrl, fileHash};
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`S3 upload failed: ${error.message}`);

@@ -9,17 +9,14 @@ export class GeneratePresignedUrlUseCase implements IGeneratePresignedUrlUseCase
   constructor(
     private fileValidationService: IFileValidationService,
     private storageService: IStorageService,
-    private noteRepository: INoteRepository
   ) {}
 
   async execute(fileName: string, fileType: string, fileHash: string, fileSize?: number): Promise<{ signedUrl: string; fileUrl: string }> {
     if (!fileName || !fileType || !fileHash) {
       throw new BadRequestError('fileName, fileType, and fileHash are required');
     }
-
     const file = new FileEntity(fileName, fileType, fileSize ?? 0);
     await this.fileValidationService.validate(file, fileHash);
-
     return this.storageService.generatePresignedUrl(fileName, fileType);
   }
 }

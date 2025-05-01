@@ -9,5 +9,6 @@ export interface INote {
 export interface NoteUploadParams {
     title: string;
     fileUrl: string;
+    fileHash: string;
   }
   

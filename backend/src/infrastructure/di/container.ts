@@ -166,8 +166,6 @@ export class DependencyContainer {
         this.dependencies.get('ITeacherRepository') || new TeacherRepository()
       )
     );
-    this.dependencies.set('IStorageService', new S3StorageService()); 
-    this.dependencies.set('IFileValidationService', new FileValidationService(this.dependencies.get('INotRepository')));
 
     // Repositories
     this.dependencies.set('IStudentRepository', new StudentRepository());
@@ -183,6 +181,9 @@ export class DependencyContainer {
     this.dependencies.set('IMessageRepository', new MessageRepository());
     this.dependencies.set('INotificationRepository', new NotificationRepository());
     this.dependencies.set('INotificationRepository', new NotificationRepository());
+
+    this.dependencies.set('IStorageService', new S3StorageService()); 
+    this.dependencies.set('IFileValidationService', new FileValidationService(this.dependencies.get('INoteRepository')));
 
     // Parsers
     this.dependencies.set('StudentExcelParser', new StudentExcelParser());
@@ -435,7 +436,6 @@ export class DependencyContainer {
       new GeneratePresignedUrlUseCase(
         this.dependencies.get('IFileValidationService'),
         this.dependencies.get('IStorageService'),
-        this.dependencies.get('INoteRepository')
       )
     );
 

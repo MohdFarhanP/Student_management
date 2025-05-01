@@ -22,10 +22,9 @@ const NoteUpload: React.FC = () => {
 
     setLocalError(null);
     try {
-      const fileUrl = await uploadToS3(file);
-      console.log('Sending to /notes/upload:', { title, fileUrl });
-      await dispatch(uploadNote({ title, fileUrl })).unwrap();
-      toast.success('Note uploaded successfully');
+      const {fileUrl,fileHash} = await uploadToS3(file);
+      console.log('Sending to /notes/upload:', { title, fileUrl, fileHash });
+      await dispatch(uploadNote({ title, fileUrl, fileHash })).unwrap();      toast.success('Note uploaded successfully');
       setTitle('');
       setFile(null);
     } catch (err: any) {
