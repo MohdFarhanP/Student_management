@@ -21,6 +21,7 @@ interface PopulatedTeacher {
   dateOfBirth: string;
   availability: { [key in Day]: number[] };
   profileImage?: string;
+  fileHash?: string;
   specialization?: string;
   experienceYears?: number;
   qualification?: string;
@@ -75,6 +76,7 @@ export class TeacherRepository implements ITeacherRepository {
       subject: t.subject ? t.subject.subjectName : null,
       dateOfBirth: t.dateOfBirth,
       profileImage: t.profileImage || '',
+      fileHash: t.fileHash,
       specialization: t.specialization || '',
       experienceYears: t.experienceYears || 0,
       qualification: t.qualification || '',
@@ -104,6 +106,7 @@ export class TeacherRepository implements ITeacherRepository {
       subject: t.subject ? t.subject.subjectName : null,
       dateOfBirth: t.dateOfBirth,
       profileImage: t.profileImage || '',
+      fileHash: t.fileHash,
       specialization: t.specialization || '',
       experienceYears: t.experienceYears || 0,
       qualification: t.qualification || '',
@@ -133,6 +136,7 @@ export class TeacherRepository implements ITeacherRepository {
       subject: teacherData.subject ? teacherData.subject.subjectName : null,
       dateOfBirth: teacherData.dateOfBirth,
       profileImage: teacherData.profileImage || '',
+      fileHash: teacherData.fileHash,
       specialization: teacherData.specialization || '',
       experienceYears: teacherData.experienceYears || 0,
       qualification: teacherData.qualification || '',
@@ -161,6 +165,7 @@ export class TeacherRepository implements ITeacherRepository {
       subject: teacherData.subject ? teacherData.subject.subjectName : null,
       dateOfBirth: teacherData.dateOfBirth,
       profileImage: teacherData.profileImage || '',
+      fileHash: teacherData.fileHash,
       specialization: teacherData.specialization || '',
       experienceYears: teacherData.experienceYears || 0,
       qualification: teacherData.qualification || '',
@@ -209,6 +214,7 @@ export class TeacherRepository implements ITeacherRepository {
       assignedClass: teacherData.assignedClass ? teacherData.assignedClass.name : null,
       dateOfBirth: teacherData.dateOfBirth,
       profileImage: teacherData.profileImage || '',
+      fileHash: teacherData.fileHash,
       specialization: teacherData.specialization || '',
       experienceYears: teacherData.experienceYears || 0,
       qualification: teacherData.qualification || '',
@@ -253,6 +259,7 @@ export class TeacherRepository implements ITeacherRepository {
       subject: teacherData.subject ? teacherData.subject.subjectName : null,
       dateOfBirth: teacherData.dateOfBirth,
       profileImage: teacherData.profileImage || '',
+      fileHash: teacherData.fileHash,
       specialization: teacherData.specialization || '',
       experienceYears: teacherData.experienceYears || 0,
       qualification: teacherData.qualification || '',
@@ -270,6 +277,7 @@ export class TeacherRepository implements ITeacherRepository {
       assignedClass: teacher.assignedClass ? new Types.ObjectId(teacher.assignedClass) : null,
       subject: teacher.subject ? new Types.ObjectId(teacher.subject) : null,
       profileImage: teacher.profileImage,
+      fileHash: teacher.fileHash,
       specialization: teacher.specialization,
       experienceYears: teacher.experienceYears,
       qualification: teacher.qualification,

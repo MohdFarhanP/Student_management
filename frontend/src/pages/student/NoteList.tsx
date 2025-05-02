@@ -13,10 +13,27 @@ const NoteList: React.FC = () => {
     dispatch(fetchNotes());
   }, [dispatch]);
 
-  const handleDownload = (noteId: string) => {
-    dispatch(downloadNote(noteId));
+  const handleDownload = async (noteId: string) => {
+    try {
+      // Dispatch the downloadNote thunk and unwrap the result to get the downloadUrl
+      const downloadUrl = await dispatch(downloadNote(noteId)).unwrap();
+      console.log('Initiating download with URL:', downloadUrl);
+      // Create a temporary link to trigger the download
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', ''); // Let the browser use the filename from Content-Disposition
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Download error:', err);
+      alert(err instanceof Error ? err.message : 'Failed to download note');
+    }
   };
 
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <StudentSidebar />

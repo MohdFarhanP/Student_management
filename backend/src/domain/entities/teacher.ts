@@ -14,6 +14,7 @@ export class Teacher implements ITeacher {
   subject?: mongoose.Types.ObjectId | string | null;
   dateOfBirth: string;
   profileImage?: string;
+  fileHash?: string;
   specialization?: string;
   experienceYears?: number;
   qualification?: string;
@@ -31,6 +32,7 @@ export class Teacher implements ITeacher {
     this.subject = data.subject || undefined;
     this.dateOfBirth = data.dateOfBirth || '';
     this.profileImage = data.profileImage || '';
+    this.fileHash = data.fileHash || '';
     this.specialization = data.specialization || '';
     this.experienceYears = data.experienceYears || 0;
     this.qualification = data.qualification || '';

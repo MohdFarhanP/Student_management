@@ -39,11 +39,13 @@ export class S3StorageService implements IStorageService {
   }
 
   async generatePresignedDownloadUrl(fileKey: string): Promise<string> {
-    const params = {
+    const command = new GetObjectCommand({
       Bucket: this.bucketName,
       Key: fileKey,
-    };
-    const command = new GetObjectCommand(params);
-    return getSignedUrl(this.s3Client, command, { expiresIn: 60 });
+      ResponseContentDisposition: `attachment; filename="${fileKey.split('-').pop()}"`,
+    });
+
+    const signedUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 60 });
+    return signedUrl;
   }
 }

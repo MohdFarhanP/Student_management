@@ -10,6 +10,7 @@ import TeacherSidebar from '../../components/TeacherSidebar';
 import { IoCameraOutline } from 'react-icons/io5';
 import defaultImg from '../../assets/profile.jpg';
 import { uploadToS3 } from '../../services/UploadToS3';
+import { toast } from 'react-toastify';
 
 interface TeacherProfile {
   id?: string;
@@ -75,21 +76,20 @@ const TeacherProfile: React.FC = () => {
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const uploadedUrl = await uploadToS3(file);
-      console.log(
-        'this is the url for uploading to the database ',
-        uploadedUrl
-      );
-      if (uploadedUrl) {
+      try {
+        const { fileUrl, fileHash } = await uploadToS3(file);
+        console.log('Uploaded Image URL:', { fileUrl, fileHash });
         setEditedProfile((prev) => {
           if (!prev) return prev;
-          return { ...prev, profileImage: uploadedUrl };
+          return { ...prev, profileImage: fileUrl, fileHash };
         });
-      } else {
-        alert('Failed to upload image. Please try again.');
+      } catch (err) {
+        console.error('Image upload failed:', err);
+        toast.error('Failed to upload image. Please try again.');
       }
     }
   };
+
 
   const validateForm = (): boolean => {
     const errors: Partial<TeacherProfile> = {};
@@ -112,7 +112,7 @@ const TeacherProfile: React.FC = () => {
         }
       } catch (err) {
         console.error('Failed to update profile:', err);
-        alert('Failed to update profile. Please try again.');
+        toast.error('Failed to update profile. Please try again.');
       }
     }
   };
@@ -132,10 +132,9 @@ const TeacherProfile: React.FC = () => {
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
       <TeacherSidebar />
 
-      {/* Main Content */}
       <div className="flex flex-1 items-start justify-center bg-[#E6F0FA] p-6">
         <div className="max-w-5xl space-y-6">
-          {/* Profile and General Information Row */}
+
           <div className="flex gap-6">
             {/* Profile Picture and Name Card */}
             <div className="flex max-h-min w-64 flex-col items-center rounded-lg bg-white p-6 shadow-md dark:bg-gray-700">

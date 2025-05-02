@@ -44,8 +44,8 @@ export const downloadNote = createAsyncThunk(
   'notes/downloadNote',
   async (noteId: string, { rejectWithValue }) => {
     try {
-      await downloadNoteApi(noteId);
-      return undefined;
+      const downloadUrl = await downloadNoteApi(noteId);
+      return downloadUrl; // Return the downloadUrl
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : 'Failed to download note'
@@ -66,7 +66,7 @@ const noteSlice = createSlice({
       })
       .addCase(uploadNote.fulfilled, (state, action) => {
         state.loading = false;
-        state.notes.push(action.payload);
+        state.notes.push(action.payload!);
       })
       .addCase(uploadNote.rejected, (state, action) => {
         state.loading = false;
@@ -78,7 +78,7 @@ const noteSlice = createSlice({
       })
       .addCase(fetchNotes.fulfilled, (state, action) => {
         state.loading = false;
-        state.notes = action.payload;
+        state.notes = action.payload!;
       })
       .addCase(fetchNotes.rejected, (state, action) => {
         state.loading = false;

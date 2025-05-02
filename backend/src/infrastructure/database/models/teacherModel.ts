@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { ITeacher } from '../../../domain/interface/ITeacher';
+import { ITeacher } from '../../../domain/types/interfaces';
 
 const TeacherSchema = new Schema<ITeacher>(
   {
@@ -17,8 +17,8 @@ const TeacherSchema = new Schema<ITeacher>(
     subject: { type: Schema.Types.ObjectId, ref: 'Subject', default: null },
     dateOfBirth: { type: String, required: true },
     profileImage: { type: String, default: '' },
+    fileHash: {type: String, default: ''},
     specialization: { type: String, default: '' },
-    refreshToken: { type: String },
     experienceYears: { type: Number, default: 0 },
     qualification: { type: String, default: '' },
     isInitialLogin: { type: Boolean, default: true },

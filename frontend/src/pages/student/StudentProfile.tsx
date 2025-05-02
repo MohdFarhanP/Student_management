@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../redux/store';
 import {
@@ -10,6 +10,7 @@ import StudentSidebar from '../../components/StudentSidebar';
 import { RiImageEditLine } from 'react-icons/ri';
 import defaultImage from '../../assets/profile.jpg';
 import { uploadToS3 } from '../../services/UploadToS3';
+import { toast } from 'react-toastify';
 
 const StudentProfile: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,6 +22,9 @@ const StudentProfile: React.FC = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string>('');
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!user || user.role !== 'Student') {
@@ -38,24 +42,49 @@ const StudentProfile: React.FC = () => {
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const uploadedUrl = await uploadToS3(file);
-      if (uploadedUrl) {
-        setProfileImage(uploadedUrl);
-        dispatch(
-          updateStudentProfileImage({
-            email: user?.email || '',
-            profileImage: uploadedUrl,
-          })
-        );
-        console.log('Uploaded Image URL:', uploadedUrl);
+    if (!file) {
+      setUploadError('Please select a file to upload');
+      return;
+    }
+
+    setUploadLoading(true);
+    setUploadError(null);
+
+    try {
+      const { fileUrl, fileHash } = await uploadToS3(file);
+      console.log('Uploaded Image URL:', { fileUrl, fileHash });
+
+      // Update the profile image in the backend
+      await dispatch(
+        updateStudentProfileImage({
+          email: user?.email || '',
+          profileImage: fileUrl,
+        })
+      ).unwrap();
+
+      // Only update the profile image state if the backend update succeeds
+      setProfileImage(fileUrl);
+      // Reset the file input
+      setUploadLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
+    } catch (err) {
+      setUploadLoading(false);
+      const message = err instanceof Error ? err.message : 'Failed to upload image';
+      setUploadError(message);
+      toast.error(message);
     }
   };
 
   const handleEditToggle = () => {
     if (isEditing) {
       setProfileImage(profile?.profileImage || defaultImage);
+      setUploadError(null);
+      setUploadLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
     setIsEditing(!isEditing);
   };
@@ -100,8 +129,11 @@ const StudentProfile: React.FC = () => {
                 accept="image/*"
                 onChange={handleImageChange}
                 className="hidden"
+                ref={fileInputRef}
               />
             )}
+            {uploadLoading && <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Uploading...</p>}
+            {uploadError && <p className="text-sm text-red-500 mt-2">{uploadError}</p>}
             <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 text-center">
               {profile?.name ?? user?.email?.split('@')[0] ?? 'Unknown'}
             </h2>

@@ -65,7 +65,11 @@ export class NoteController implements INoteController {
       // Extract S3 key from fileUrl
       const fileKey = note.fileUrl.split(`https://${this.storageService.bucketName}.s3.${this.storageService.region}.amazonaws.com/`)[1];
       const downloadUrl = await this.storageService.generatePresignedDownloadUrl(fileKey);
-      res.redirect(downloadUrl);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Pre-signed download URL generated successfully',
+        data: { downloadUrl },
+      } as IApiResponse<{ downloadUrl: string }>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to download note';
       const status =

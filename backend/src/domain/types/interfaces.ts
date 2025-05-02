@@ -52,12 +52,13 @@ export interface ITeacher {
   subject?: mongoose.Types.ObjectId | string | null;
   dateOfBirth: string;
   profileImage?: string;
+  fileHash?: string;
   specialization?: string;
   experienceYears?: number;
   qualification?: string;
   availability?: { [key in Day]: number[] };
   isInitialLogin?: boolean;
-
+  isDeleted?: boolean
 }
 
 // Class entity
