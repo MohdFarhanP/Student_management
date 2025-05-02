@@ -14,6 +14,7 @@ const ClassSchema = new mongoose.Schema<IClass>({
   subjects: { type: [Schema.Types.ObjectId], ref: 'Subject', default: [] },
   grade: { type: String, required: true, enum: Object.values(Grade) },
   isDeleted: { type: Boolean, default: false },
+  chatRoomId: { type: String, required: true, unique: true }, 
 });
 
 export const ClassModel = mongoose.model('Class', ClassSchema);

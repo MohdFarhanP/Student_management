@@ -9,7 +9,7 @@ import {
 interface User {
   id: string;
   email: string;
-  role: string;
+  role: 'Student' | 'Teacher  ' | 'Admin';
   isInitialLogin?: boolean;
 }
 

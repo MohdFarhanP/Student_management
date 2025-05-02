@@ -7,4 +7,6 @@ export interface IClassController {
   getAllClassNames(req: Request, res: Response): Promise<void>;
   fetchClasses(req: Request, res: Response): Promise<void>;
   getStudentByClass(req: Request, res: Response): Promise<void>;
+  getClassesForTeacher(req: Request, res: Response): Promise<void>;
+  getClassForStudent(req: Request, res: Response): Promise<void>;
 }

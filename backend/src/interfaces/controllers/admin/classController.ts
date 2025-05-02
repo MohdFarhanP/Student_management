@@ -122,4 +122,44 @@ export class ClassController implements IClassController {
       } as IApiResponse<never>);
     }
   }
+  async getClassesForTeacher(req: Request, res: Response): Promise<void> {
+    try {
+      if (req.user.role !== Role.Teacher) {
+        throw new ForbiddenError('Only teachers can access this endpoint');
+      }
+      const classes = await this.classRepository.getClassesForTeacher(req.user.id);
+      res.status(HttpStatus.OK).json(classes);
+    } catch (error) {
+      if (error instanceof ForbiddenError) {
+        res.status(HttpStatus.FORBIDDEN).json({ error: error.message });
+      } else {
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          error: error instanceof Error ? error.message : 'Failed to fetch classes',
+        });
+      }
+    }
+  }
+
+  async getClassForStudent(req: Request, res: Response): Promise<void> {
+    try {
+      if (req.user.role !== Role.Student) {
+        throw new ForbiddenError('Only students can access this endpoint');
+      }
+      const classDoc = await this.classRepository.getClassForStudent(req.user.id);
+      if (!classDoc) {
+        throw new NotFoundError('No class found for this student');
+      }
+      res.status(HttpStatus.OK).json(classDoc);
+    } catch (error) {
+      if (error instanceof ForbiddenError) {
+        res.status(HttpStatus.FORBIDDEN).json({ error: error.message });
+      } else if (error instanceof NotFoundError) {
+        res.status(HttpStatus.NOT_FOUND).json({ error: error.message });
+      } else {
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          error: error instanceof Error ? error.message : 'Failed to fetch class',
+        });
+      }
+    }
+  }
 }

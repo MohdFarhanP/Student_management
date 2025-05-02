@@ -1,4 +1,5 @@
 import { ClassEntity } from "../../entities/class";
+import { IClass } from "../../types/interfaces";
 
 export interface IClassRepository {
   findAll(page: number, limit: number): Promise<{ data: ClassEntity[]; totalCount: number }>;
@@ -10,4 +11,8 @@ export interface IClassRepository {
   findByGrade(grade: string): Promise<ClassEntity[]>;
   update(classId: string, classData: Partial<ClassEntity>): Promise<ClassEntity>;
   fetchClass(): Promise<{ _id: string; name: string }[]>;
+  isStudentInClass(studentId: string, chatRoomId: string): Promise<boolean>;
+  isTeacherInClass(teacherId: string, chatRoomId: string): Promise<boolean>;
+  getClassesForTeacher(teacherId: string): Promise<Partial<IClass>[]>;
+  getClassForStudent(studentId: string): Promise<Partial<IClass> | null>;
 }

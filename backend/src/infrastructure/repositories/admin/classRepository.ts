@@ -1,8 +1,9 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { ClassEntity } from '../../../domain/entities/class';
 import { ClassModel } from '../../database/models/classModel';
 import { TeacherModel } from '../../database/models/teacherModel';
 import { IClassRepository } from '../../../domain/interface/admin/IClassRepository';
+import { IClass } from '../../../domain/types/interfaces';
 
 
 export class ClassRepository implements IClassRepository {
@@ -151,6 +152,89 @@ export class ClassRepository implements IClassRepository {
       }));
     } catch (error) {
       throw new Error(`Failed to fetch classes: ${(error as Error).message}`);
+    }
+  }
+
+  async isStudentInClass(studentId: string, chatRoomId: string): Promise<boolean> {
+    try {
+      const classDoc = await ClassModel.findOne({
+        chatRoomId,
+        students: new mongoose.Types.ObjectId(studentId),
+        isDeleted: false,
+      });
+      return !!classDoc;
+    } catch (error) {
+      throw new Error(
+        'Failed to verify student class membership: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      );
+    }
+  }
+
+  async isTeacherInClass(teacherId: string, chatRoomId: string): Promise<boolean> {
+    try {
+      const classDoc = await ClassModel.findOne({
+        chatRoomId,
+        $or: [
+          { teachers: new mongoose.Types.ObjectId(teacherId) },
+          { tutor: new mongoose.Types.ObjectId(teacherId) },
+        ],
+        isDeleted: false,
+      });
+      return !!classDoc;
+    } catch (error) {
+      throw new Error(
+        'Failed to verify teacher class membership: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      );
+    }
+  }
+
+  async getClassesForTeacher(teacherId: string): Promise<Partial<IClass>[]> {
+    try {
+      const classes = await ClassModel.find({
+        $or: [
+          { teachers: new mongoose.Types.ObjectId(teacherId) },
+          { tutor: new mongoose.Types.ObjectId(teacherId) },
+        ],
+        isDeleted: false,
+      }).select('chatRoomId name grade section');
+      return classes.map((doc) => ({
+        _id: doc._id,
+        chatRoomId: doc.chatRoomId,
+        name: doc.name,
+        section: doc.section,
+        grade: doc.grade,
+        // Other fields as needed
+      }));
+    } catch (error) {
+      throw new Error(
+        'Failed to fetch classes for teacher: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      );
+    }
+  }
+
+  async getClassForStudent(studentId: string): Promise<Partial<IClass> | null> {
+    try {
+      const classDoc = await ClassModel.findOne({
+        students: new mongoose.Types.ObjectId(studentId),
+        isDeleted: false,
+      }).select('chatRoomId name grade section');
+      if (!classDoc) return null;
+      return {
+        _id: classDoc._id,
+        chatRoomId: classDoc.chatRoomId,
+        name: classDoc.name,
+        section: classDoc.section,
+        grade: classDoc.grade,
+        // Other fields as needed
+      };
+    } catch (error) {
+      throw new Error(
+        'Failed to fetch class for student: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      );
     }
   }
 }

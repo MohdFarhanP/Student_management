@@ -532,7 +532,9 @@ export class DependencyContainer {
     );
     this.dependencies.set(
       'IChatController',
-      new ChatController(this.dependencies.get('ISendMessageUseCase'))
+      new ChatController(
+        this.dependencies.get('ISendMessageUseCase'),
+        this.dependencies.get('IClassRepository'))
     );
     this.dependencies.set(
       'IUserController',
@@ -565,7 +567,8 @@ export class DependencyContainer {
         this.dependencies.get('ISendMessageUseCase'),
         this.dependencies.get('INotificationRepository'),
         this.dependencies.get('ISendNotificationUseCase'),
-        this.dependencies.get('INotificationScheduler')
+        this.dependencies.get('INotificationScheduler'),
+        this.dependencies.get('IClassRepository')
       )
     );
   }

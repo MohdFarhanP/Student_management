@@ -46,5 +46,8 @@ router.put(
   authenticateUser,
   subjectController.updateSubject.bind(subjectController)
 );
+router.get('/classes', authenticateUser, classController.getClassesForTeacher.bind(classController));
+router.get('/my-class', authenticateUser, classController.getClassForStudent.bind(classController));
+
 
 export default router;

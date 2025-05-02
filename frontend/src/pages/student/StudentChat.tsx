@@ -1,43 +1,64 @@
-import React, { useEffect } from 'react';
+// src/pages/StudentChat.tsx
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ChatWindow from '../../components/ChatWindow';
 import NotificationBell from '../../components/NotificationBell';
 import StudentSidebar from '../../components/StudentSidebar';
 import { RootState, AppDispatch } from '../../redux/store';
-import {
-  addMessage,
-  setMessages,
-  setError,
-} from '../../redux/slices/chatSlice';
+import { addMessage, setMessages, setError } from '../../redux/slices/chatSlice';
 import { Message } from '../../types/message';
 import { socket } from '../../socket';
+import axios from 'axios';
+
+interface Class {
+  chatRoomId: string;
+  name: string;
+  grade: string;
+  section: string;
+}
 
 const StudentChat: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { messages, error } = useSelector((state: RootState) => state.chat);
   const user = useSelector((state: RootState) => state.auth.user);
+  const [classData, setClassData] = useState<Class | null>(null);
 
   useEffect(() => {
     if (!user) return;
 
-    socket.io.opts.query = { userId: user.id };
+    // Fetch student's class
+    const fetchClass = async () => {
+      try {
+        const response = await axios.get('/api/teacher/my-class', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        setClassData(response.data);
+      } catch (err) {
+        dispatch(setError('Failed to fetch class'));
+      }
+    };
+    fetchClass();
+  }, [user, dispatch]);
+
+  useEffect(() => {
+    if (!user || !classData) return;
+
+    socket.io.opts.query = { userId: user.id, userRole: user.role };
     socket.connect();
 
     socket.on('connect', () => {
       console.log('Connected to Socket.IO server');
-      socket.emit('joinRoom', 'class-123', () => {
-        console.log('Joined room class-123');
-        socket.emit('loadMessages', 'class-123');
+      socket.emit('joinRoom', classData.chatRoomId, () => {
+        console.log(`Joined room ${classData.chatRoomId}`);
+        socket.emit('loadMessages', classData.chatRoomId);
       });
     });
 
     socket.on('initialMessages', (messages: Message[]) => {
-      console.log('Received initialMessages:', messages);
       dispatch(setMessages(messages));
     });
 
     socket.on('message', (message: Message) => {
-      console.log('Received new message:', message);
       dispatch(addMessage(message));
     });
 
@@ -52,16 +73,16 @@ const StudentChat: React.FC = () => {
       socket.off('error');
       socket.disconnect();
     };
-  }, [dispatch, user]);
+  }, [dispatch, user, classData]);
 
   const sendMessage = (
     content: string,
     mediaUrl?: string,
     mediaType?: string
   ) => {
-    if (!user) return;
+    if (!user || !classData) return;
     socket.emit('sendMessage', {
-      chatRoomId: 'class-123',
+      chatRoomId: classData.chatRoomId,
       senderId: user.id,
       senderRole: user.role,
       content,
@@ -71,6 +92,7 @@ const StudentChat: React.FC = () => {
   };
 
   if (!user) return <div>Please log in to access the chat.</div>;
+  if (!classData) return <div>Loading class data...</div>;
 
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -78,7 +100,7 @@ const StudentChat: React.FC = () => {
       <div className="flex-1 max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 lg:ml-45">
         <div className="flex flex-row items-center justify-between sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
           <h1 className="text-xl pl-[50px] sm:pl-0 md:pl-10 sm:text-2xl lg:text-3xl lg:pl-0 font-bold mb-2 sm:mb-0 text-gray-800 dark:text-gray-100">
-            Student Chat
+            {classData.name} Chat
           </h1>
           <NotificationBell />
         </div>
@@ -91,7 +113,7 @@ const StudentChat: React.FC = () => {
           <ChatWindow
             messages={messages}
             sendMessage={sendMessage}
-            chatRoomId="class-123"
+            chatRoomId={classData.chatRoomId}
             isTeacher={false}
           />
         </div>

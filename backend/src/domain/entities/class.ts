@@ -14,6 +14,7 @@ export class ClassEntity implements IClass {
   roomNo: string;
   subjects: mongoose.Types.ObjectId[];
   grade: Grade;
+  chatRoomId: string;
   isDeleted?: boolean;
 
   constructor(data: Partial<IClass>) {
@@ -32,6 +33,7 @@ export class ClassEntity implements IClass {
     this.grade = Object.values(Grade).includes(data.grade as Grade)
       ? (data.grade as Grade)
       : Grade.Grade1;
+    this.chatRoomId = data.chatRoomId || '';  
     this.isDeleted = data.isDeleted ?? false;
   }
 }

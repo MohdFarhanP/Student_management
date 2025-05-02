@@ -75,6 +75,7 @@ export interface IClass {
   roomNo: string;
   subjects: mongoose.Types.ObjectId[];
   grade: Grade;
+  chatRoomId: string;
   isDeleted?: boolean;
 }
 
