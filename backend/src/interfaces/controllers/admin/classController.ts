@@ -1,3 +1,4 @@
+// interfaces/controllers/classController.ts
 import { Request, Response } from 'express';
 import HttpStatus from '../../../utils/httpStatus';
 import { ICreateClassUseCase } from '../../../domain/interface/ICreateClassUseCase';
@@ -6,8 +7,11 @@ import { IGetClassesUseCase } from '../../../domain/interface/IGetClassesUseCase
 import { IUpdateClassUseCase } from '../../../domain/interface/IUpdateClassUseCase';
 import { IGetClassNameUseCase } from '../../../domain/interface/IGetClassNameUseCase';
 import { IGetStudentsByClassUseCase } from '../../../domain/interface/IGetStudentsByClassUseCase';
+import { IGetClassesForTeacherUseCase } from '../../../domain/interface/IGetClassesForTeacherUseCase';
+import { IGetClassForStudentUseCase } from '../../../domain/interface/IGetClassForStudentUseCase';
 import { IClassController } from '../../../domain/interface/IClassController';
-import { IApiResponse } from '../../../domain/types/interfaces';
+import { IApiResponse, IClass } from '../../../domain/types/interfaces';
+import { ForbiddenError, NotFoundError } from '../../../domain/errors';
 
 export class ClassController implements IClassController {
   constructor(
@@ -16,7 +20,9 @@ export class ClassController implements IClassController {
     private getAllClassesUseCase: IGetClassesUseCase,
     private updateClassUseCase: IUpdateClassUseCase,
     private getAllClassNamesUseCase: IGetClassNameUseCase,
-    private getStudentsByClassUseCase: IGetStudentsByClassUseCase
+    private getStudentsByClassUseCase: IGetStudentsByClassUseCase,
+    private getClassesForTeacherUseCase: IGetClassesForTeacherUseCase,
+    private getClassForStudentUseCase: IGetClassForStudentUseCase
   ) {}
 
   async addClasses(req: Request, res: Response): Promise<void> {
@@ -122,44 +128,55 @@ export class ClassController implements IClassController {
       } as IApiResponse<never>);
     }
   }
+
   async getClassesForTeacher(req: Request, res: Response): Promise<void> {
     try {
-      if (req.user.role !== Role.Teacher) {
-        throw new ForbiddenError('Only teachers can access this endpoint');
-      }
-      const classes = await this.classRepository.getClassesForTeacher(req.user.id);
-      res.status(HttpStatus.OK).json(classes);
+      const classes = await this.getClassesForTeacherUseCase.execute(req.user.id, req.user.role);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Classes fetched successfully',
+        data: classes,
+      } as IApiResponse<IClass[]>);
     } catch (error) {
       if (error instanceof ForbiddenError) {
-        res.status(HttpStatus.FORBIDDEN).json({ error: error.message });
+        res.status(HttpStatus.FORBIDDEN).json({
+          success: false,
+          message: error.message,
+        } as IApiResponse<never>);
       } else {
         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-          error: error instanceof Error ? error.message : 'Failed to fetch classes',
-        });
+          success: false,
+          message: error instanceof Error ? error.message : 'Failed to fetch classes',
+        } as IApiResponse<never>);
       }
     }
   }
 
   async getClassForStudent(req: Request, res: Response): Promise<void> {
     try {
-      if (req.user.role !== Role.Student) {
-        throw new ForbiddenError('Only students can access this endpoint');
-      }
-      const classDoc = await this.classRepository.getClassForStudent(req.user.id);
-      if (!classDoc) {
-        throw new NotFoundError('No class found for this student');
-      }
-      res.status(HttpStatus.OK).json(classDoc);
+      const classDoc = await this.getClassForStudentUseCase.execute(req.user.id, req.user.role);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Class fetched successfully',
+        data: classDoc,
+      } as IApiResponse<IClass | null>);
     } catch (error) {
       if (error instanceof ForbiddenError) {
-        res.status(HttpStatus.FORBIDDEN).json({ error: error.message });
+        res.status(HttpStatus.FORBIDDEN).json({
+          success: false,
+          message: error.message,
+        } as IApiResponse<never>);
       } else if (error instanceof NotFoundError) {
-        res.status(HttpStatus.NOT_FOUND).json({ error: error.message });
+        res.status(HttpStatus.NOT_FOUND).json({
+          success: false,
+          message: error.message,
+        } as IApiResponse<never>);
       } else {
         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-          error: error instanceof Error ? error.message : 'Failed to fetch class',
-        });
+          success: false,
+          message: error instanceof Error ? error.message : 'Failed to fetch class',
+        } as IApiResponse<never>);
       }
     }
   }
-}
+} 

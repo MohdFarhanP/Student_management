@@ -34,7 +34,7 @@ import { DeleteStudentUseCase } from '../../application/useCases/admin/student/d
 import { EditStudentUseCase } from '../../application/useCases/admin/student/editStudentUseCase';
 import { GetAllStudentsUseCase } from '../../application/useCases/admin/student/getAllStudentsUseCase';
 import { GetStudentProfileUseCase as AdminGetStudentProfileUseCase  } from '../../application/useCases/student/GetStudentProfileUseCase';
-import { AuthService } from '../../application/services/AuthService';
+import { AuthService } from '../../application/services/authService';
 import { IClassRepository } from '../../domain/interface/admin/IClassRepository';
 import { ISubjectRepository } from '../../domain/interface/ISubjectRepository';
 import { IClassController } from '../../domain/interface/IClassController';
@@ -151,6 +151,9 @@ import { IGeneratePresignedUrlUseCase } from '../../domain/interface/IGeneratePr
 import { GeneratePresignedUrlUseCase } from '../../application/useCases/GeneratePresignedUrlUseCase';
 import { IPresignedUrlController } from '../../domain/interface/IPresignedUrlController';
 import { PresignedUrlController } from '../../interfaces/controllers/PresignedUrlController';
+import { GetClassesForTeacherUseCase } from '../../application/useCases/message/getClassesForTeacher';
+import { IGetClassesForTeacherUseCase } from '../../domain/interface/IGetClassesForTeacherUseCase'; 
+import { GetClassForStudentUseCase } from '../../application/useCases/message/getClassForStudent';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -243,6 +246,14 @@ export class DependencyContainer {
     this.dependencies.set(
       'IGetStudentsByClassUseCase',
       new GetStudentsByClassUseCase(this.dependencies.get('IStudentRepository'))
+    );
+    this.dependencies.set(
+      'IGetClassesForTeacherUseCase',
+      new GetClassesForTeacherUseCase(this.dependencies.get('IClassRepository'))
+    );
+    this.dependencies.set(
+      'IGetClassForStudentUseCase',
+      new GetClassForStudentUseCase(this.dependencies.get('IClassRepository'))
     );
 
     // Use Cases (Subject)
@@ -463,7 +474,9 @@ export class DependencyContainer {
         this.dependencies.get('IGetClassesUseCase'),
         this.dependencies.get('IUpdateClassUseCase'),
         this.dependencies.get('IGetClassNameUseCase'),
-        this.dependencies.get('IGetStudentsByClassUseCase')
+        this.dependencies.get('IGetStudentsByClassUseCase'),
+        this.dependencies.get('IGetClassesForTeacherUseCase'),
+        this.dependencies.get('IGetClassForStudentUseCase')
       )
     );
     this.dependencies.set(

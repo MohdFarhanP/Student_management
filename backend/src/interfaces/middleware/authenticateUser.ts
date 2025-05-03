@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { AuthService } from "../../application/services/AuthService";
+import { AuthService } from "../../application/services/authService";
 import { IAuthService } from "../../domain/interface/IAuthService";
 import HttpStatus from "../../utils/httpStatus";
 
