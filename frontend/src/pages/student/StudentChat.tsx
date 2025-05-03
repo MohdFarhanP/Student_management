@@ -1,20 +1,20 @@
-// src/pages/StudentChat.tsx
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ChatWindow from '../../components/ChatWindow';
 import NotificationBell from '../../components/NotificationBell';
-import StudentSidebar from '../../components/StudentSidebar';
-import { RootState, AppDispatch } from '../../redux/store';
+import StudentSidebar from '../../components/StudentSidebar'; 
+import { RootState, AppDispatch } from '../../redux/store' ;
 import { addMessage, setMessages, setError } from '../../redux/slices/chatSlice';
 import { Message } from '../../types/message';
 import { socket } from '../../socket';
-import axios from 'axios';
+import { fetchStudentClass } from '../../api/admin/classApi';
 
 interface Class {
-  chatRoomId: string;
+  _id: string;
+  chatRoomId?: string;
   name: string;
-  grade: string;
-  section: string;
+  section?: string;
+  grade?: string;
 }
 
 const StudentChat: React.FC = () => {
@@ -22,18 +22,17 @@ const StudentChat: React.FC = () => {
   const { messages, error } = useSelector((state: RootState) => state.chat);
   const user = useSelector((state: RootState) => state.auth.user);
   const [classData, setClassData] = useState<Class | null>(null);
-
+ 
   useEffect(() => {
     if (!user) return;
 
     // Fetch student's class
     const fetchClass = async () => {
       try {
-        const response = await axios.get('/api/teacher/my-class', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        setClassData(response.data);
+        const classData = await fetchStudentClass();
+        setClassData(classData);
       } catch (err) {
+        console.log('ERROR from student chat.tsx:', err);
         dispatch(setError('Failed to fetch class'));
       }
     };
@@ -91,15 +90,15 @@ const StudentChat: React.FC = () => {
     });
   };
 
-  if (!user) return <div>Please log in to access the chat.</div>;
-  if (!classData) return <div>Loading class data...</div>;
+  if (!user) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">Please log in to access the chat.</div>;
+  if (!classData) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">Loading class data...</div>;
 
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <StudentSidebar />
-      <div className="flex-1 max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 lg:ml-45">
-        <div className="flex flex-row items-center justify-between sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
-          <h1 className="text-xl pl-[50px] sm:pl-0 md:pl-10 sm:text-2xl lg:text-3xl lg:pl-0 font-bold mb-2 sm:mb-0 text-gray-800 dark:text-gray-100">
+      <div className="flex-1 max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 md:ml-45">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 dark:text-gray-100">
             {classData.name} Chat
           </h1>
           <NotificationBell />

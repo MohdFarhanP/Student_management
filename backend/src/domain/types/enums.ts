@@ -50,6 +50,7 @@ export enum Role {
     B = 'B',
     C = 'C',
     D = 'D',
+    E = 'E',
   }
 
   export enum SubjectName {

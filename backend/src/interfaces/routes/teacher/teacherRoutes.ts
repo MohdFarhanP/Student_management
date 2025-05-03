@@ -24,7 +24,7 @@ router.post(
   attendanceController.markAttendance.bind(attendanceController)
 );
 router.get('/classes', authenticateUser, classController.getClassesForTeacher.bind(classController));
-router.get('/my-class', authenticateUser, classController.getClassForStudent.bind(classController));
+
 
 
 export default router;

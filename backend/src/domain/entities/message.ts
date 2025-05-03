@@ -1,4 +1,4 @@
-import { IMessage } from '../interface/IMessage';
+import { IMessage } from '../types/interfaces';
 import { MediaType, Role } from '../types/enums';
 
 export class MessageEntity implements IMessage {

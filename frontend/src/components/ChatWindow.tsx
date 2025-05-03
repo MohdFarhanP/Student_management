@@ -5,14 +5,19 @@ import { Message } from '../types/message';
 import { RootState } from '../redux/store';
 import { uploadToS3 } from '../services/UploadToS3';
 
+enum MediaType {
+  Image = 'image',
+  Document = 'document',
+}
+
 interface ChatWindowProps {
   messages: Message[];
   sendMessage: (
     content: string,
     mediaUrl?: string,
-    mediaType?: 'image' | 'document'
+    mediaType?: MediaType
   ) => void;
-  chatRoomId: string;
+  chatRoomId?: string;
   isTeacher: boolean;
 }
 
@@ -35,16 +40,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (!content.trim() && !file) return;
 
     let mediaUrl: string | undefined;
-    let mediaType: 'image' | 'document' | undefined;
+    let mediaType: MediaType | undefined;
 
     if (file && isTeacher) {
       try {
-        mediaUrl = await uploadToS3(file);
+        const uploadResult = await uploadToS3(file); 
+        mediaUrl = uploadResult.fileUrl; 
         if (!mediaUrl) {
-          setUploadError('Upload failed');
+          setUploadError('Upload failed: No file URL returned');
           return;
         }
-        mediaType = file.type.startsWith('image/') ? 'image' : 'document';
+        mediaType = file.type.startsWith('image/') ? MediaType.Image : MediaType.Document;
         setFile(null);
         setUploadError(null);
       } catch (error) {
@@ -61,7 +67,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     setFile(null);
   };
 
-  if (!user) return <div>Please log in to access the chat.</div>;
+  if (!user) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">Please log in to access the chat.</div>;
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] sm:h-[calc(100vh-14rem)] lg:h-[calc(100vh-10rem)] bg-white dark:bg-gray-800 p-4 rounded-lg">

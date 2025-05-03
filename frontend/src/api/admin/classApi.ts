@@ -1,5 +1,6 @@
 import { toast } from 'react-toastify';
 import { apiRequest } from '../apiClient';
+import { STUDENT_API_URL } from '../student/studentApi';
 
 const ADMIN_CLASS_API_URL = `/admin/classes`;
 
@@ -26,6 +27,9 @@ interface Student {
 interface Class {
   _id: string;
   name: string;
+  chatRoomId?:string;
+  section?: string;
+  grade?: string;
 }
 
 interface ApiResponse<T> {
@@ -82,3 +86,11 @@ export const updateClass = (data: IClassData) =>
 export const fetchClasses = () =>
   apiRequest<ApiResponse<Class[]>>('get', `${ADMIN_CLASS_API_URL}/classlist`)
     .then((res)=> res?.data);
+
+export const fetchStudentClass = () =>
+  apiRequest<ApiResponse<Class>>('get', `${STUDENT_API_URL}/my-class`).then((res) => {
+    if (!res.data) {
+      throw new Error('Class data not found');
+    }
+    return res.data;
+  });

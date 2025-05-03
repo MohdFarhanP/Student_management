@@ -14,4 +14,6 @@ export interface IStudentRepository {
   getProfile(email: string): Promise<Student | null>;
   findByEmail(email: string): Promise<Student | null>;
   getStudentsByClass(classId: string): Promise<Student[]>;
+  addStudentToClass(classId: string, studentId: string): Promise<void>;
+  removeStudentFromClass(classId: string, studentId: string): Promise<void>;
 }

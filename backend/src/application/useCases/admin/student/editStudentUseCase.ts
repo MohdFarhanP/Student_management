@@ -12,10 +12,25 @@ export class EditStudentUseCase implements IEditStudentUseCase {
       if (!Types.ObjectId.isValid(studentId)) {
         throw new Error('Invalid student ID');
       }
-      const updatedStudent = await this.studentRepository.update(studentId, studentData);
-      if (!updatedStudent) {
-        throw new Error('Student not found');
-      }
+
+    const existingStudent = await this.studentRepository.findById(studentId);
+    if (!existingStudent) {
+      throw new Error('Student not found');
+    }
+
+    const updatedStudent = await this.studentRepository.update(studentId, studentData);
+    if (!updatedStudent) {
+      throw new Error('Student not found');
+    }
+    
+    const oldClassId = existingStudent.class?.toString();
+    const newClassId = studentData.class?.toString();
+
+    if (oldClassId && newClassId && oldClassId !== newClassId) {
+      await this.studentRepository.removeStudentFromClass(oldClassId, studentId);
+      await this.studentRepository.addStudentToClass(newClassId, studentId);
+    }
+
       return updatedStudent;
     } catch (error) {
       throw error instanceof Error ? error : new Error('Failed to update student');

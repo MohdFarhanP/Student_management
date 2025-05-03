@@ -128,7 +128,6 @@ export class ClassController implements IClassController {
       } as IApiResponse<never>);
     }
   }
-
   async getClassesForTeacher(req: Request, res: Response): Promise<void> {
     try {
       const classes = await this.getClassesForTeacherUseCase.execute(req.user.id, req.user.role);
@@ -154,12 +153,13 @@ export class ClassController implements IClassController {
 
   async getClassForStudent(req: Request, res: Response): Promise<void> {
     try {
+      console.log("req.user.id",req.user.id, "and req.user.role" ,req.user.role );
       const classDoc = await this.getClassForStudentUseCase.execute(req.user.id, req.user.role);
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Class fetched successfully',
         data: classDoc,
-      } as IApiResponse<IClass | null>);
+      } as IApiResponse<Partial<IClass> | null>);
     } catch (error) {
       if (error instanceof ForbiddenError) {
         res.status(HttpStatus.FORBIDDEN).json({

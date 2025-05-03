@@ -165,6 +165,18 @@ export interface IApiResponse<T> {
     senderRole: Role;
     scheduledAt?: Date;
   }
+
+  
+export interface IMessage {
+  id: string;
+  chatRoomId: string;
+  senderId: string;
+  senderRole: Role;
+  content?: string;
+  mediaUrl?: string;
+  mediaType?: MediaType;
+  createdAt: Date;
+}
   
   // DTO for frontend
   export interface IClassData {

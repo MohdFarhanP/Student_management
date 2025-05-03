@@ -13,6 +13,13 @@ export class UpdateClassUseCase implements IUpdateClassUseCase {
         throw new Error('Class not found');
       }
 
+      if (updatedData.grade || updatedData.section || updatedData.name) {
+        const updatedGrade = updatedData.grade || existingClass.grade;
+        const updatedSection = updatedData.section || existingClass.section;
+        const updatedName = updatedData.name || existingClass.name;
+        updatedData.chatRoomId = `class-${updatedGrade}-${updatedSection}-${updatedName}`;
+      }
+
       const filteredUpdates: Partial<IClass> = Object.fromEntries(
         Object.entries(updatedData).filter(
           ([key, value]) =>

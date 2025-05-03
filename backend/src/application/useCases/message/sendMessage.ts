@@ -1,5 +1,4 @@
-// application/useCases/message/sendMessage.ts
-import { IMessage } from '../../../domain/interface/IMessage';
+import { IMessage } from '../../../domain/types/interfaces';
 import { IMessageRepository } from '../../../domain/interface/IMessageRepository';
 import { ISendMessageUseCase } from '../../../domain/interface/ISendMessageUseCase';
 import { ValidationError } from '../../../domain/errors';

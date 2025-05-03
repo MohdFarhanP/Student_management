@@ -6,6 +6,7 @@ const router: Router = express.Router();
 const container = DependencyContainer.getInstance();
 const studentProfileController = container.getStudentProfileController();
 const attendanceController = container.getAttendanceController();
+const classController = container.getClassController();
 
 router.get(
   '/profile/:email',
@@ -23,5 +24,7 @@ router.get(
   authenticateUser,
   attendanceController.viewAttendance.bind(attendanceController)
 );
+router.get('/my-class', authenticateUser, classController.getClassForStudent.bind(classController));
+
 
 export default router;

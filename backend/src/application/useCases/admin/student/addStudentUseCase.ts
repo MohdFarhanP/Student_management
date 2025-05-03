@@ -29,6 +29,11 @@ export class AddStudentUseCase implements IAddStudentUseCase {
       };
 
       const student = await this.studentRepo.create(fullStudentData);
+
+      if (student.class) {
+        await this.studentRepo.addStudentToClass(student.class.toString(), student.id.toString());
+      }
+
       await sendDefaultPasswordEmail(studentData.email!, defaultPassword);
       return student;
     } catch (error) {

@@ -1,5 +1,5 @@
 import { MessageEntity } from '../../../domain/entities/message';
-import { IMessage } from '../../../domain/interface/IMessage';
+import { IMessage } from '../../../domain/types/interfaces';
 import { IMessageRepository } from '../../../domain/interface/IMessageRepository';
 import { MessageModel } from '../../database/models/messageModel';
 

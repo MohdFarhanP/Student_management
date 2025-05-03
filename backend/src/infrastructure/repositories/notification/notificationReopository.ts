@@ -39,16 +39,10 @@ export class NotificationRepository implements INotificationRepository {
   async findScheduled(currentTime: Date): Promise<INotification[]> {
     try {
       const utcCurrentTime = currentTime.toISOString();
-      console.log('Checking scheduled notifications at:', utcCurrentTime);
       const docs = await NotificationModel.find({
         scheduledAt: { $lte: utcCurrentTime, $exists: true },
         isRead: false,
       }).sort({ scheduledAt: 1 });
-      console.log('Retrieved documents with scheduledAt:', docs.map(doc => ({
-        _id: doc._id,
-        scheduledAt: doc.scheduledAt,
-        isRead: doc.isRead,
-      })));
       return docs.map(
         (doc) =>
           new NotificationEntity({

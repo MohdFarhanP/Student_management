@@ -19,10 +19,7 @@ export class NotificationController implements INotificationController {
       if (!userId) {
         throw new UnauthorizedError('User not authenticated');
       }
-      console.log('Hitting the controller');
-      console.log('This is the user id:', userId);
       const notifications = await this.getNotificationsUseCase.execute(userId);
-      console.log('Notifications from use case:', notifications);
       res.status(HttpStatus.OK).json(notifications);
     } catch (error) {
       if (error instanceof AppError) {

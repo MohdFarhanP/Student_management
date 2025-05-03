@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
 import { apiRequest } from '../apiClient';
 
-const STUDENT_API_URL = '/student';
+export const STUDENT_API_URL = '/student';
 
 interface StudentAddress {
   houseName: string;
@@ -13,7 +13,7 @@ interface StudentAddress {
   guardianContact: string;
 }
 
-interface StudentProfile {
+export interface StudentProfile {
   id: string;
   name: string;
   email: string;

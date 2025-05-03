@@ -1,32 +1,14 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
+  StudentProfile,
   studentsProfileFetch,
   updateProfileImg,
 } from '../../api/student/studentApi';
 
-interface IStudent {
-  name: string;
-  email: string;
-  age: number;
-  gender: 'Male' | 'Female';
-  roleNumber: string;
-  class: string | null;
-  dob: string;
-  profileImage: string;
-  address: {
-    houseName: string;
-    place: string;
-    district: string;
-    pincode: number;
-    phoneNo: number;
-    guardianName: string;
-    guardianContact: string | null;
-  };
-  classes?: string[];
-}
+
 
 interface StudentState {
-  profile: IStudent | null;
+  profile: StudentProfile | null;
   loading: boolean;
   error: string | null;
 }
@@ -42,6 +24,7 @@ export const fetchStudentProfile = createAsyncThunk(
   async (email: string, { rejectWithValue }) => {
     try {
       const data = await studentsProfileFetch(email);
+      console.log('fetched students data studentslice: ',data)
       return data;
     } catch (error: unknown) {
       let errorMessage = 'Failed to fetch teacher profile';
@@ -90,9 +73,9 @@ const studentSlice = createSlice({
       })
       .addCase(
         fetchStudentProfile.fulfilled,
-        (state, action: PayloadAction<IStudent>) => {
+        (state, action) => {
           state.loading = false;
-          state.profile = action.payload;
+          state.profile = action.payload!;
         }
       )
       .addCase(fetchStudentProfile.rejected, (state, action) => {
@@ -107,9 +90,9 @@ const studentSlice = createSlice({
       })
       .addCase(
         updateStudentProfileImage.fulfilled,
-        (state, action: PayloadAction<IStudent>) => {
+        (state, action) => {
           state.loading = false;
-          state.profile = action.payload;
+          state.profile = action.payload!;
         }
       )
       .addCase(updateStudentProfileImage.rejected, (state, action) => {

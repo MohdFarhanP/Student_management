@@ -29,6 +29,5 @@ export class NotificationEntity implements INotification {
       ? notification.createdAt
       : new Date(notification.createdAt);
     this.scheduledAt = notification.scheduledAt;
-    console.log('NotificationEntity created with scheduledAt:', this.scheduledAt);
   }
 }

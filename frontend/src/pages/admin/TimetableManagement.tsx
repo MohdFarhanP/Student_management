@@ -24,9 +24,9 @@ const TimetableManagement: React.FC = () => {
       setLoading(true);
       try {
         const classesData = await fetchClasses();
-        setClasses(classesData);
-        if (classesData.length > 0 && classesData[0]._id) {
-          setSelectedClassId(classesData[0]._id ?? '');
+        setClasses(classesData!);
+        if (classesData!.length > 0 && classesData![0]._id) {
+          setSelectedClassId(classesData![0]._id ?? '');
         }
       } catch (err: unknown) {
         if (err instanceof AxiosError) {

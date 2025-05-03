@@ -1,6 +1,5 @@
-// infrastructure/database/models/messageModel.ts
 import mongoose from 'mongoose';
-import { IMessage } from '../../../domain/interface/IMessage';
+import { IMessage } from '../../../domain/types/interfaces';
 import { Role, MediaType } from '../../../domain/types/enums';
 
 const messageSchema = new mongoose.Schema<IMessage>({

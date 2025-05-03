@@ -12,6 +12,7 @@ export class GetClassForStudentUseCase implements IGetClassForStudentUseCase {
       throw new ForbiddenError('Only students can access this endpoint');
     }
     const classDoc = await this.classRepository.getClassForStudent(studentId);
+    console.log('this is the classDoc return from the repo in GetClassForStudentUseCase', classDoc)
     if (!classDoc) {
       throw new NotFoundError('No class found for this student');
     }

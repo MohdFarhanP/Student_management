@@ -1,6 +1,5 @@
 import { IClassRepository } from '../../../../domain/interface/admin/IClassRepository';
 import { IGetClassesUseCase } from '../../../../domain/interface/IGetClassesUseCase';
-import { ClassEntity } from '../../../../domain/entities/class';
 import { IClassData } from '../../../../domain/types/interfaces';
 
 export class GetClassesUseCase implements IGetClassesUseCase {

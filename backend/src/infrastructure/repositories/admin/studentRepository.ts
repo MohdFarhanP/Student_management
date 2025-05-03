@@ -54,21 +54,54 @@ interface PopulatedStudent {
 export class StudentRepository implements IStudentRepository {
   async insertMany(students: Student[]): Promise<void> {
     if (!students || students.length === 0) return;
-
+  
+    const classMap = new Map<string, string>(); // Cache class name to ObjectId
+    const classStudentMap = new Map<string, string[]>(); // classId => studentIds
+  
+    // Step 1: Convert class name to ObjectId and prepare for bulk insert
     const processedStudents = await Promise.all(
       students.map(async (student) => {
         if (student.class && typeof student.class === 'string') {
-          const classDoc = await ClassModel.findOne({ name: student.class });
-          if (!classDoc) throw new Error(`Class '${student.class}' not found`);
-          student.class = classDoc._id;
+          let classId = classMap.get(student.class);
+          if (!classId) {
+            const classDoc = await ClassModel.findOne({ name: student.class });
+            if (!classDoc) throw new Error(`Class '${student.class}' not found`);
+            classId = classDoc._id.toString();
+            classMap.set(student.class, classId);
+          }
+          student.class = classId;
+  
+          // Prepare to push student IDs into class
+          if (!classStudentMap.has(classId)) classStudentMap.set(classId, []);
         }
         return student;
       })
     );
-
-    await studentModel.insertMany(processedStudents);
+  
+    // Step 2: Bulk insert students
+    const insertedStudents = await studentModel.insertMany(processedStudents);
+  
+    // Step 3: Organize students by class
+    insertedStudents.forEach((student) => {
+      const classId = student.class?.toString();
+      if (classId) {
+        classStudentMap.get(classId)?.push(student._id.toString());
+      }
+    });
+  
+    // Step 4: Update each class with students and total count
+    for (const [classId, studentIds] of classStudentMap.entries()) {
+      await ClassModel.findByIdAndUpdate(
+        classId,
+        {
+          $push: { students: { $each: studentIds } },
+          $inc: { totalStudents: studentIds.length },
+        },
+        { new: true }
+      );
+    }
   }
-
+  
   async getAll(page: number, limit: number): Promise<{ students: Student[]; totalCount: number }> {
     const skip = (page - 1) * limit;
 
@@ -164,4 +197,26 @@ export class StudentRepository implements IStudentRepository {
       });
     });
   }
+  async addStudentToClass(classId: string, studentId: string): Promise<void> {
+    await ClassModel.findByIdAndUpdate(
+      classId,
+      {
+        $addToSet: { students: studentId },
+        $inc: { totalStudents: 1 },
+      },
+      { new: true }
+    );
+  }
+  async removeStudentFromClass(classId: string, studentId: string): Promise<void> {
+    await ClassModel.findByIdAndUpdate(
+      classId,
+      {
+        $pull: { students: studentId },
+        $inc: { totalStudents: -1 },
+      },
+      { new: true }
+    );
+  }
+  
+  
 }

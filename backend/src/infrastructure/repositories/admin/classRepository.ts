@@ -73,6 +73,13 @@ export class ClassRepository implements IClassRepository {
         ...classData,
         tutor: new Types.ObjectId(classData.tutor),
       });
+
+      const chatRoomId = `class-${newClass.grade}-${newClass.section}-${newClass.name}`;
+      await this.classModel.updateOne(
+        { _id: newClass._id },
+        { $set: { chatRoomId } }
+      );
+
       const populatedClass = await this.classModel
         .findById(newClass._id)
         .populate('tutor', 'name')
@@ -142,13 +149,14 @@ export class ClassRepository implements IClassRepository {
   async fetchClass(): Promise<{ _id: string; name: string }[]> {
     try {
       const classes = await this.classModel
-        .find({}, { _id: 1, name: 1 })
+        .find({}, { _id: 1, name: 1 ,chatRoomId: 1})
         .lean()
         .exec();
 
       return classes.map((cls) => ({
         _id: cls._id.toString(),
         name: cls.name,
+        chatRoomId: cls.chatRoomId,
       }));
     } catch (error) {
       throw new Error(`Failed to fetch classes: ${(error as Error).message}`);

@@ -26,12 +26,15 @@ export class SocketServer implements ISocketServer {
   }
 
   initialize() {
-    this.notificationScheduler.start();
+    if (this.notificationScheduler) {
+      this.notificationScheduler.start();
+    }
 
     this.io.use((socket, next) => {
       const userId = socket.handshake.query.userId as string;
       const userRole = socket.handshake.query.userRole as Role;
       if (!userId || !userRole) {
+        console.error('Authentication error: userId and userRole required');
         return next(new ValidationError('Authentication error: userId and userRole required'));
       }
       socket.data.userId = userId;
@@ -44,6 +47,7 @@ export class SocketServer implements ISocketServer {
 
       socket.on('joinRoom', async (chatRoomId: string, callback) => {
         if (!chatRoomId) {
+          console.error('Invalid chatRoomId:', chatRoomId);
           socket.emit('error', new ValidationError('Invalid chatRoomId').message);
           return;
         }
@@ -55,16 +59,17 @@ export class SocketServer implements ISocketServer {
               chatRoomId
             );
             if (!isStudentInClass) {
+              console.error('Student not authorized to join room:', chatRoomId);
               socket.emit('error', new ForbiddenError('You are not authorized to join this class group').message);
               return;
             }
           }
-          // Teachers can join any class group (no check needed)
 
           socket.join(chatRoomId);
           console.log(`User ${socket.data.userId} joined room ${chatRoomId}`);
-          if (callback) callback();
+          if (callback) callback({ success: true });
         } catch (error) {
+          console.error('Error joining room:', error);
           socket.emit('error', error instanceof Error ? error.message : 'Failed to join room');
         }
       });
@@ -77,14 +82,17 @@ export class SocketServer implements ISocketServer {
               chatRoomId
             );
             if (!isStudentInClass) {
+              console.error('Student not authorized to access room:', chatRoomId);
               socket.emit('error', new ForbiddenError('You are not authorized to access this class group').message);
               return;
             }
           }
 
           const messages = await this.messageRepository.findByChatRoomId(chatRoomId);
+          console.log(`Loaded ${messages.length} messages for room ${chatRoomId}`);
           socket.emit('initialMessages', messages);
         } catch (error) {
+          console.error('Error loading messages:', error);
           socket.emit('error', error instanceof Error ? error.message : 'Failed to load messages');
         }
       });
@@ -98,6 +106,7 @@ export class SocketServer implements ISocketServer {
             message.senderId !== socket.data.userId ||
             message.senderRole !== socket.data.userRole
           ) {
+            console.error('Unauthorized or invalid message:', message);
             throw new UnauthorizedError('Unauthorized or missing message fields');
           }
 
@@ -107,14 +116,16 @@ export class SocketServer implements ISocketServer {
               message.chatRoomId
             );
             if (!isStudentInClass) {
+              console.error('Student not authorized to send message to room:', message.chatRoomId);
               throw new ForbiddenError('You are not authorized to send messages to this class group');
             }
           }
 
           const savedMessage = await this.sendMessageUseCase.execute(message);
-          socket.to(message.chatRoomId).emit('message', savedMessage);
-          socket.emit('message', savedMessage);
+          console.log('Message saved and broadcasted:', savedMessage);
+          this.io.to(message.chatRoomId).emit('message', savedMessage); // Broadcast to all in room
         } catch (error) {
+          console.error('Error sending message:', error);
           socket.emit(
             'error',
             error instanceof Error ? error.message : 'An unknown error occurred'
