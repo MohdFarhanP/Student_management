@@ -17,11 +17,16 @@ const chatSlice = createSlice({
   name: 'chat',
   initialState,
   reducers: {
-    addMessage: (state, action: PayloadAction<Message>) => {
-      state.messages.push(action.payload);
-    },
     setMessages: (state, action: PayloadAction<Message[]>) => {
-      state.messages = action.payload;
+      const uniqueMessages = Array.from(
+        new Map(action.payload.map((msg) => [msg.id, msg])).values()
+      );
+      state.messages = uniqueMessages;
+    },
+    addMessage: (state, action: PayloadAction<Message>) => {
+      if (!state.messages.some((msg) => msg.id === action.payload.id)) {
+        state.messages.push(action.payload);
+      }
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;

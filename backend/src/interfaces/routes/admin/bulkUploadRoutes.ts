@@ -1,14 +1,28 @@
 import express from 'express';
 import multer from 'multer';
-import { DependencyContainer } from '../../../infrastructure/di/container';
+import { IBulkUploadController } from '../../../domain/interface/IBulkUploadController';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-const container = DependencyContainer.getInstance();
-const bulkUploadController = container.getBulkUploadController();
+let bulkUploadController: IBulkUploadController | null = null;
 
-router.post('/students/bulk-upload', upload.single('file'), bulkUploadController.uploadStudents.bind(bulkUploadController));
-router.post('/teachers/bulk-upload', upload.single('file'), bulkUploadController.uploadTeachers.bind(bulkUploadController));
+export const setBulkUploadController = (controller: IBulkUploadController) => {
+  bulkUploadController = controller;
+};
+
+router.post('/students/bulk-upload', upload.single('file'), (req, res, next) => {
+  if (!bulkUploadController) {
+    throw new Error('BulkUploadController not initialized. Dependency injection failed.');
+  }
+  bulkUploadController.uploadStudents.bind(bulkUploadController)(req, res, next);
+});
+
+router.post('/teachers/bulk-upload', upload.single('file'), (req, res, next) => {
+  if (!bulkUploadController) {
+    throw new Error('BulkUploadController not initialized. Dependency injection failed.');
+  }
+  bulkUploadController.uploadTeachers.bind(bulkUploadController)(req, res, next);
+});
 
 export default router;

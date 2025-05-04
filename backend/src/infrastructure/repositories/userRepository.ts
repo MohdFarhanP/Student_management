@@ -44,8 +44,6 @@ export class UserRepository implements IUserRepository {
   }
 
   async findByRefreshToken(token: string, role: Role): Promise<IUser | null> {
-    console.log('findByRefreshToken from user repo cheking role', role)
-    console.log('findByRefreshToken from user repo cheking token', token);
     const Model = this.getModel(role);
     const user = await Model.findOne({ refreshToken: token });
     if (!user) return null;

@@ -160,16 +160,7 @@ export class DependencyContainer {
   private dependencies: Map<string, any> = new Map();
 
   private constructor(io?: SocketIOServer) {
-    // Services
-    this.dependencies.set('IAuthService', new AuthService());
-    this.dependencies.set(
-      'ITimetableService',
-      new TimetableService(
-        this.dependencies.get('ITimetableRepository') || new TimetableRepository(),
-        this.dependencies.get('ITeacherRepository') || new TeacherRepository()
-      )
-    );
-
+    
     // Repositories
     this.dependencies.set('IStudentRepository', new StudentRepository());
     this.dependencies.set('ITeacherRepository', new TeacherRepository());
@@ -183,7 +174,42 @@ export class DependencyContainer {
     this.dependencies.set('IUserRepository', new UserRepository());
     this.dependencies.set('IMessageRepository', new MessageRepository());
     this.dependencies.set('INotificationRepository', new NotificationRepository());
-    this.dependencies.set('INotificationRepository', new NotificationRepository());
+
+    // Services
+
+    this.dependencies.set('IAuthService', new AuthService());
+    this.dependencies.set(
+      'ITimetableService',
+      new TimetableService(
+        this.dependencies.get('ITimetableRepository') || new TimetableRepository(),
+        this.dependencies.get('ITeacherRepository') || new TeacherRepository()
+      )
+    );
+
+    this.dependencies.set('ISendMessageUseCase', new SendMessage(this.dependencies.get('IMessageRepository')));
+
+    this.dependencies.set(
+      'INotificationScheduler',
+      new NotificationScheduler(
+        io, 
+        this.dependencies.get('INotificationRepository')
+      )
+    );
+
+    // Services
+
+    this.dependencies.set(
+      'ISocketServer',
+      new SocketServer(
+        io,
+        this.dependencies.get('IMessageRepository'),
+        this.dependencies.get('ISendMessageUseCase'),
+        this.dependencies.get('INotificationRepository'),
+        this.dependencies.get('ISendNotificationUseCase'),
+        this.dependencies.get('INotificationScheduler'),
+        this.dependencies.get('IClassRepository')
+      )
+    );
 
     this.dependencies.set('IStorageService', new S3StorageService()); 
     this.dependencies.set('IFileValidationService', new FileValidationService(this.dependencies.get('INoteRepository')));
@@ -553,41 +579,22 @@ export class DependencyContainer {
       'IUserController',
       new UserController(
         this.dependencies.get('ILoginUseCase'),
-        this.dependencies.get('ILogoutUseCase'),
         this.dependencies.get('IUpdatePasswordUseCase'),
-        this.dependencies.get('IRefreshTokenUseCase')
+        this.dependencies.get('IRefreshTokenUseCase'),
+        this.dependencies.get('ILogoutUseCase'),
       )
     );
     this.dependencies.set(
       'IPresignedUrlController',
       new PresignedUrlController(this.dependencies.get('IGeneratePresignedUrlUseCase'))
     );
-
-    // Services
-    this.dependencies.set(
-      'INotificationScheduler',
-      new NotificationScheduler(
-        io || new SocketIOServer(), 
-        this.dependencies.get('INotificationRepository')
-      )
-    );
-
-    this.dependencies.set(
-      'ISocketServer',
-      new SocketServer(
-        io || new SocketIOServer(),
-        this.dependencies.get('IMessageRepository'),
-        this.dependencies.get('ISendMessageUseCase'),
-        this.dependencies.get('INotificationRepository'),
-        this.dependencies.get('ISendNotificationUseCase'),
-        this.dependencies.get('INotificationScheduler'),
-        this.dependencies.get('IClassRepository')
-      )
-    );
   }
 
   static getInstance(io?: SocketIOServer): DependencyContainer {
     if (!DependencyContainer.instance) {
+      if (!io) {
+        throw new Error('SocketIOServer instance is required for DependencyContainer initialization');
+      }
       DependencyContainer.instance = new DependencyContainer(io);
     }
     return DependencyContainer.instance;

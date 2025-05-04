@@ -1,14 +1,41 @@
 import express, { Router } from 'express';
-import { DependencyContainer } from '../../../infrastructure/di/container';
+import { ITimetableController } from '../../../domain/interface/ITimetableController';
 import { authenticateUser } from '../../middleware/authenticateUser';
 
 const router: Router = express.Router();
-const container = DependencyContainer.getInstance();
-const timetableController = container.getTimetableController();
 
-router.put('/:classId/assign', authenticateUser, timetableController.assignTeacher.bind(timetableController));
-router.put('/:classId/slot', authenticateUser, timetableController.updateTimetableSlot.bind(timetableController));
-router.delete('/:classId/slot', authenticateUser, timetableController.deleteTimetableSlot.bind(timetableController));
-router.get('/:classId', authenticateUser, timetableController.getTimetable.bind(timetableController));
+let timetableController: ITimetableController | null = null;
+
+export const setTimetableController = (controller: ITimetableController) => {
+  timetableController = controller;
+};
+
+router.put('/:classId/assign', authenticateUser, (req, res, next) => {
+  if (!timetableController) {
+    throw new Error('TimetableController not initialized. Dependency injection failed.');
+  }
+  timetableController.assignTeacher.bind(timetableController)(req, res, next);
+});
+
+router.put('/:classId/slot', authenticateUser, (req, res, next) => {
+  if (!timetableController) {
+    throw new Error('TimetableController not initialized. Dependency injection failed.');
+  }
+  timetableController.updateTimetableSlot.bind(timetableController)(req, res, next);
+});
+
+router.delete('/:classId/slot', authenticateUser, (req, res, next) => {
+  if (!timetableController) {
+    throw new Error('TimetableController not initialized. Dependency injection failed.');
+  }
+  timetableController.deleteTimetableSlot.bind(timetableController)(req, res, next);
+});
+
+router.get('/:classId', authenticateUser, (req, res, next) => {
+  if (!timetableController) {
+    throw new Error('TimetableController not initialized. Dependency injection failed.');
+  }
+  timetableController.getTimetable.bind(timetableController)(req, res, next);
+});
 
 export default router;

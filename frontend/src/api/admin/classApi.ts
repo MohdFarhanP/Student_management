@@ -92,5 +92,6 @@ export const fetchStudentClass = () =>
     if (!res.data) {
       throw new Error('Class data not found');
     }
+    console.log(res.data)
     return res.data;
   });

@@ -1,3 +1,4 @@
+// src/App.tsx
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store, RootState, AppDispatch } from './redux/store';
 import './App.css';
@@ -17,6 +18,7 @@ import { Unauthorized } from './pages/Unauthorized';
 import PrivateRoute from './routes/PrivateRoute';
 import { useEffect, useState } from 'react';
 import { checkAuthOnLoad } from './redux/slices/authSlice';
+import { socket } from './socket';
 
 const AppContent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -32,6 +34,44 @@ const AppContent: React.FC = () => {
       });
     }
   }, [dispatch, hasCheckedAuth, user]);
+
+  // Manage socket connection at the app level
+  useEffect(() => {
+    if (loading || !hasCheckedAuth) {
+      console.log('App.tsx: Still loading or checking auth, skipping socket connection');
+      return;
+    }
+
+    if (!user) {
+      console.log('App.tsx: No user, disconnecting socket');
+      if (socket.connected) {
+        socket.disconnect();
+      }
+      return;
+    }
+
+    console.log('App.tsx: Connecting socket for user:', user.id);
+    socket.io.opts.query = { userId: user.id, userRole: user.role };
+
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    socket.on('connect', () => {
+      console.log('App.tsx: Socket connected, socket ID:', socket.id);
+    });
+
+    socket.on('connect_error', (error: Error) => {
+      console.error('App.tsx: Socket connection error:', error.message);
+    });
+
+    return () => {
+      console.log('App.tsx: Cleaning up socket listeners');
+      socket.off('connect');
+      socket.off('connect_error');
+      // Do NOT disconnect socket here unless the app is unmounting completely
+    };
+  }, [user, loading, hasCheckedAuth]);
 
   useEffect(() => {
     if (loading || !hasCheckedAuth) return;

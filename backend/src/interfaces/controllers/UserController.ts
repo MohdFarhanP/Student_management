@@ -7,6 +7,7 @@ import HttpStatus from '../../utils/httpStatus';
 import { Role } from '../../domain/types/enums';
 import { IApiResponse, IUser } from '../../domain/types/interfaces';
 import { IUserController } from '../../domain/interface/IUserController';
+import { BadRequestError } from '../../domain/errors';
 
 const ACCESS_TOKEN_MAX_AGE = 15 * 60 * 1000; // 15 minutes
 const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -85,9 +86,22 @@ export class UserController implements IUserController {
   async updatePassword(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const { password } = req.body;
-      const { email, role } = req.user!;
-      const user = await this.updatePasswordUseCase.execute(email, password, role);
-
+      if (!password || typeof password !== 'string') {
+        throw new BadRequestError('Password is required and must be a string');
+      }
+      if (password.length < 6) {
+        throw new BadRequestError('Password must be at least 6 characters');
+      }
+  
+      const { email, role } = req.user;
+  
+      const validRoles = [Role.Admin, Role.Student, Role.Teacher];
+      if (!validRoles.includes(role as Role)) {
+        throw new Error('Invalid user role');
+      }
+  
+      const user = await this.updatePasswordUseCase.execute(email, password, role as Role);
+  
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Password updated',
@@ -96,17 +110,12 @@ export class UserController implements IUserController {
     } catch (error: unknown) {
       console.error('Update Password Error:', error);
       const message = error instanceof Error ? error.message : 'Internal server error';
-      res.status(HttpStatus.BAD_REQUEST).json({
-        success: false,
-        message,
-      } as IApiResponse<never>);
     }
   }
 
   async refreshToken(req: Request, res: Response): Promise<void> {
     try {
       const refreshToken = req.cookies.refresh_token;
-      console.log("hitting refresh token in user controller ",refreshToken);
       if (!refreshToken) {
         res.status(HttpStatus.UNAUTHORIZED).json({
           success: false,
@@ -128,7 +137,6 @@ export class UserController implements IUserController {
         data: result.user,
       } as IApiResponse<IUser>);
     } catch (error: unknown) {
-      console.error('Refresh Token Error:', error);
       const message = error instanceof Error ? error.message : 'Internal server error';
       const status =
         error instanceof Error && error.message.includes('Invalid')

@@ -1,3 +1,4 @@
+// src/components/NotificationBell.tsx
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
@@ -14,34 +15,48 @@ const NotificationBell: React.FC = () => {
   const { notifications, error } = useSelector(
     (state: RootState) => state.notification
   );
-  const user = useSelector((state: RootState) => state.auth.user);
+  const user = useSelector(
+    (state: RootState) => state.auth.user,
+    (prev, next) => prev?.id === next?.id // Stabilize user dependency
+  );
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
 
-    socket.io.opts.query = { userId: user.id };
+    // Update socket query (in case user changes)
+    socket.io.opts.query = { userId: user.id, userRole: user.role };
+    console.log('NotificationBell: Setting socket query:', socket.io.opts.query);
+
+    // Fetch initial notifications
     dispatch(fetchNotifications());
 
-    socket.connect();
+    // Join notification room
+    socket.emit('joinNotification');
 
-    socket.on('connect', () => {
+    const handleConnect = () => {
+      console.log('NotificationBell socket connected');
       socket.emit('joinNotification');
-    });
+    };
 
-    socket.on('notification', (notification: Notification) => {
+    const handleNotification = (notification: Notification) => {
+      console.log('Received notification:', notification);
       dispatch(addNotification(notification));
-    });
+    };
 
-    socket.on('error', (err: string) => {
+    const handleError = (err: string) => {
       console.error('Notification error:', err);
-    });
+    };
+
+    socket.on('connect', handleConnect);
+    socket.on('notification', handleNotification);
+    socket.on('error', handleError);
 
     return () => {
-      socket.off('connect');
-      socket.off('notification');
-      socket.off('error');
-      socket.disconnect();
+      console.log('Cleaning up NotificationBell socket listeners');
+      socket.off('connect', handleConnect);
+      socket.off('notification', handleNotification);
+      socket.off('error', handleError);
     };
   }, [dispatch, user]);
 

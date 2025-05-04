@@ -4,8 +4,8 @@ import { IAuthService } from '../../domain/interface/IAuthService';
 import { Role } from '../../domain/types/enums';
 
 export class AuthService implements IAuthService {
-  private jwtSecret = process.env.JWT_SECRET || 'secret_key';
-  private refreshSecret = process.env.JWT_REFRESH_SECRET || 'refresh_secret';
+  private jwtSecret = process.env.JWT_SECRET;
+  private refreshSecret = process.env.JWT_REFRESH_SECRET ;
 
   async comparePasswords(
     plainText: string,
@@ -15,8 +15,13 @@ export class AuthService implements IAuthService {
   }
 
   async hashPassword(password: string): Promise<string> {
-    const saltRounds = 10;
-    return bcrypt.hash(password, saltRounds);
+    try {
+      const saltRounds = 10;
+      return bcrypt.hash(password, saltRounds);
+    } catch (error) {
+      console.log("this is the error from the hashPassword",error);
+      throw new Error("Failed to hash password");
+    }
   }
 
   generateToken(payload: { id: string; email: string; role: Role }): string {
@@ -32,14 +37,18 @@ export class AuthService implements IAuthService {
       email: string;
       role: Role;
     };
-    console.log('verifiy refreshtocken from authService ',obj)
     return obj;
   }
   verifyToken(token: string): { id: string; email: string; role: Role } {
-    return jwt.verify(token, this.jwtSecret) as {
-      id: string;
-      email: string;
-      role: Role;
-    };
+    try {
+      return jwt.verify(token, this.jwtSecret) as {
+        id: string;
+        email: string;
+        role: Role;
+      };
+    } catch (error) {
+      console.error('Error verifying token in AuthService:', error);
+      throw error;
+    }
   }
 }

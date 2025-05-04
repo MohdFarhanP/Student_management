@@ -4,6 +4,7 @@ import MessageBubble from './MessageBubble';
 import { Message } from '../types/message';
 import { RootState } from '../redux/store';
 import { uploadToS3 } from '../services/UploadToS3';
+import { MdAttachFile, MdSend } from 'react-icons/md';
 
 enum MediaType {
   Image = 'image',
@@ -30,6 +31,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [file, setFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const user = useSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
@@ -44,8 +46,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
     if (file && isTeacher) {
       try {
-        const uploadResult = await uploadToS3(file); 
-        mediaUrl = uploadResult.fileUrl; 
+        const uploadResult = await uploadToS3(file);
+        mediaUrl = uploadResult.fileUrl;
         if (!mediaUrl) {
           setUploadError('Upload failed: No file URL returned');
           return;
@@ -65,6 +67,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     sendMessage(content.trim(), mediaUrl, mediaType);
     setContent('');
     setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Reset file input
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFile(e.target.files?.[0] || null);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSend();
+    }
   };
 
   if (!user) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">Please log in to access the chat.</div>;
@@ -79,7 +94,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       <div className="flex-1 overflow-y-auto space-y-3">
         {messages.map((msg) => (
           <MessageBubble
-            key={msg.id}
+            key={msg.id || `${msg.chatRoomId}-${messages.indexOf(msg)}`}
             message={msg}
             isOwnMessage={msg.senderId === user.id}
           />
@@ -87,28 +102,53 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         <div ref={messagesEndRef} />
       </div>
       <div className="mt-4">
-        {isTeacher && (
-          <input
-            type="file"
-            accept="image/*,application/pdf"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="mb-3 text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 dark:file:bg-blue-900 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-200 dark:hover:file:bg-blue-800"
-          />
-        )}
-        <div className="flex gap-2">
-          <input
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            {isTeacher && (
+              <>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                >
+                  <MdAttachFile size={20} />
+                </button>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </>
+            )}
+            <input
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type a message..."
+              className={`w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-10 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                isTeacher ? 'pl-12' : 'pl-4'
+              }`} // Adjust padding for the icon
+            />
+          </div>
           <button
             onClick={handleSend}
-            className="rounded-lg bg-blue-500 dark:bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
+            className="rounded-lg bg-blue-500 dark:bg-blue-600 text-white p-2 hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
           >
-            Send
+            <MdSend size={20} />
           </button>
         </div>
+        {file && isTeacher && (
+          <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            Selected file: {file.name}
+            <button
+              onClick={() => setFile(null)}
+              className="ml-2 text-red-500 hover:text-red-600"
+            >
+              Remove
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

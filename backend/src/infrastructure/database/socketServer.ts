@@ -19,20 +19,19 @@ export class SocketServer implements ISocketServer {
     private sendNotificationUseCase: ISendNotificationUseCase,
     private notificationScheduler: INotificationScheduler,
     private classRepository: IClassRepository
-  ) {}
-
-  getIo(): SocketIOServer {
-    return this.io;
+  ) {
+    console.log('SocketServer constructor called'); // Add this log
   }
 
+  
+
   initialize() {
-    if (this.notificationScheduler) {
-      this.notificationScheduler.start();
-    }
+    console.log('SocketServer initialized');
 
     this.io.use((socket, next) => {
       const userId = socket.handshake.query.userId as string;
       const userRole = socket.handshake.query.userRole as Role;
+      console.log('Socket middleware - userId:', userId, 'userRole:', userRole);
       if (!userId || !userRole) {
         console.error('Authentication error: userId and userRole required');
         return next(new ValidationError('Authentication error: userId and userRole required'));
@@ -42,10 +41,16 @@ export class SocketServer implements ISocketServer {
       next();
     });
 
+
+    if (this.notificationScheduler) {
+      this.notificationScheduler.start();
+    }
+
     this.io.on('connection', (socket: Socket) => {
-      console.log('User connected:', socket.id, 'userId:', socket.data.userId);
+      console.log('User connected:', socket.id, 'userId:', socket.data.userId, 'userRole:', socket.data.userRole);
 
       socket.on('joinRoom', async (chatRoomId: string, callback) => {
+        console.log('joinRoom event received:', chatRoomId);
         if (!chatRoomId) {
           console.error('Invalid chatRoomId:', chatRoomId);
           socket.emit('error', new ValidationError('Invalid chatRoomId').message);
@@ -58,6 +63,7 @@ export class SocketServer implements ISocketServer {
               socket.data.userId,
               chatRoomId
             );
+            console.log("isStudentInClass in sockent server.ts",isStudentInClass)
             if (!isStudentInClass) {
               console.error('Student not authorized to join room:', chatRoomId);
               socket.emit('error', new ForbiddenError('You are not authorized to join this class group').message);
@@ -75,6 +81,7 @@ export class SocketServer implements ISocketServer {
       });
 
       socket.on('loadMessages', async (chatRoomId: string) => {
+        console.log('loadMessages event received:', chatRoomId);
         try {
           if (socket.data.userRole === Role.Student) {
             const isStudentInClass = await this.classRepository.isStudentInClass(
@@ -98,6 +105,7 @@ export class SocketServer implements ISocketServer {
       });
 
       socket.on('sendMessage', async (message: SendMessageDTO) => {
+        console.log('sendMessage event received:', message);
         try {
           if (
             !message.chatRoomId ||
@@ -123,7 +131,7 @@ export class SocketServer implements ISocketServer {
 
           const savedMessage = await this.sendMessageUseCase.execute(message);
           console.log('Message saved and broadcasted:', savedMessage);
-          this.io.to(message.chatRoomId).emit('message', savedMessage); // Broadcast to all in room
+          this.io.to(message.chatRoomId).emit('message', savedMessage);
         } catch (error) {
           console.error('Error sending message:', error);
           socket.emit(
@@ -134,11 +142,13 @@ export class SocketServer implements ISocketServer {
       });
 
       socket.on('joinNotification', () => {
+        console.log('joinNotification event received');
         socket.join(`user-${socket.data.userId}`);
         console.log(`User ${socket.data.userId} joined notification room`);
       });
 
       socket.on('sendNotification', async (notification: SendNotificationDTO) => {
+        console.log('sendNotification event received:', notification);
         try {
           if (!notification.title || !notification.message || !notification.senderId || !notification.senderRole) {
             throw new ValidationError('Missing required notification fields');
@@ -167,6 +177,7 @@ export class SocketServer implements ISocketServer {
           }
           socket.emit('notification', savedNotification);
         } catch (error) {
+          console.error('Error sending notification:', error);
           socket.emit(
             'error',
             error instanceof Error ? error.message : 'Failed to send notification'

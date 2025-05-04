@@ -1,11 +1,20 @@
 import { Router } from 'express';
 import { authenticateUser } from '../middleware/authenticateUser';
-import { DependencyContainer } from '../../infrastructure/di/container';
+import { IChatController } from '../../domain/interface/IChatController';
 
 const router = Router();
-const container = DependencyContainer.getInstance();
-const chatController = container.getChatController();
 
-router.post('/send', authenticateUser, chatController.sendMessage.bind(chatController));
+let chatController: IChatController | null = null;
+
+export const setChatController = (controller: IChatController) => {
+  chatController = controller;
+};
+
+router.post('/send', authenticateUser, (req, res, next) => {
+  if (!chatController) {
+    throw new Error('ChatController not initialized. Dependency injection failed.');
+  }
+  chatController.sendMessage.bind(chatController)(req, res, next);
+});
 
 export default router;

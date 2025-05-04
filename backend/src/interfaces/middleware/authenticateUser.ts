@@ -12,6 +12,7 @@ export const authenticateUser = (
   next: NextFunction
 ) => {
   const token = req.cookies.access_token;
+
   if (!token) {
     res
       .status(HttpStatus.UNAUTHORIZED)
@@ -31,9 +32,9 @@ export const authenticateUser = (
       email: decoded.email,
       role: decoded.role
     };
-    
     next();
   } catch (error) {
+    console.error('Token verification failed:', error); // Add this
     res
       .status(HttpStatus.UNAUTHORIZED)
       .json({ message: 'Invalid token' });

@@ -1,10 +1,19 @@
 import { Router } from 'express';
-import { DependencyContainer } from '../../infrastructure/di/container';
+import { IPresignedUrlController } from '../../domain/interface/IPresignedUrlController';
 
 const router: Router = Router();
-const container = DependencyContainer.getInstance();
-const presignedUrlController = container.getPresignedUrlController();
 
-router.post('/', (req, res) => presignedUrlController.handle(req, res));
+let presignedUrlController: IPresignedUrlController | null = null;
+
+export const setPresignedUrlController = (controller: IPresignedUrlController) => {
+  presignedUrlController = controller;
+};
+
+router.post('/', (req, res) => {
+  if (!presignedUrlController) {
+    throw new Error('PresignedUrlController not initialized. Dependency injection failed.');
+  }
+  presignedUrlController.handle(req, res);
+});
 
 export default router;

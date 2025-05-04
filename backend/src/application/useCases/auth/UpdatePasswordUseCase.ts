@@ -15,7 +15,6 @@ export class UpdatePasswordUseCase implements IUpdatePasswordUseCase {
     if (!user) {
       throw new Error('Invalid credentials');
     }
-
     const hashedPassword = await this.authService.hashPassword(password);
     await this.userRepository.updatePassword(user.id, hashedPassword);
 

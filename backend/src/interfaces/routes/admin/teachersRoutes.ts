@@ -1,15 +1,48 @@
 import express from 'express';
-import { DependencyContainer } from '../../../infrastructure/di/container';
+import { ITeacherController } from '../../../domain/interface/ITeacherController';
 import { authenticateUser } from '../../middleware/authenticateUser';
 
 const router = express.Router();
-const container = DependencyContainer.getInstance();
-const teacherController = container.getTeacherController();
 
-router.get('/teachers', authenticateUser, teacherController.getTeachers.bind(teacherController));
-router.get('/all', authenticateUser, teacherController.getAllTeachers.bind(teacherController));
-router.post('/teacher', authenticateUser, teacherController.addTeacher.bind(teacherController));
-router.put('/:teacherId', authenticateUser, teacherController.editTeacher.bind(teacherController));
-router.delete('/:teacherId', authenticateUser, teacherController.deleteTeacher.bind(teacherController));
+let teacherController: ITeacherController | null = null;
+
+export const setTeacherController = (controller: ITeacherController) => {
+  teacherController = controller;
+};
+
+router.get('/teachers', authenticateUser, (req, res, next) => {
+  if (!teacherController) {
+    throw new Error('TeacherController not initialized. Dependency injection failed.');
+  }
+  teacherController.getTeachers.bind(teacherController)(req, res, next);
+});
+
+router.get('/all', authenticateUser, (req, res, next) => {
+  if (!teacherController) {
+    throw new Error('TeacherController not initialized. Dependency injection failed.');
+  }
+  teacherController.getAllTeachers.bind(teacherController)(req, res, next);
+});
+
+router.post('/teacher', authenticateUser, (req, res, next) => {
+  if (!teacherController) {
+    throw new Error('TeacherController not initialized. Dependency injection failed.');
+  }
+  teacherController.addTeacher.bind(teacherController)(req, res, next);
+});
+
+router.put('/:teacherId', authenticateUser, (req, res, next) => {
+  if (!teacherController) {
+    throw new Error('TeacherController not initialized. Dependency injection failed.');
+  }
+  teacherController.editTeacher.bind(teacherController)(req, res, next);
+});
+
+router.delete('/:teacherId', authenticateUser, (req, res, next) => {
+  if (!teacherController) {
+    throw new Error('TeacherController not initialized. Dependency injection failed.');
+  }
+  teacherController.deleteTeacher.bind(teacherController)(req, res, next);
+});
 
 export default router;

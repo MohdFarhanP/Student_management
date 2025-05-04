@@ -1,13 +1,27 @@
 import { Router } from 'express';
 import { INotificationController } from '../../../domain/interface/INotificationController';
 import { authenticateUser } from '../../middleware/authenticateUser';
-import { DependencyContainer } from '../../../infrastructure/di/container';
 
 const router = Router();
-const container = DependencyContainer.getInstance();
-const notificationController: INotificationController = container.getNotificationController();
 
-router.get('/', authenticateUser, notificationController.getNotifications.bind(notificationController));
-router.put('/:id/read', authenticateUser, notificationController.markAsRead.bind(notificationController));
+let notificationController: INotificationController | null = null;
+
+export const setNotificationController = (controller: INotificationController) => {
+  notificationController = controller;
+};
+
+router.get('/', authenticateUser, (req, res, next) => {
+  if (!notificationController) {
+    throw new Error('NotificationController not initialized. Dependency injection failed.');
+  }
+  notificationController.getNotifications.bind(notificationController)(req, res, next);
+});
+
+router.put('/:id/read', authenticateUser, (req, res, next) => {
+  if (!notificationController) {
+    throw new Error('NotificationController not initialized. Dependency injection failed.');
+  }
+  notificationController.markAsRead.bind(notificationController)(req, res, next);
+});
 
 export default router;

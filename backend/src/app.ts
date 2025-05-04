@@ -3,22 +3,29 @@ import cors from 'cors';
 import { Server } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { DependencyContainer } from './infrastructure/di/container';
-import chatRouter from './interfaces/routes/chatRoutes';
 import { ISocketServer } from './domain/interface/ISocketServer';
 import { connectDB } from './infrastructure/database/database';
-import adminRoutes from './interfaces/routes/admin/adminRoutes';
 import cookieParser from 'cookie-parser';
-import authenticationRoutes from './interfaces/routes/authenticationRoutes';
-import studentRoutes from './interfaces/routes/student/student';
-import teacherRoutes from './interfaces/routes/teacher/teacherRoutes';
-import notificationRoutes from './interfaces/routes/notification/notificationRoutes';
-import noteRoutes from './interfaces/routes/noteRoutes';
-import PresignedUrlRoute  from './interfaces/routes/presignedUrl';
 import { AppError, BadRequestError, ConflictError, ForbiddenError, NotFoundError } from './domain/errors';
 import HttpStatus from './utils/httpStatus';
 
+import adminRoutes, { setAdminControllers } from './interfaces/routes/admin/adminRoutes';
+import authenticationRoutes, { setUserController } from './interfaces/routes/authenticationRoutes';
+import studentRoutes, { setStudentControllers } from './interfaces/routes/student/student';
+import teacherRoutes, { setTeacherControllers } from './interfaces/routes/teacher/teacherRoutes';
+import notificationRoutes, { setNotificationController } from './interfaces/routes/notification/notificationRoutes';
+import noteRoutes, { setNoteController } from './interfaces/routes/noteRoutes';
+import PresignedUrlRoute, { setPresignedUrlController } from './interfaces/routes/presignedUrl';
+import chatRouter, { setChatController } from './interfaces/routes/chatRoutes';
+
 const app = express();
 const server = new Server(app);
+
+if (!process.env.FRONTEND_CLINT_URL) {
+  console.error('Error: FRONTEND_CLINT_URL environment variable is not set.');
+  process.exit(1);
+}
+
 const io = new SocketIOServer(server, {
   cors: {
     origin: process.env.FRONTEND_CLINT_URL,
@@ -27,6 +34,7 @@ const io = new SocketIOServer(server, {
   },
 });
 
+console.log('SocketIOServer created');
 // Initialize Dependency Container
 const dependencyContainer = DependencyContainer.getInstance(io);
 
@@ -43,6 +51,30 @@ app.use(
     credentials: true,
   })
 );
+
+    setChatController(dependencyContainer.getChatController());
+    setAdminControllers({
+      classController: dependencyContainer.getClassController(),
+      subjectController: dependencyContainer.getSubjectController(),
+      bulkUploadController: dependencyContainer.getBulkUploadController(),
+      studentController: dependencyContainer.getStudentController(),
+      teacherController: dependencyContainer.getTeacherController(),
+      timetableController: dependencyContainer.getTimetableController(),
+    });
+    setUserController(dependencyContainer.getUserController());
+    setStudentControllers({
+      studentProfileController: dependencyContainer.getStudentProfileController(),
+      attendanceController: dependencyContainer.getAttendanceController(),
+      classController: dependencyContainer.getClassController(),
+    });
+    setTeacherControllers({
+      teacherProfileController: dependencyContainer.getTeacherProfileController(),
+      attendanceController: dependencyContainer.getAttendanceController(),
+      classController: dependencyContainer.getClassController(),
+    });
+    setNotificationController(dependencyContainer.getNotificationController());
+    setNoteController(dependencyContainer.getNoteController());
+    setPresignedUrlController(dependencyContainer.getPresignedUrlController());
 
 // Routes
 app.use('/api/admin/', adminRoutes);

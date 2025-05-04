@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ChatWindow from '../../components/ChatWindow';
 import NotificationBell from '../../components/NotificationBell';
-import StudentSidebar from '../../components/StudentSidebar'; 
-import { RootState, AppDispatch } from '../../redux/store' ;
+import StudentSidebar from '../../components/StudentSidebar';
+import { RootState, AppDispatch } from '../../redux/store';
 import { addMessage, setMessages, setError } from '../../redux/slices/chatSlice';
 import { Message } from '../../types/message';
 import { socket } from '../../socket';
@@ -20,66 +20,126 @@ interface Class {
 const StudentChat: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { messages, error } = useSelector((state: RootState) => state.chat);
-  const user = useSelector((state: RootState) => state.auth.user);
+  const user = useSelector(
+    (state: RootState) => state.auth.user,
+    (prev, next) => prev?.id === next?.id // Stabilize user dependency
+  );
   const [classData, setClassData] = useState<Class | null>(null);
- 
-  useEffect(() => {
-    if (!user) return;
+  const [isLoading, setIsLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
 
-    // Fetch student's class
+
+  // Fetch class data
+  useEffect(() => {
+    if (!user) {
+      console.log('User is null, cannot fetch class');
+      setIsLoading(false);
+      return;
+    }
+
+    console.log('Fetching class for user:', user.id);
+
     const fetchClass = async () => {
       try {
-        const classData = await fetchStudentClass();
-        setClassData(classData);
+        setIsLoading(true);
+        const classdata = await fetchStudentClass();
+        console.log('fetched class data form backend', classdata);
+        setClassData(classdata);
+        if (!classdata) {
+          dispatch(setError('No class assigned to this student'));
+        }
       } catch (err) {
-        console.log('ERROR from student chat.tsx:', err);
+        console.error('ERROR from student chat.tsx:', err);
         dispatch(setError('Failed to fetch class'));
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchClass();
   }, [user, dispatch]);
 
+  // Set isReady once both user and classData are available
   useEffect(() => {
-    if (!user || !classData) return;
+    if (user && classData?.chatRoomId) {
+      setIsReady(true);
+    } else {
+      setIsReady(false); // Reset isReady if either user or classData becomes unavailable
+    }
+  }, [user, classData]);
 
-    socket.io.opts.query = { userId: user.id, userRole: user.role };
-    socket.connect();
-
-    socket.on('connect', () => {
-      console.log('Connected to Socket.IO server');
-      socket.emit('joinRoom', classData.chatRoomId, () => {
-        console.log(`Joined room ${classData.chatRoomId}`);
-        socket.emit('loadMessages', classData.chatRoomId);
+  // Join chat room and set up socket listeners when isReady
+  useEffect(() => {
+    if (!isReady) {
+      console.log('Missing user or classData.chatRoomId, skipping socket setup');
+      return;
+    }
+  
+    const chatRoomId = classData!.chatRoomId; // Store in a variable to avoid dependency
+    console.log('StudentChat: Socket connected state before joinRoom:', socket.connected);
+  
+    socket.emit('joinRoom', chatRoomId, (res: { [key: string]: boolean }) => {
+      console.log(`Join room response for ${chatRoomId}:`, res || 'Success');
+      socket.emit('loadMessages', chatRoomId, (messagesRes: any) => {
+        console.log(`Load messages response for ${chatRoomId}:`, messagesRes || 'Success');
       });
     });
-
-    socket.on('initialMessages', (messages: Message[]) => {
-      dispatch(setMessages(messages));
-    });
-
-    socket.on('message', (message: Message) => {
-      dispatch(addMessage(message));
-    });
-
-    socket.on('error', (err: string) => {
-      dispatch(setError(err));
-    });
-
-    return () => {
-      socket.off('connect');
-      socket.off('initialMessages');
-      socket.off('message');
-      socket.off('error');
-      socket.disconnect();
+  
+    const handleConnect = () => {
+      console.log('StudentChat: Socket connected, socket ID:', socket.id);
+      socket.emit('joinRoom', chatRoomId, (res: { [key: string]: boolean }) => {
+        console.log(`Join room response for ${chatRoomId}:`, res || 'Success');
+        socket.emit('loadMessages', chatRoomId, (messagesRes: any) => {
+          console.log(`Load messages response for ${chatRoomId}:`, messagesRes || 'Success');
+        });
+      });
     };
-  }, [dispatch, user, classData]);
-
+  
+    const handleConnectError = (error: Error) => {
+      console.error('Socket connection error in StudentChat:', error.message);
+      dispatch(setError('Failed to connect to chat server: ' + error.message));
+    };
+  
+    const handleInitialMessages = (messages: Message[]) => {
+      console.log('Received initial messages in StudentChat:', messages);
+      dispatch(setMessages(messages));
+    };
+  
+    const handleMessage = (message: Message) => {
+      console.log('Received new message in StudentChat:', message);
+      dispatch(addMessage(message));
+    };
+  
+    const handleError = (err: string) => {
+      console.error('Socket error in StudentChat:', err);
+      dispatch(setError(err));
+    };
+  
+    socket.on('connect', handleConnect);
+    socket.on('connect_error', handleConnectError);
+    socket.on('initialMessages', handleInitialMessages);
+    socket.on('message', handleMessage);
+    socket.on('error', handleError);
+  
+    // return () => {
+    //   console.log('Cleaning up socket listeners for chat room id', chatRoomId || 'unknown');
+    //   socket.off('connect', handleConnect);
+    //   socket.off('connect_error', handleConnectError);
+    //   socket.off('initialMessages', handleInitialMessages);
+    //   socket.off('message', handleMessage);
+    //   socket.off('error', handleError);
+    // };
+  }, [isReady, dispatch]); // Remove classData from dependencies
   const sendMessage = (
     content: string,
     mediaUrl?: string,
     mediaType?: string
   ) => {
-    if (!user || !classData) return;
+    if (!user || !classData || !classData.chatRoomId) {
+      console.error('Cannot send message: user or classData missing');
+      dispatch(setError('Cannot send message: Class data not loaded'));
+      return;
+    }
+    console.log('Emitting sendMessage event:', { chatRoomId: classData.chatRoomId, content, mediaUrl, mediaType });
     socket.emit('sendMessage', {
       chatRoomId: classData.chatRoomId,
       senderId: user.id,
@@ -91,7 +151,8 @@ const StudentChat: React.FC = () => {
   };
 
   if (!user) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">Please log in to access the chat.</div>;
-  if (!classData) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">Loading class data...</div>;
+  if (isLoading) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">Loading class data...</div>;
+  if (!classData) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">No class assigned to this student.</div>;
 
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">

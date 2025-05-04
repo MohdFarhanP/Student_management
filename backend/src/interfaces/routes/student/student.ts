@@ -1,30 +1,51 @@
 import express, { Router } from 'express';
-import { DependencyContainer } from '../../../infrastructure/di/container';
+import { IStudentProfileController } from '../../../domain/interface/IStudentProfileController';
+import { IAttendanceController } from '../../../domain/interface/teacher/IAttendanceController';
+import { IClassController } from '../../../domain/interface/IClassController';
 import { authenticateUser } from '../../middleware/authenticateUser';
 
 const router: Router = express.Router();
-const container = DependencyContainer.getInstance();
-const studentProfileController = container.getStudentProfileController();
-const attendanceController = container.getAttendanceController();
-const classController = container.getClassController();
 
-router.get(
-  '/profile/:email',
-  authenticateUser,
-  studentProfileController.getProfile.bind(studentProfileController)
-);
-router.patch(
-  '/profile/image',
-  authenticateUser,
-  studentProfileController.updateProfileImage.bind(studentProfileController)
-);
+let studentProfileController: IStudentProfileController | null = null;
+let attendanceController: IAttendanceController | null = null;
+let classController: IClassController | null = null;
 
-router.get(
-  '/attendance/:studentId',
-  authenticateUser,
-  attendanceController.viewAttendance.bind(attendanceController)
-);
-router.get('/my-class', authenticateUser, classController.getClassForStudent.bind(classController));
+export const setStudentControllers = (controllers: {
+  studentProfileController: IStudentProfileController;
+  attendanceController: IAttendanceController;
+  classController: IClassController;
+}) => {
+  studentProfileController = controllers.studentProfileController;
+  attendanceController = controllers.attendanceController;
+  classController = controllers.classController;
+};
 
+router.get('/profile/:email', authenticateUser, (req, res, next) => {
+  if (!studentProfileController) {
+    throw new Error('StudentProfileController not initialized. Dependency injection failed.');
+  }
+  studentProfileController.getProfile.bind(studentProfileController)(req, res, next);
+});
+
+router.patch('/profile/image', authenticateUser, (req, res, next) => {
+  if (!studentProfileController) {
+    throw new Error('StudentProfileController not initialized. Dependency injection failed.');
+  }
+  studentProfileController.updateProfileImage.bind(studentProfileController)(req, res, next);
+});
+
+router.get('/attendance/:studentId', authenticateUser, (req, res, next) => {
+  if (!attendanceController) {
+    throw new Error('AttendanceController not initialized. Dependency injection failed.');
+  }
+  attendanceController.viewAttendance.bind(attendanceController)(req, res, next);
+});
+
+router.get('/my-class', authenticateUser, (req, res, next) => {
+  if (!classController) {
+    throw new Error('ClassController not initialized. Dependency injection failed.');
+  }
+  classController.getClassForStudent.bind(classController)(req, res, next);
+});
 
 export default router;

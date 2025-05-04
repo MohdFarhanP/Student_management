@@ -1,15 +1,48 @@
 import express from 'express';
-import { DependencyContainer } from '../../../infrastructure/di/container';
+import { IStudentController } from '../../../domain/interface/IStudentController';
 import { authenticateUser } from '../../middleware/authenticateUser';
 
 const router = express.Router();
-const container = DependencyContainer.getInstance();
-const studentController = container.getStudentController();
 
-router.get('/students', authenticateUser, studentController.getStudents.bind(studentController));
-router.post('/student', authenticateUser, studentController.addStudent.bind(studentController));
-router.put('/:studentId', authenticateUser, studentController.editStudent.bind(studentController));
-router.delete('/:studentId', authenticateUser, studentController.deleteStudent.bind(studentController));
-router.get('/profile/:email', authenticateUser, studentController.getProfile.bind(studentController));
+let studentController: IStudentController | null = null;
+
+export const setStudentController = (controller: IStudentController) => {
+  studentController = controller;
+};
+
+router.get('/students', authenticateUser, (req, res, next) => {
+  if (!studentController) {
+    throw new Error('StudentController not initialized. Dependency injection failed.');
+  }
+  studentController.getStudents.bind(studentController)(req, res, next);
+});
+
+router.post('/student', authenticateUser, (req, res, next) => {
+  if (!studentController) {
+    throw new Error('StudentController not initialized. Dependency injection failed.');
+  }
+  studentController.addStudent.bind(studentController)(req, res, next);
+});
+
+router.put('/:studentId', authenticateUser, (req, res, next) => {
+  if (!studentController) {
+    throw new Error('StudentController not initialized. Dependency injection failed.');
+  }
+  studentController.editStudent.bind(studentController)(req, res, next);
+});
+
+router.delete('/:studentId', authenticateUser, (req, res, next) => {
+  if (!studentController) {
+    throw new Error('StudentController not initialized. Dependency injection failed.');
+  }
+  studentController.deleteStudent.bind(studentController)(req, res, next);
+});
+
+router.get('/profile/:email', authenticateUser, (req, res, next) => {
+  if (!studentController) {
+    throw new Error('StudentController not initialized. Dependency injection failed.');
+  }
+  studentController.getProfile.bind(studentController)(req, res, next);
+});
 
 export default router;
