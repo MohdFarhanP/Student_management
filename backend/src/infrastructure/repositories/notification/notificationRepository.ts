@@ -9,14 +9,17 @@ import { RecipientType } from '../../../domain/types/enums';
 export class NotificationRepository implements INotificationRepository {
   async save(notification: SendNotificationDTO): Promise<INotification> {
     try {
-      console.log('Saving notification with scheduledAt:', notification.scheduledAt);
+      if (notification.scheduledAt && isNaN(new Date(notification.scheduledAt).getTime())) {
+        throw new ValidationError('Invalid scheduledAt format');
+      }
+      console.log('Saving notification at server time (UTC):', new Date().toISOString());
+      console.log('Scheduled at (UTC):', notification.scheduledAt);
       const doc = new NotificationModel({
         ...notification,
-        scheduledAt: notification.scheduledAt
-          ? new Date(notification.scheduledAt).toISOString()
-          : undefined,
+        scheduledAt: notification.scheduledAt || undefined,
       });
       const saved = await doc.save();
+      console.log('Saved notification with createdAt (UTC):', saved.createdAt.toISOString());
       return new NotificationEntity({
         id: saved._id.toString(),
         title: saved.title,
@@ -26,6 +29,7 @@ export class NotificationRepository implements INotificationRepository {
         senderId: saved.senderId,
         senderRole: saved.senderRole,
         isRead: saved.isRead,
+        sent: saved.sent,
         createdAt: saved.createdAt,
         scheduledAt: saved.scheduledAt,
       });
@@ -39,10 +43,12 @@ export class NotificationRepository implements INotificationRepository {
   async findScheduled(currentTime: Date): Promise<INotification[]> {
     try {
       const utcCurrentTime = currentTime.toISOString();
+      console.log(`findScheduled querying for notifications with scheduledAt <= ${utcCurrentTime}, sent: false`);
       const docs = await NotificationModel.find({
         scheduledAt: { $lte: utcCurrentTime, $exists: true },
-        isRead: false,
+        sent: false,
       }).sort({ scheduledAt: 1 });
+      console.log(`findScheduled found ${docs.length} notifications`);
       return docs.map(
         (doc) =>
           new NotificationEntity({
@@ -54,6 +60,7 @@ export class NotificationRepository implements INotificationRepository {
             senderId: doc.senderId,
             senderRole: doc.senderRole,
             isRead: doc.isRead,
+            sent: doc.sent,
             createdAt: doc.createdAt,
             scheduledAt: doc.scheduledAt || undefined,
           })
@@ -88,6 +95,7 @@ export class NotificationRepository implements INotificationRepository {
             senderId: doc.senderId,
             senderRole: doc.senderRole,
             isRead: doc.isRead,
+            sent: doc.sent,
             createdAt: doc.createdAt,
             scheduledAt: doc.scheduledAt || undefined,
           })
@@ -95,6 +103,22 @@ export class NotificationRepository implements INotificationRepository {
     } catch (error) {
       throw new ValidationError(
         `Failed to fetch notifications: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  async markAsSent(notificationId: string): Promise<void> {
+    try {
+      const result = await NotificationModel.updateOne(
+        { _id: notificationId },
+        { $set: { sent: true } }
+      );
+      if (result.matchedCount === 0) {
+        throw new ValidationError('Notification not found');
+      }
+    } catch (error) {
+      throw new ValidationError(
+        `Failed to mark notification as sent: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }

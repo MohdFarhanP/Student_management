@@ -2,33 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { socket } from '../socket';
+import { toDate } from 'date-fns-tz'; // For timezone handling
 
 const SendNotification: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
-  const [recipientType, setRecipientType] = useState<
-    'global' | 'role' | 'Student'
-  >('global');
-  const [recipientIds, setRecipientIds] = useState<string>('');
-  const [scheduledAt, setScheduledAt] = useState<string>(''); // New state for scheduling
+  const [recipientType, setRecipientType] = useState<'global' | 'role' | 'Student'>('global');
+  const [recipientIds, setRecipientIds] = useState('');
+  const [scheduledAt, setScheduledAt] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
 
-    socket.on('error', (err: string) => {
-      setError(err);
-    });
+    socket.on('error', (err: string) => setError(err));
+    socket.on('notificationScheduled', () => setSuccess('Notification scheduled successfully'));
 
     return () => {
       socket.off('error');
+      socket.off('notificationScheduled');
     };
   }, [user]);
 
   if (!user || !['Admin', 'Teacher'].includes(user.role)) return null;
 
   const handleSend = () => {
+    setError(null);
+    setSuccess(null);
+
     if (!title.trim()) {
       setError('Title is required');
       return;
@@ -37,14 +40,7 @@ const SendNotification: React.FC = () => {
       setError('Message is required');
       return;
     }
-    console.log("title",title);
-    console.log("message",message);
-    console.log("recipientType",recipientType);
-    console.log("recipientIds",recipientIds);
-    console.log("scheduledAt",scheduledAt);
-    
 
-    // Define the notification type explicitly to include scheduledAt
     const notification: {
       title: string;
       message: string;
@@ -59,36 +55,34 @@ const SendNotification: React.FC = () => {
       recipientType,
       recipientIds:
         recipientType !== 'global' && recipientIds.trim()
-          ? recipientIds.split(',').map((id) => id.trim())
+          ? recipientIds.split(',').map((id) => id.trim()).filter((id) => id)
           : undefined,
       senderId: user.id,
       senderRole: user.role as 'Admin' | 'Teacher',
     };
 
-    // Include scheduledAt if provided
     if (scheduledAt) {
-      const scheduledDate = new Date(scheduledAt);
-      if (scheduledDate < new Date()) {
-        setError('Scheduled time cannot be in the past');
+      // Convert local time to UTC ISO string
+      const scheduledDate = toDate(scheduledAt, { timeZone: 'UTC' });
+      if (scheduledDate <= new Date()) {
+        setError('Scheduled time must be in the future');
         return;
       }
-      notification.scheduledAt = scheduledDate.toISOString(); // Ensure UTC
-      console.log('Sending with scheduledAt:', notification.scheduledAt); // Debug log
+      notification.scheduledAt = scheduledDate.toISOString();
     }
 
-    console.log('Sending notification:', notification);
     socket.emit('sendNotification', notification);
     setTitle('');
     setMessage('');
     setRecipientIds('');
     setScheduledAt('');
-    setError(null);
   };
 
   return (
     <div className="rounded-lg bg-gray-100 p-4 text-gray-800">
       <h2 className="mb-4 text-xl">Send Notification</h2>
       {error && <div className="mb-4 text-red-500">{error}</div>}
+      {success && <div className="mb-4 text-green-500">{success}</div>}
       <input
         type="text"
         value={title}
@@ -104,9 +98,7 @@ const SendNotification: React.FC = () => {
       />
       <select
         value={recipientType}
-        onChange={(e) =>
-          setRecipientType(e.target.value as 'global' | 'role' | 'Student')
-        }
+        onChange={(e) => setRecipientType(e.target.value as 'global' | 'role' | 'Student')}
         className="mb-2 w-full rounded border p-2"
       >
         <option value="global">Global</option>
@@ -130,13 +122,9 @@ const SendNotification: React.FC = () => {
         type="datetime-local"
         value={scheduledAt}
         onChange={(e) => setScheduledAt(e.target.value)}
-        placeholder="Schedule notification (optional)"
         className="mb-2 w-full rounded border p-2"
       />
-      <button
-        onClick={handleSend}
-        className="rounded bg-blue-500 p-2 text-white"
-      >
+      <button onClick={handleSend} className="rounded bg-blue-500 p-2 text-white">
         Send
       </button>
     </div>

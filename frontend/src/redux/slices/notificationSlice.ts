@@ -10,6 +10,7 @@ export interface Notification {
   senderId: string;
   senderRole: 'Admin' | 'Teacher';
   isRead: boolean;
+  sent: boolean;
   createdAt: string;
   scheduledAt?: string;
 }
@@ -31,11 +32,11 @@ export const fetchNotifications = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await FetchNotifications();
-      return Array.isArray(response) ? response : response ? [response] : [];
+      console.log('fetched data form backend' ,response)
+      return Array.isArray(response) ? response : [];
     } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Failed to fetch notifications'
-      );
+      console.log(error)
+      return rejectWithValue('Failed to fetch notifications');
     }
   }
 );
@@ -47,11 +48,8 @@ export const markNotificationAsRead = createAsyncThunk(
       await MarkNotificationAsRead(notificationId);
       return notificationId;
     } catch (error) {
-      return rejectWithValue(
-        error instanceof Error
-          ? error.message
-          : 'Failed to mark notification as read'
-      );
+      console.log(error)
+      return rejectWithValue('Failed to mark notification as read');
     }
   }
 );
@@ -61,9 +59,6 @@ const notificationSlice = createSlice({
   initialState,
   reducers: {
     addNotification: (state, action: PayloadAction<Notification>) => {
-      if (!Array.isArray(state.notifications)) {
-        state.notifications = [];
-      }
       if (!state.notifications.some((n) => n.id === action.payload.id)) {
         state.notifications.push(action.payload);
       }
@@ -74,45 +69,22 @@ const notificationSlice = createSlice({
       .addCase(fetchNotifications.pending, (state) => {
         state.loading = true;
         state.error = null;
-        if (!Array.isArray(state.notifications)) {
-          state.notifications = [];
-        }
       })
-      .addCase(
-        fetchNotifications.fulfilled,
-        (state, action: PayloadAction<Notification[]>) => {
-          state.loading = false;
-          const now = new Date().toISOString();
-          const uniqueNotifications = Array.isArray(action.payload)
-            ? action.payload.reduce((acc: Notification[], curr) => {
-              if (
-                !acc.some((n) => n.id === curr.id) &&
-                (!curr.scheduledAt || curr.scheduledAt <= now || curr.isRead)
-              ) {
-                acc.push(curr);
-              }
-              return acc;
-            }, [])
-            : [];
-          state.notifications = uniqueNotifications;
-        }
-      )
+      .addCase(fetchNotifications.fulfilled, (state, action: PayloadAction<Notification[]>) => {
+        state.loading = false;
+        console.log("fetchNotifications.fulfilled",action.payload)
+        state.notifications = action.payload;
+      })
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-        state.notifications = [];
       })
-      .addCase(
-        markNotificationAsRead.fulfilled,
-        (state, action: PayloadAction<string>) => {
-          const notification = state.notifications.find(
-            (n) => n.id === action.payload
-          );
-          if (notification) {
-            notification.isRead = true;
-          }
+      .addCase(markNotificationAsRead.fulfilled, (state, action: PayloadAction<string>) => {
+        const notification = state.notifications.find((n) => n.id === action.payload);
+        if (notification) {
+          notification.isRead = true;
         }
-      )
+      })
       .addCase(markNotificationAsRead.rejected, (state, action) => {
         state.error = action.payload as string;
       });

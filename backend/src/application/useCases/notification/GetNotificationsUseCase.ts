@@ -12,12 +12,8 @@ export class GetNotificationsUseCase implements IGetNotificationsUseCase {
     }
     const now = new Date().toISOString();
     const allNotifications = await this.notificationRepository.findByUserId(userId);
-
-    const filteredNotifications = allNotifications.filter(
-      (notification) =>
-        !notification.scheduledAt || notification.scheduledAt <= now
+    return allNotifications.filter(
+      (notification) => !notification.scheduledAt || (notification.scheduledAt <= now && notification.sent)
     );
-
-    return filteredNotifications;
   }
 }

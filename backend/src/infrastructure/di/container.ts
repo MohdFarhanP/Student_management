@@ -34,7 +34,7 @@ import { DeleteStudentUseCase } from '../../application/useCases/admin/student/d
 import { EditStudentUseCase } from '../../application/useCases/admin/student/editStudentUseCase';
 import { GetAllStudentsUseCase } from '../../application/useCases/admin/student/getAllStudentsUseCase';
 import { GetStudentProfileUseCase as AdminGetStudentProfileUseCase  } from '../../application/useCases/student/GetStudentProfileUseCase';
-import { AuthService } from '../../application/services/AuthService';
+import { AuthService } from '../../application/services/authService';
 import { IClassRepository } from '../../domain/interface/admin/IClassRepository';
 import { ISubjectRepository } from '../../domain/interface/ISubjectRepository';
 import { IClassController } from '../../domain/interface/IClassController';
@@ -131,7 +131,7 @@ import { IMessageRepository } from '../../domain/interface/IMessageRepository';
 import { ISendMessageUseCase } from '../../domain/interface/ISendMessageUseCase';
 import { IChatController } from '../../domain/interface/IChatController';
 import { ISocketServer } from '../../domain/interface/ISocketServer';
-import { NotificationRepository } from '../repositories/notification/notificationReopository'; // Adjust path as needed
+import { NotificationRepository } from '../repositories/notification/notificationRepository'; // Adjust path as needed
 import { SendNotification } from '../../application/useCases/notification/SendNotificationUseCase';
 import { NotificationScheduler } from '../services/notificationScheduler';
 import { INotificationScheduler } from '../../domain/interface/INotificationScheduler';
@@ -185,6 +185,20 @@ export class DependencyContainer {
         this.dependencies.get('ITeacherRepository') || new TeacherRepository()
       )
     );
+        // Use Cases (Notification)
+        this.dependencies.set(
+          'IGetNotificationsUseCase',
+          new GetNotificationsUseCase(this.dependencies.get('INotificationRepository'))
+        );
+        this.dependencies.set(
+          'IMarkNotificationAsRead',
+          new MarkNotificationAsRead(this.dependencies.get('INotificationRepository'))
+        );
+        this.dependencies.set(
+          'ISendNotificationUseCase',
+          new SendNotification(this.dependencies.get('INotificationRepository'))
+        );
+    
 
     this.dependencies.set('ISendMessageUseCase', new SendMessage(this.dependencies.get('IMessageRepository')));
 
@@ -234,19 +248,6 @@ export class DependencyContainer {
       )
     );
 
-    // Use Cases (Notification)
-    this.dependencies.set(
-      'IGetNotificationsUseCase',
-      new GetNotificationsUseCase(this.dependencies.get('INotificationRepository'))
-    );
-    this.dependencies.set(
-      'IMarkNotificationAsRead',
-      new MarkNotificationAsRead(this.dependencies.get('INotificationRepository'))
-    );
-    this.dependencies.set(
-      'ISendNotificationUseCase',
-      new SendNotification(this.dependencies.get('INotificationRepository'))
-    );
 
     // Use Cases (Class)
     this.dependencies.set(

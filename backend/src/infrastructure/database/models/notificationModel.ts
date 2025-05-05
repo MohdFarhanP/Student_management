@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { INotification } from '../../../domain/types/interfaces';
-import { Role, RecipientType  } from '../../../domain/types/enums';
+import { Role, RecipientType } from '../../../domain/types/enums';
 
 const notificationSchema = new mongoose.Schema<INotification>({
   title: { type: String, required: true },
@@ -18,14 +18,12 @@ const notificationSchema = new mongoose.Schema<INotification>({
     required: true,
   },
   isRead: { type: Boolean, default: false },
+  sent: { type: Boolean, default: false }, // Tracks if notification was emitted
   createdAt: { type: Date, default: Date.now },
   scheduledAt: { type: String },
 });
 
 notificationSchema.index({ recipientIds: 1, createdAt: -1 });
-notificationSchema.index({ scheduledAt: 1 });
+notificationSchema.index({ scheduledAt: 1, sent: 1 });
 
-export const NotificationModel = mongoose.model<INotification>(
-  'Notification',
-  notificationSchema
-);
+export const NotificationModel = mongoose.model<INotification>('Notification', notificationSchema);

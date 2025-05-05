@@ -97,6 +97,7 @@ export interface INotification {
   senderId: string;
   senderRole: Role;
   isRead: boolean;
+  sent: boolean;
   createdAt: Date;
   scheduledAt?: string;
 }

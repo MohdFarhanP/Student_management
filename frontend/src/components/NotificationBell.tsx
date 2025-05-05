@@ -1,62 +1,28 @@
-// src/components/NotificationBell.tsx
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
-import {
-  fetchNotifications,
-  markNotificationAsRead,
-  addNotification,
-  Notification,
-} from '../redux/slices/notificationSlice';
+import { fetchNotifications, markNotificationAsRead, addNotification, Notification } from '../redux/slices/notificationSlice';
 import { socket } from '../socket';
 
 const NotificationBell: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { notifications, error } = useSelector(
-    (state: RootState) => state.notification
-  );
-  const user = useSelector(
-    (state: RootState) => state.auth.user,
-    (prev, next) => prev?.id === next?.id // Stabilize user dependency
-  );
+  const { notifications, error } = useSelector((state: RootState) => state.notification);
+  const user = useSelector((state: RootState) => state.auth.user);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
 
-    // Update socket query (in case user changes)
     socket.io.opts.query = { userId: user.id, userRole: user.role };
-    console.log('NotificationBell: Setting socket query:', socket.io.opts.query);
-
-    // Fetch initial notifications
     dispatch(fetchNotifications());
-
-    // Join notification room
     socket.emit('joinNotification');
 
-    const handleConnect = () => {
-      console.log('NotificationBell socket connected');
-      socket.emit('joinNotification');
-    };
-
-    const handleNotification = (notification: Notification) => {
-      console.log('Received notification:', notification);
+    socket.on('notification', (notification: Notification) => {
       dispatch(addNotification(notification));
-    };
-
-    const handleError = (err: string) => {
-      console.error('Notification error:', err);
-    };
-
-    socket.on('connect', handleConnect);
-    socket.on('notification', handleNotification);
-    socket.on('error', handleError);
+    });
 
     return () => {
-      console.log('Cleaning up NotificationBell socket listeners');
-      socket.off('connect', handleConnect);
-      socket.off('notification', handleNotification);
-      socket.off('error', handleError);
+      socket.off('notification');
     };
   }, [dispatch, user]);
 
@@ -64,9 +30,7 @@ const NotificationBell: React.FC = () => {
     dispatch(markNotificationAsRead(notificationId));
   };
 
-  const unreadCount = Array.isArray(notifications)
-    ? notifications.filter((n) => !n.isRead).length
-    : 0;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   if (!user) return null;
 
@@ -76,12 +40,7 @@ const NotificationBell: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
         className="relative rounded-full bg-blue-500 p-2 text-white"
       >
-        <svg
-          className="h-6 w-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -98,7 +57,7 @@ const NotificationBell: React.FC = () => {
       {isOpen && (
         <div className="absolute right-0 mt-2 max-h-96 w-80 overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
           {error && <div className="mb-2 text-red-500">{error}</div>}
-          {!Array.isArray(notifications) || notifications.length === 0 ? (
+          {notifications.length === 0 ? (
             <p>No notifications</p>
           ) : (
             notifications.map((notification) => (
