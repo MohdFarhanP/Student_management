@@ -11,7 +11,7 @@ import { Role, RecipientType, SessionStatus } from '../../domain/types/enums';
 import { IScheduleLiveSessionUseCase } from '../../domain/interface/IScheduleLiveSessionUseCase';
 import { IJoinLiveSessionUseCase } from '../../domain/interface/IJoinLiveSessionUseCase';
 import { ILiveSessionRepository } from '../../domain/interface/ILiveSessionRepository';
-import { ILiveSession } from '../../domain/types/interfaces';
+import { IVideoService } from '../../domain/interface/IVideoService';
 
 export class SocketServer implements ISocketServer {
   constructor(
@@ -23,10 +23,12 @@ export class SocketServer implements ISocketServer {
     private classRepository: IClassRepository,
     private scheduleLiveSessionUseCase: IScheduleLiveSessionUseCase,
     private joinLiveSessionUseCase: IJoinLiveSessionUseCase,
-    private liveSessionRepository: ILiveSessionRepository
+    private liveSessionRepository: ILiveSessionRepository,
+    private videoService: IVideoService // Add IVideoService dependency
   ) {
     console.log('SocketServer constructor called');
     console.log('SocketServer initialized with sendNotificationUseCase:', !!sendNotificationUseCase);
+    console.log('SocketServer initialized with videoService:', !!videoService);
   }
 
   initialize() {
@@ -243,11 +245,28 @@ export class SocketServer implements ISocketServer {
 
           // Notify all participants
           this.io.emit('live-session-ended', { sessionId });
-
-          // Removed unnecessary joinLiveSessionUseCase.execute call
         } catch (error) {
           console.error('Error ending live session:', error);
           socket.emit('error', error instanceof Error ? error.message : 'Failed to end live session');
+        }
+      });
+
+      // Renew token handler
+      socket.on('renew-token', async ({ sessionId, participantId }, callback) => {
+        try {
+          console.log(`Renewing token for session ${sessionId}, participant ${participantId}`);
+          const session = await this.liveSessionRepository.findById(sessionId);
+          if (!session || !session.roomId) {
+            throw new Error('Session or room ID not found');
+          }
+          const token = this.videoService.generateToken(session.roomId, participantId);
+          console.log('Token renewed successfully:', token);
+          callback({ token });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          console.error('Error renewing token:', errorMessage);
+          socket.emit('error', { message: errorMessage });
+          callback({ error: errorMessage });
         }
       });
 

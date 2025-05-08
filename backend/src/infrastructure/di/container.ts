@@ -263,7 +263,8 @@ export class DependencyContainer {
         this.dependencies.get('IClassRepository'),
         this.dependencies.get('IScheduleLiveSessionUseCase'),
         this.dependencies.get('IJoinLiveSessionUseCase'),
-        this.dependencies.get('ILiveSessionRepository')
+        this.dependencies.get('ILiveSessionRepository'),
+        this.dependencies.get('IVideoService')
       )
     );
 

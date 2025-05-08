@@ -4,7 +4,6 @@ import { socket } from '../socket';
 import { Class } from '../pages/admin/TimetableManagement';
 import { fetchClasses, getStudentsIdByClass } from '../api/admin/classApi';
 
-// Define the type for sessionInfo based on the data received from the socket
 interface SessionInfo {
   sessionId: string;
   title: string;
@@ -22,30 +21,27 @@ const appId = import.meta.env.VITE_AGORA_APP_ID;
 const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; userId: string }) => {
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
   const [localTracks, setLocalTracks] = useState<{ audioTrack: IMicrophoneAudioTrack; videoTrack: ICameraVideoTrack } | null>(null);
-  const [remoteUsers, setRemoteUsers] = useState<IAgoraRTCRemoteUser[]>([]); // Track remote users for video rendering
-  const [sessionTitle, setSessionTitle] = useState<string>(''); // For starting a new session
-  const [scheduledAt, setScheduledAt] = useState<string>(''); // For scheduling a session
+  const [remoteUsers, setRemoteUsers] = useState<IAgoraRTCRemoteUser[]>([]);
+  const [sessionTitle, setSessionTitle] = useState<string>('');
+  const [scheduledAt, setScheduledAt] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false); // For loading states
-  const [userList, setUserList] = useState<UserInfo[]>([]); // To display participants
-  const [classes, setClasses] = useState<Class[]>([]); 
-  const [selectedClassId, setSelectedClassId] = useState<string>(''); // Selected class for scheduling
-  const [studentIds, setStudentIds] = useState<string[]>([]); // To store student IDs for the selected class
-  const isJoiningRef = useRef<boolean>(false); // Track if a join operation is in progress
+  const [loading, setLoading] = useState<boolean>(false);
+  const [userList, setUserList] = useState<UserInfo[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const [studentIds, setStudentIds] = useState<string[]>([]);
+  const isJoiningRef = useRef<boolean>(false);
 
-  // Initialize Agora client
   const agoraClient: IAgoraRTCClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
 
-  // Fetch classes for the teacher
   useEffect(() => {
     if (userRole === 'Teacher') {
       const getClasses = async () => {
         try {
           const fetchedClasses = await fetchClasses();
-          setClasses(fetchedClasses || []); // Fallback to empty array if undefined
-
-          if (fetchedClasses?.length > 0 && fetchedClasses[0]._id) {
-            setSelectedClassId(fetchedClasses[0]._id ?? '');
+          setClasses(fetchedClasses || []);
+          if (fetchedClasses!.length > 0 && fetchedClasses![0]._id) {
+            setSelectedClassId(fetchedClasses![0]._id ?? '');
           }
         } catch (err) {
           setError('Failed to load classes: ' + (err instanceof Error ? err.message : String(err)));
@@ -55,23 +51,21 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
     }
   }, [userRole]);
 
-  // Fetch student IDs for the selected class
   useEffect(() => {
     if (userRole === 'Teacher' && selectedClassId) {
       const fetchStudentIds = async () => {
         try {
           const studentIdsData = await getStudentsIdByClass(selectedClassId);
-          setStudentIds(studentIdsData?.studentIds || []); // Fallback to empty array if undefined
+          setStudentIds(studentIdsData?.studentIds || []);
         } catch (err) {
           setError('Failed to load student list: ' + (err instanceof Error ? err.message : String(err)));
-          setStudentIds([]); // Reset to empty array on error
+          setStudentIds([]);
         }
       };
       fetchStudentIds();
     }
   }, [userRole, selectedClassId]);
 
-  // Memoize joinSession to ensure it doesn't change unnecessarily
   const joinSession = useCallback((sessionId: string) => {
     setLoading(true);
     socket.emit('join-live-session', {
@@ -80,21 +74,51 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
     });
   }, [userId]);
 
+  const renewToken = useCallback(async (sessionId: string, retries = 3) => {
+    setLoading(true);
+    const attemptRenew = async (attempt: number): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        socket.emit('renew-token', { sessionId, participantId: userId }, (response: { token?: string; error?: string }) => {
+          if (response.token) {
+            console.log('Token renewed:', response.token);
+            agoraClient.renewToken(response.token);
+            setLoading(false);
+            resolve();
+          } else {
+            const errorMessage = response.error || 'Failed to renew token';
+            if (attempt < retries) {
+              console.log(`Retrying token renewal, attempt ${attempt + 1}/${retries}...`);
+              setTimeout(() => attemptRenew(attempt + 1).then(resolve).catch(reject), 1000);
+            } else {
+              setError(errorMessage);
+              setLoading(false);
+              reject(new Error(errorMessage));
+            }
+          }
+        });
+      });
+    };
+    try {
+      await attemptRenew(1);
+    } catch (err) {
+      console.error('Token renewal failed after retries:', err);
+    }
+  }, [userId, agoraClient]);
+
   useEffect(() => {
     if (!appId) {
       setError('Agora App ID is not set. Please check VITE_AGORA_APP_ID in your environment variables.');
       return;
     }
 
-    // Socket event handlers
+    console.log('Frontend Agora App ID:', appId);
+
     const onLiveSessionScheduled = (data: SessionInfo) => {
       setSessionInfo(data);
-      // Removed immediate join logic; wait for live-session-start event
     };
 
     const onLiveSessionStart = (data: SessionInfo) => {
       setSessionInfo(data);
-      // Auto-join for both teacher and student when the session starts
       alert(`Live session "${data.title}" is starting now! Joining the session...`);
       joinSession(data.sessionId);
     };
@@ -105,33 +129,29 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
     };
 
     const onLiveSessionJoined = async ({ roomId, token, participants }: { roomId: string; token: string; participants: UserInfo[] }) => {
-      if (!sessionInfo) return; // Skip if session has already ended
+      if (!sessionInfo) return;
 
       setLoading(true);
-      isJoiningRef.current = true; // Mark that a join operation is in progress
+      isJoiningRef.current = true;
 
       try {
         console.log('Joining Agora session:', { appId, roomId, token, userId });
-        // Join the Agora session
         await agoraClient.join(appId, roomId, token, userId);
         console.log('Successfully joined Agora session');
 
-        // Create and publish local tracks
         console.log('Creating microphone and camera tracks...');
         const tracks = await AgoraRTC.createMicrophoneAndCameraTracks();
         setLocalTracks({
-          audioTrack: tracks[0], // Microphone track
-          videoTrack: tracks[1], // Camera track
+          audioTrack: tracks[0],
+          videoTrack: tracks[1],
         });
         console.log('Local tracks created:', tracks);
 
-        // Only publish if the session is still active
         if (sessionInfo) {
           console.log('Publishing tracks to Agora session...');
           await agoraClient.publish(tracks);
           console.log('Tracks published successfully');
 
-          // Play local video
           const localVideoElement = document.getElementById(`local-video-${userId}`);
           if (!localVideoElement) {
             throw new Error(`Local video element local-video-${userId} not found in DOM`);
@@ -140,17 +160,24 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
           tracks[1].play(`local-video-${userId}`);
           console.log('Local video playing');
         } else {
-          // If session ended during join, clean up tracks
           tracks[0]?.stop();
           tracks[1]?.stop();
           await agoraClient.leave();
           return;
         }
 
-        // Update participant list
         setUserList(participants);
 
-        // Handle remote users
+        agoraClient.on('token-privilege-will-expire', () => {
+          console.log('Token will expire soon, renewing...');
+          renewToken(sessionInfo.sessionId);
+        });
+
+        agoraClient.on('token-privilege-did-expire', () => {
+          console.log('Token has expired, renewing...');
+          renewToken(sessionInfo.sessionId);
+        });
+
         agoraClient.on('user-published', async (user: IAgoraRTCRemoteUser, mediaType: 'video' | 'audio') => {
           console.log(`Remote user published: ${user.uid}, mediaType: ${mediaType}`);
           await agoraClient.subscribe(user, mediaType);
@@ -194,15 +221,14 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
         setError(errorMessage);
         setLoading(false);
       } finally {
-        isJoiningRef.current = false; // Mark join operation as complete
+        isJoiningRef.current = false;
       }
     };
 
     const onLiveSessionEnded = async ({ sessionId }: { sessionId: string }) => {
       if (sessionInfo?.sessionId === sessionId) {
-        // Wait for any ongoing join operation to complete
         while (isJoiningRef.current) {
-          await new Promise((resolve) => setTimeout(resolve, 100)); // Poll every 100ms
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
         setSessionInfo(null);
@@ -220,14 +246,12 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       }
     };
 
-    // Register socket event listeners
     socket.on('live-session-scheduled', onLiveSessionScheduled);
     socket.on('live-session-start', onLiveSessionStart);
     socket.on('error', onError);
     socket.on('live-session-joined', onLiveSessionJoined);
     socket.on('live-session-ended', onLiveSessionEnded);
 
-    // Cleanup on unmount
     return () => {
       socket.off('live-session-scheduled', onLiveSessionScheduled);
       socket.off('live-session-start', onLiveSessionStart);
@@ -235,10 +259,9 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       socket.off('live-session-joined', onLiveSessionJoined);
       socket.off('live-session-ended', onLiveSessionEnded);
 
-      // Wait for any ongoing join operation to complete before leaving
       const cleanup = async () => {
         while (isJoiningRef.current) {
-          await new Promise((resolve) => setTimeout(resolve, 100)); // Poll every 100ms
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
         await agoraClient.leave();
         if (localTracks) {
@@ -248,9 +271,8 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       };
       cleanup();
     };
-  }, [userRole, userId, sessionInfo, agoraClient, localTracks, joinSession]);
+  }, [userRole, userId, sessionInfo, agoraClient, localTracks, joinSession, renewToken]);
 
-  // Teacher starts a session immediately
   const startSession = () => {
     if (!sessionTitle || !selectedClassId) {
       setError('Please enter a session title and select a class');
@@ -261,17 +283,16 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       return;
     }
     setLoading(true);
-    const sessionId = Date.now().toString(); // Use UUID in production
+    const sessionId = Date.now().toString();
     socket.emit('schedule-live-session', {
-      sessionId, // Include sessionId in the emitted data
+      sessionId,
       title: sessionTitle,
       teacherId: userId,
-      studentIds: studentIds, // Already an array of strings
-      scheduledAt: new Date().toISOString(), // Start immediately
+      studentIds: studentIds,
+      scheduledAt: new Date().toISOString(),
     });
   };
 
-  // Teacher schedules a session for a future time
   const scheduleSession = () => {
     if (!sessionTitle || !scheduledAt || !selectedClassId) {
       setError('Please enter a session title, select a class, and select a date/time');
@@ -282,12 +303,12 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       return;
     }
     setLoading(true);
-    const sessionId = Date.now().toString(); // Use UUID in production
+    const sessionId = Date.now().toString();
     socket.emit('schedule-live-session', {
-      sessionId, // Include sessionId in the emitted data
+      sessionId,
       title: sessionTitle,
       teacherId: userId,
-      studentIds: studentIds, // Already an array of strings
+      studentIds: studentIds,
       scheduledAt: new Date(scheduledAt).toISOString(),
     });
     alert(`Session "${sessionTitle}" scheduled for ${new Date(scheduledAt).toLocaleString()}`);
@@ -296,11 +317,9 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
     setLoading(false);
   };
 
-  // End a session (for teachers)
   const endSession = async () => {
     if (sessionInfo) {
       socket.emit('end-live-session', { sessionId: sessionInfo.sessionId });
-      // The rest of the cleanup is handled by onLiveSessionEnded
     }
   };
 
@@ -323,7 +342,6 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
           </div>
         )}
 
-        {/* Teacher UI: Start or Schedule a Session */}
         {userRole === 'Teacher' && !sessionInfo && (
           <div className="bg-white p-6 rounded-lg shadow-md mb-6">
             <h2 className="text-xl font-semibold text-gray-700 mb-4">Start or Schedule a Live Session</h2>
@@ -397,7 +415,6 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
           </div>
         )}
 
-        {/* Student UI: Waiting for a Session */}
         {userRole === 'Student' && !sessionInfo && !localTracks && (
           <div className="bg-white p-6 rounded-lg shadow-md mb-6">
             <h2 className="text-xl font-semibold text-gray-700 mb-4">Waiting for a Live Session</h2>
@@ -405,10 +422,8 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
           </div>
         )}
 
-        {/* Active Session UI: For Both Teacher and Student */}
         {sessionInfo && (
           <div className="space-y-6">
-            {/* Session Info */}
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold text-gray-700 mb-4">Active Session: {sessionInfo.title}</h2>
               <div className="flex justify-between items-center">
@@ -443,7 +458,6 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
               </div>
             </div>
 
-            {/* Participants List */}
             {userList.length > 0 && (
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-lg font-semibold text-gray-700 mb-4">Participants ({userList.length})</h3>
@@ -457,9 +471,7 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
               </div>
             )}
 
-            {/* Video Streams */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Local Video */}
               {localTracks ? (
                 <div className="bg-white p-4 rounded-lg shadow-md">
                   <h3 className="text-lg font-semibold text-gray-700 mb-2">Your Video</h3>
@@ -477,7 +489,6 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
                 </div>
               )}
 
-              {/* Remote Videos */}
               {remoteUsers.length > 0 ? (
                 remoteUsers.map((user) => (
                   <div key={user.uid} className="bg-white p-4 rounded-lg shadow-md">
