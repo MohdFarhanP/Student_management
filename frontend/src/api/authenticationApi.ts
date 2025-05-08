@@ -31,7 +31,9 @@ export const adminLogin = (data: ICredentials) =>
     'post',
     `${AUTH_API_URL}/login`,
     data
-  ).then((res) => res.data);
+  ).then((res) => {
+    console.log(res.data)
+    return res.data});
 
 export const updateUserPassword = (password: string) =>
   apiRequest<ApiResponse<User>, UpdateUserPasswordParams>(
@@ -47,4 +49,7 @@ export const refreshUserToken = (showErrorToast = true) =>
   apiRequest<ApiResponse<User>>('post', `${AUTH_API_URL}/refresh-token`,
     undefined,
     {showErrorToast},
-  ).then((res) => res.data);
+  ).then((res) =>{
+    console.log("refreshUsertoken api response",res.data);
+    return res.data
+  }).catch((err)=> console.log('auth refresh token error', err));

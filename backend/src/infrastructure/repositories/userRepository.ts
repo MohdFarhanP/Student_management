@@ -44,7 +44,8 @@ export class UserRepository implements IUserRepository {
   }
 
   async findByRefreshToken(token: string, role: Role): Promise<IUser | null> {
-    const Model = this.getModel(role);
+    try {
+      const Model = this.getModel(role);
     const user = await Model.findOne({ refreshToken: token });
     if (!user) return null;
     return {
@@ -54,6 +55,9 @@ export class UserRepository implements IUserRepository {
       isInitialLogin: user.isInitialLogin ?? true,
       refreshToken: user.refreshToken ?? null,
     };
+    } catch (error) {
+      console.log('errror on user repo : ',error)
+    }
   }
 
   async updatePassword(id: string, password: string): Promise<void> {
@@ -69,11 +73,15 @@ export class UserRepository implements IUserRepository {
   }
 
   async updateRefreshToken(id: string, refreshToken: string | null): Promise<void> {
-    const roles = [Role.Admin, Role.Student, Role.Teacher];
+    try {
+      const roles = [Role.Admin, Role.Student, Role.Teacher];
     for (const role of roles) {
       const Model = this.getModel(role);
-      const user = await Model.findByIdAndUpdate(id, { refreshToken });
+      const user = await Model.findByIdAndUpdate(id, { refreshToken },{ new: true } );
       if (user) break;
+    }
+    } catch (error) {
+     console.log('error on update refresh token', error); 
     }
   }
 }

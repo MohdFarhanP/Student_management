@@ -4,11 +4,14 @@ import { IMessageRepository } from '../../domain/interface/IMessageRepository';
 import { ISendMessageUseCase } from '../../domain/interface/ISendMessageUseCase';
 import { INotificationRepository } from '../../domain/interface/INotificationRepository';
 import { ISendNotificationUseCase } from '../../domain/interface/ISendNotificationUseCase';
-import { INotificationScheduler } from '../../domain/interface/INotificationScheduler';
 import { IClassRepository } from '../../domain/interface/admin/IClassRepository';
-import { SendMessageDTO, SendNotificationDTO } from '../../domain/types/interfaces';
+import { JoinLiveSessionDTO, ScheduleLiveSessionDTO, SendMessageDTO, SendNotificationDTO } from '../../domain/types/interfaces';
 import { ValidationError, UnauthorizedError, ForbiddenError } from '../../domain/errors';
-import { Role, RecipientType } from '../../domain/types/enums';
+import { Role, RecipientType, SessionStatus } from '../../domain/types/enums';
+import { IScheduleLiveSessionUseCase } from '../../domain/interface/IScheduleLiveSessionUseCase';
+import { IJoinLiveSessionUseCase } from '../../domain/interface/IJoinLiveSessionUseCase';
+import { ILiveSessionRepository } from '../../domain/interface/ILiveSessionRepository';
+import { ILiveSession } from '../../domain/types/interfaces';
 
 export class SocketServer implements ISocketServer {
   constructor(
@@ -17,23 +20,17 @@ export class SocketServer implements ISocketServer {
     private sendMessageUseCase: ISendMessageUseCase,
     private notificationRepository: INotificationRepository,
     private sendNotificationUseCase: ISendNotificationUseCase,
-    private notificationScheduler: INotificationScheduler,
-    private classRepository: IClassRepository
+    private classRepository: IClassRepository,
+    private scheduleLiveSessionUseCase: IScheduleLiveSessionUseCase,
+    private joinLiveSessionUseCase: IJoinLiveSessionUseCase,
+    private liveSessionRepository: ILiveSessionRepository
   ) {
     console.log('SocketServer constructor called');
     console.log('SocketServer initialized with sendNotificationUseCase:', !!sendNotificationUseCase);
-    console.log('SocketServer initialized with notificationScheduler:', !!notificationScheduler);
   }
 
   initialize() {
     console.log('SocketServer initializing...');
-
-    // Start the notification scheduler once
-    if (this.notificationScheduler) {
-      this.notificationScheduler.start();
-    } else {
-      console.error('NotificationScheduler not initialized');
-    }
 
     this.io.use((socket, next) => {
       const userId = socket.handshake.query.userId as string;
@@ -170,10 +167,88 @@ export class SocketServer implements ISocketServer {
         }
       });
 
-      socket.on('processScheduledNotifications', async () => {
-        console.log('Manual processScheduledNotifications triggered');
-        await this.notificationScheduler.processNow();
-        socket.emit('processScheduledNotifications', { success: true });
+      // Schedule a live session
+      socket.on('schedule-live-session', async (dto: ScheduleLiveSessionDTO & { sessionId: string }) => {
+        try {
+          if (!dto.sessionId || !dto.title || !dto.teacherId || !dto.studentIds || !dto.scheduledAt) {
+            throw new ValidationError('Missing required fields for scheduling live session');
+          }
+          if (dto.teacherId !== socket.data.userId) {
+            throw new UnauthorizedError('Unauthorized: Teacher ID does not match socket user');
+          }
+          if (socket.data.userRole !== Role.Teacher) {
+            throw new ForbiddenError('Unauthorized: Only teachers can schedule live sessions');
+          }
+
+          const session = await this.scheduleLiveSessionUseCase.execute(dto);
+          socket.emit('live-session-scheduled', {
+            sessionId: session.id,
+            title: session.title,
+            scheduledAt: session.scheduledAt,
+          });
+
+          // If the session starts immediately, notify students
+          if (new Date(dto.scheduledAt).getTime() <= Date.now()) {
+            session.studentIds.forEach((studentId: string) => {
+              this.io.to(`user-${studentId}`).emit('live-session-start', {
+                sessionId: session.id,
+                title: session.title,
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error scheduling live session:', error);
+          socket.emit('error', error instanceof Error ? error.message : 'Failed to schedule live session');
+        }
+      });
+
+      // Join a live session
+      socket.on('join-live-session', async (dto: JoinLiveSessionDTO) => {
+        try {
+          if (!dto.sessionId || !dto.participantId) {
+            throw new ValidationError('Missing required fields for joining live session');
+          }
+          if (dto.participantId !== socket.data.userId) {
+            throw new UnauthorizedError('Unauthorized: Participant ID does not match socket user');
+          }
+
+          const response = await this.joinLiveSessionUseCase.execute(dto);
+          socket.emit('live-session-joined', response);
+        } catch (error) {
+          console.error('Error joining live session:', error);
+          socket.emit('error', error instanceof Error ? error.message : 'Failed to join live session');
+        }
+      });
+
+      // End a live session
+      socket.on('end-live-session', async ({ sessionId }: { sessionId: string }) => {
+        try {
+          if (!sessionId) {
+            throw new ValidationError('Missing sessionId for ending live session');
+          }
+          if (socket.data.userRole !== Role.Teacher) {
+            throw new ForbiddenError('Unauthorized: Only teachers can end live sessions');
+          }
+
+          const session = await this.liveSessionRepository.findById(sessionId);
+          if (!session) {
+            throw new ValidationError('Live session not found');
+          }
+          if (session.teacherId !== socket.data.userId) {
+            throw new UnauthorizedError('Unauthorized: Only the session host can end the session');
+          }
+
+          // Update session status to Ended
+          await this.liveSessionRepository.updateStatus(sessionId, SessionStatus.Ended);
+
+          // Notify all participants
+          this.io.emit('live-session-ended', { sessionId });
+
+          // Removed unnecessary joinLiveSessionUseCase.execute call
+        } catch (error) {
+          console.error('Error ending live session:', error);
+          socket.emit('error', error instanceof Error ? error.message : 'Failed to end live session');
+        }
       });
 
       socket.on('disconnect', () => {

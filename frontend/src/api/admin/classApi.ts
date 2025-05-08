@@ -13,7 +13,9 @@ export interface IClassData {
   totalStudents?: string;
   _id?: string;
 }
-
+export interface StudentId{
+  studentIds: string[] 
+}
 interface Student {
   id: string;
   name: string;
@@ -66,6 +68,15 @@ export const getStudentsByClass = (classId: string) => {
   ).then((res)=> res.data);
 };
 
+export const getStudentsIdByClass = (classId: string) => {
+  console.log('classId checking in from getStudentsByClass', classId);
+  return apiRequest<ApiResponse<StudentId>>(
+    'get',
+    `${ADMIN_CLASS_API_URL}/${classId}/studentsId`,
+    undefined
+  ).then((res)=> res.data);
+};
+
 export const getClassNames = () =>
   apiRequest<ApiResponse<IClassData[]>>(
     'get',
@@ -85,7 +96,7 @@ export const updateClass = (data: IClassData) =>
 
 export const fetchClasses = () =>
   apiRequest<ApiResponse<Class[]>>('get', `${ADMIN_CLASS_API_URL}/classlist`)
-    .then((res)=> res?.data);
+    .then((res)=> res.data);
 
 export const fetchStudentClass = () =>
   apiRequest<ApiResponse<Class>>('get', `${STUDENT_API_URL}/my-class`).then((res) => {

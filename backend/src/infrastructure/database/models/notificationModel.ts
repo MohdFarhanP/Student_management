@@ -18,7 +18,7 @@ const notificationSchema = new mongoose.Schema<INotification>({
     required: true,
   },
   isRead: { type: Boolean, default: false },
-  sent: { type: Boolean, default: false }, // Tracks if notification was emitted
+  sent: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   scheduledAt: { type: String },
 });

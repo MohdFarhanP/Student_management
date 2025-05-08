@@ -10,6 +10,12 @@ const NotificationBell: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const [isOpen, setIsOpen] = useState(false);
 
+  // Utility to convert UTC to IST
+  const convertToIST = (utcDate: string | Date): string => {
+    const date = new Date(utcDate);
+    return date.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -18,6 +24,7 @@ const NotificationBell: React.FC = () => {
     socket.emit('joinNotification');
 
     socket.on('notification', (notification: Notification) => {
+      console.log('Received notification:', notification);
       dispatch(addNotification(notification));
     });
 
@@ -69,8 +76,8 @@ const NotificationBell: React.FC = () => {
                 <p>{notification.message}</p>
                 <p className="text-xs text-gray-500">
                   {notification.scheduledAt
-                    ? `Scheduled: ${new Date(notification.scheduledAt).toLocaleString()}`
-                    : new Date(notification.createdAt).toLocaleString()}
+                    ? `Scheduled: ${convertToIST(notification.scheduledAt)}`
+                    : `Created: ${convertToIST(notification.createdAt)}`}
                 </p>
                 {!notification.isRead && (
                   <button

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { socket } from '../socket';
-import { toDate } from 'date-fns-tz'; // For timezone handling
 
 const SendNotification: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -31,7 +30,7 @@ const SendNotification: React.FC = () => {
   const handleSend = () => {
     setError(null);
     setSuccess(null);
-
+  
     if (!title.trim()) {
       setError('Title is required');
       return;
@@ -40,7 +39,7 @@ const SendNotification: React.FC = () => {
       setError('Message is required');
       return;
     }
-
+  
     const notification: {
       title: string;
       message: string;
@@ -60,17 +59,26 @@ const SendNotification: React.FC = () => {
       senderId: user.id,
       senderRole: user.role as 'Admin' | 'Teacher',
     };
-
+  
     if (scheduledAt) {
-      // Convert local time to UTC ISO string
-      const scheduledDate = toDate(scheduledAt, { timeZone: 'UTC' });
-      if (scheduledDate <= new Date()) {
+      // Interpret the input as IST (Asia/Kolkata) and convert to UTC
+      const scheduledDateIST = new Date(scheduledAt); // e.g., "2025-05-05T14:03" in IST
+      const scheduledDateUTC = new Date(
+        scheduledDateIST.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
+      ).toISOString(); // Convert to UTC
+      console.log('Scheduled time (IST):', scheduledDateIST.toLocaleString());
+      console.log('Scheduled time (UTC):', scheduledDateUTC);
+  
+      // Validate that the scheduled time is in the future (in UTC)
+      const nowUTC = new Date().toISOString();
+      if (scheduledDateUTC <= nowUTC) {
         setError('Scheduled time must be in the future');
         return;
       }
-      notification.scheduledAt = scheduledDate.toISOString();
+  
+      notification.scheduledAt = scheduledDateUTC; // Store in UTC
     }
-
+  
     socket.emit('sendNotification', notification);
     setTitle('');
     setMessage('');

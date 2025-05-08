@@ -1,5 +1,3 @@
-
-
 export enum Role {
     Admin = 'Admin',
     Student = 'Student',
@@ -84,4 +82,17 @@ export enum Role {
     JPEG = 'image/jpeg',
     PNG = 'image/png',
     GIF = 'image/gif',
+  }
+
+  export enum SessionStatus {
+    Scheduled = 'SCHEDULED',
+    Ongoing = 'ONGOING',
+    Completed = 'COMPLETED',
+    Cancelled = 'CANCELLED',
+    Ended = 'ENDED',
+  }
+  
+  export enum ParticipantRole {
+    Teacher = 'TEACHER',
+    Student = 'STUDENT',
   }

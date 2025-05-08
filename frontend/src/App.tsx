@@ -1,4 +1,3 @@
-// src/App.tsx
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store, RootState, AppDispatch } from './redux/store';
 import './App.css';
@@ -65,10 +64,19 @@ const AppContent: React.FC = () => {
       console.error('App.tsx: Socket connection error:', error.message);
     });
 
+    socket.on('disconnect', (reason: string) => {
+      console.log('App.tsx: Socket disconnected, reason:', reason);
+      if (reason === 'io server disconnect' && user) {
+        // Server disconnected us, attempt to reconnect
+        socket.connect();
+      }
+    });
+
     return () => {
       console.log('App.tsx: Cleaning up socket listeners');
       socket.off('connect');
       socket.off('connect_error');
+      socket.off('disconnect');
       // Do NOT disconnect socket here unless the app is unmounting completely
     };
   }, [user, loading, hasCheckedAuth]);

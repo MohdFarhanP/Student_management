@@ -33,11 +33,16 @@ export class AuthService implements IAuthService {
   }
 
   verifyRefreshToken(token: string): { email: string; role: Role } {
-    const obj = jwt.verify(token, this.refreshSecret) as {
-      email: string;
-      role: Role;
-    };
-    return obj;
+    try {
+      const obj = jwt.verify(token, this.refreshSecret) as {
+        email: string;
+        role: Role;
+      };
+      return obj;
+    } catch (error) {
+      console.log("error on verify Refresh token ", error);
+      throw error
+    }
   }
   verifyToken(token: string): { id: string; email: string; role: Role } {
     try {

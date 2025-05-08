@@ -23,6 +23,7 @@ const TeacherSchema = new Schema<ITeacher>(
     qualification: { type: String, default: '' },
     isInitialLogin: { type: Boolean, default: true },
     isDeleted: {type: Boolean, default:false},
+    refreshToken: { type: String },
     availability: {
       type: Object,
       required: true,

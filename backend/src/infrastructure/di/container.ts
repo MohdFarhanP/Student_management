@@ -1,3 +1,12 @@
+import { Server as SocketIOServer } from 'socket.io';
+import { Queue, Worker } from 'bullmq';
+import { ILiveSessionRepository } from '../../domain/interface/ILiveSessionRepository';
+import { IVideoService } from '../../domain/interface/IVideoService';
+import { LiveSessionRepository } from '../repositories/LiveSessionRepository';
+import { ScheduleLiveSession } from '../../application/useCases/liveSession/ScheduleLiveSessionUseCase';
+import { JoinLiveSession } from '../../application/useCases/liveSession/JoinLiveSessionUseCase';
+import { setupLiveSessionQueue } from '../../application/useCases/liveSession/SetupLiveSessionQueue';
+import { AgoraVideoService } from '../services/AgoraVideoService';
 import { StudentRepository } from '../repositories/admin/studentRepository';
 import { TeacherRepository } from '../repositories/admin/teacherRepository';
 import { StudentExcelParser } from '../parsers/studentExcelParser';
@@ -33,7 +42,7 @@ import { AddStudentUseCase } from '../../application/useCases/admin/student/addS
 import { DeleteStudentUseCase } from '../../application/useCases/admin/student/deleteStudentUseCase';
 import { EditStudentUseCase } from '../../application/useCases/admin/student/editStudentUseCase';
 import { GetAllStudentsUseCase } from '../../application/useCases/admin/student/getAllStudentsUseCase';
-import { GetStudentProfileUseCase as AdminGetStudentProfileUseCase  } from '../../application/useCases/student/GetStudentProfileUseCase';
+import { GetStudentProfileUseCase as AdminGetStudentProfileUseCase } from '../../application/useCases/student/GetStudentProfileUseCase';
 import { AuthService } from '../../application/services/authService';
 import { IClassRepository } from '../../domain/interface/admin/IClassRepository';
 import { ISubjectRepository } from '../../domain/interface/ISubjectRepository';
@@ -112,7 +121,6 @@ import { IDownloadNoteUseCase } from '../../domain/interface/IDownloadNoteUseCas
 import { IListNotesUseCase } from '../../domain/interface/IListNotesUseCase';
 import { NoteRepository } from '../repositories/notesRepository';
 import { INoteRepository } from '../../domain/interface/INotRepository';
-import { CloudinaryService } from '../services/CloudinaryService';
 import { ICloudinaryService } from '../../domain/interface/ICloudinaryService';
 import { IUpdateStudentProfileImageUseCase } from '../../domain/interface/IUpdateStudentProfileImageUseCase';
 import { LoginUseCase } from '../../application/useCases/auth/LoginUseCase';
@@ -126,15 +134,12 @@ import { MessageRepository } from '../repositories/message/messageRepository';
 import { SendMessage } from '../../application/useCases/message/sendMessage';
 import { ChatController } from '../../interfaces/controllers/chatController';
 import { SocketServer } from '../database/socketServer';
-import { Server as SocketIOServer } from 'socket.io';
 import { IMessageRepository } from '../../domain/interface/IMessageRepository';
 import { ISendMessageUseCase } from '../../domain/interface/ISendMessageUseCase';
 import { IChatController } from '../../domain/interface/IChatController';
 import { ISocketServer } from '../../domain/interface/ISocketServer';
-import { NotificationRepository } from '../repositories/notification/notificationRepository'; // Adjust path as needed
+import { NotificationRepository } from '../repositories/notification/notificationRepository';
 import { SendNotification } from '../../application/useCases/notification/SendNotificationUseCase';
-import { NotificationScheduler } from '../services/notificationScheduler';
-import { INotificationScheduler } from '../../domain/interface/INotificationScheduler';
 import { NotificationController } from '../../interfaces/controllers/notification/notificationController';
 import { GetNotificationsUseCase } from '../../application/useCases/notification/GetNotificationsUseCase';
 import { MarkNotificationAsRead } from '../../application/useCases/notification/MarkNotificationAsReadUseCase';
@@ -152,15 +157,17 @@ import { GeneratePresignedUrlUseCase } from '../../application/useCases/Generate
 import { IPresignedUrlController } from '../../domain/interface/IPresignedUrlController';
 import { PresignedUrlController } from '../../interfaces/controllers/PresignedUrlController';
 import { GetClassesForTeacherUseCase } from '../../application/useCases/message/getClassesForTeacher';
-import { IGetClassesForTeacherUseCase } from '../../domain/interface/IGetClassesForTeacherUseCase'; 
+import { IGetClassesForTeacherUseCase } from '../../domain/interface/IGetClassesForTeacherUseCase';
 import { GetClassForStudentUseCase } from '../../application/useCases/message/getClassForStudent';
+import { setupNotificationQueue } from '../../application/workers/notificationWorker';
+import { getStudentsIdByClassUseCase } from '../../application/useCases/admin/class/getStudentsIdByClassUseCase';
+import { IGetStudentsIdByClassUseCase } from '../../domain/interface/IGetStudentsIdByClassUseCase';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
   private dependencies: Map<string, any> = new Map();
 
   private constructor(io?: SocketIOServer) {
-    
     // Repositories
     this.dependencies.set('IStudentRepository', new StudentRepository());
     this.dependencies.set('ITeacherRepository', new TeacherRepository());
@@ -174,10 +181,11 @@ export class DependencyContainer {
     this.dependencies.set('IUserRepository', new UserRepository());
     this.dependencies.set('IMessageRepository', new MessageRepository());
     this.dependencies.set('INotificationRepository', new NotificationRepository());
+    this.dependencies.set('ILiveSessionRepository', new LiveSessionRepository());
 
     // Services
-
     this.dependencies.set('IAuthService', new AuthService());
+    this.dependencies.set('IVideoService', new AgoraVideoService());
     this.dependencies.set(
       'ITimetableService',
       new TimetableService(
@@ -185,32 +193,64 @@ export class DependencyContainer {
         this.dependencies.get('ITeacherRepository') || new TeacherRepository()
       )
     );
-        // Use Cases (Notification)
-        this.dependencies.set(
-          'IGetNotificationsUseCase',
-          new GetNotificationsUseCase(this.dependencies.get('INotificationRepository'))
-        );
-        this.dependencies.set(
-          'IMarkNotificationAsRead',
-          new MarkNotificationAsRead(this.dependencies.get('INotificationRepository'))
-        );
-        this.dependencies.set(
-          'ISendNotificationUseCase',
-          new SendNotification(this.dependencies.get('INotificationRepository'))
-        );
-    
+    this.dependencies.set('IStorageService', new S3StorageService());
+    this.dependencies.set('IFileValidationService', new FileValidationService(this.dependencies.get('INoteRepository')));
 
-    this.dependencies.set('ISendMessageUseCase', new SendMessage(this.dependencies.get('IMessageRepository')));
+    // Initialize BullMQ Queue for Notifications
+    const notificationQueue = new Queue('notifications', {
+      connection: {
+        host: '127.0.0.1',
+        port: 6379,
+      },
+    });
 
+    // BullMQ Queue for Live Sessions
+    const sessionQueue = new Queue('live-session', {
+      connection: {
+        host: '127.0.0.1',
+        port: 6379,
+      },
+    });
+
+    this.dependencies.set('SessionQueue', sessionQueue);
+    this.dependencies.set('NotificationQueue', notificationQueue);
+
+    // Use Cases (Live Session)
     this.dependencies.set(
-      'INotificationScheduler',
-      new NotificationScheduler(
-        io, 
-        this.dependencies.get('INotificationRepository')
+      'IScheduleLiveSessionUseCase',
+      new ScheduleLiveSession(
+        this.dependencies.get('ILiveSessionRepository'),
+        this.dependencies.get('IVideoService'),
+        this.dependencies.get('SessionQueue')
+      )
+    );
+    this.dependencies.set(
+      'IJoinLiveSessionUseCase',
+      new JoinLiveSession(
+        this.dependencies.get('ILiveSessionRepository'),
+        this.dependencies.get('IVideoService')
       )
     );
 
-    // Services
+    // Use Cases (Notification)
+    this.dependencies.set(
+      'IGetNotificationsUseCase',
+      new GetNotificationsUseCase(this.dependencies.get('INotificationRepository'))
+    );
+    this.dependencies.set(
+      'IMarkNotificationAsRead',
+      new MarkNotificationAsRead(this.dependencies.get('INotificationRepository'))
+    );
+    this.dependencies.set(
+      'ISendNotificationUseCase',
+      new SendNotification(
+        this.dependencies.get('INotificationRepository'),
+        io,
+        notificationQueue
+      )
+    );
+
+    this.dependencies.set('ISendMessageUseCase', new SendMessage(this.dependencies.get('IMessageRepository')));
 
     this.dependencies.set(
       'ISocketServer',
@@ -220,13 +260,29 @@ export class DependencyContainer {
         this.dependencies.get('ISendMessageUseCase'),
         this.dependencies.get('INotificationRepository'),
         this.dependencies.get('ISendNotificationUseCase'),
-        this.dependencies.get('INotificationScheduler'),
-        this.dependencies.get('IClassRepository')
+        this.dependencies.get('IClassRepository'),
+        this.dependencies.get('IScheduleLiveSessionUseCase'),
+        this.dependencies.get('IJoinLiveSessionUseCase'),
+        this.dependencies.get('ILiveSessionRepository')
       )
     );
 
-    this.dependencies.set('IStorageService', new S3StorageService()); 
-    this.dependencies.set('IFileValidationService', new FileValidationService(this.dependencies.get('INoteRepository')));
+    // Setup the notification queue processing and store the worker
+    const notificationWorker = setupNotificationQueue(
+      io,
+      this.dependencies.get('INotificationRepository'),
+      notificationQueue
+    );
+    this.dependencies.set('NotificationWorker', notificationWorker);
+
+    // Setup the live session queue processing
+    const sessionWorker = setupLiveSessionQueue(
+      io,
+      this.dependencies.get('ILiveSessionRepository'),
+      this.dependencies.get('IVideoService'),
+      this.dependencies.get('SessionQueue')
+    );
+    this.dependencies.set('SessionWorker', sessionWorker);
 
     // Parsers
     this.dependencies.set('StudentExcelParser', new StudentExcelParser());
@@ -247,7 +303,6 @@ export class DependencyContainer {
         this.dependencies.get('TeacherExcelParser')
       )
     );
-
 
     // Use Cases (Class)
     this.dependencies.set(
@@ -282,6 +337,10 @@ export class DependencyContainer {
       'IGetClassForStudentUseCase',
       new GetClassForStudentUseCase(this.dependencies.get('IClassRepository'))
     );
+    this.dependencies.set(
+      'IGetStudentsIdByClassUseCase',
+      new getStudentsIdByClassUseCase(this.dependencies.get('IStudentRepository'))
+    )
 
     // Use Cases (Subject)
     this.dependencies.set(
@@ -397,7 +456,7 @@ export class DependencyContainer {
       'IUpdateStudentProfileImageUseCase',
       new UpdateStudentProfileImageUseCase(
         this.dependencies.get('IStudentProfileRepository'),
-        this.dependencies.get('IStorageService') 
+        this.dependencies.get('IStorageService')
       )
     );
 
@@ -426,7 +485,7 @@ export class DependencyContainer {
     this.dependencies.set(
       'IUploadNoteUseCase',
       new UploadNoteUseCase(
-        this.dependencies.get('INoteRepository'),
+        this.dependencies.get('INoteRepository')
       )
     );
     this.dependencies.set(
@@ -473,7 +532,7 @@ export class DependencyContainer {
       'IGeneratePresignedUrlUseCase',
       new GeneratePresignedUrlUseCase(
         this.dependencies.get('IFileValidationService'),
-        this.dependencies.get('IStorageService'),
+        this.dependencies.get('IStorageService')
       )
     );
 
@@ -503,7 +562,8 @@ export class DependencyContainer {
         this.dependencies.get('IGetClassNameUseCase'),
         this.dependencies.get('IGetStudentsByClassUseCase'),
         this.dependencies.get('IGetClassesForTeacherUseCase'),
-        this.dependencies.get('IGetClassForStudentUseCase')
+        this.dependencies.get('IGetClassForStudentUseCase'),
+        this.dependencies.get('IGetStudentsIdByClassUseCase'),
       )
     );
     this.dependencies.set(
@@ -574,7 +634,8 @@ export class DependencyContainer {
       'IChatController',
       new ChatController(
         this.dependencies.get('ISendMessageUseCase'),
-        this.dependencies.get('IClassRepository'))
+        this.dependencies.get('IClassRepository')
+      )
     );
     this.dependencies.set(
       'IUserController',
@@ -582,7 +643,7 @@ export class DependencyContainer {
         this.dependencies.get('ILoginUseCase'),
         this.dependencies.get('IUpdatePasswordUseCase'),
         this.dependencies.get('IRefreshTokenUseCase'),
-        this.dependencies.get('ILogoutUseCase'),
+        this.dependencies.get('ILogoutUseCase')
       )
     );
     this.dependencies.set(
@@ -599,6 +660,22 @@ export class DependencyContainer {
       DependencyContainer.instance = new DependencyContainer(io);
     }
     return DependencyContainer.instance;
+  }
+
+  getSessionQueue(): Queue {
+    return this.dependencies.get('SessionQueue');
+  }
+
+  getSessionWorker(): Worker {
+    return this.dependencies.get('SessionWorker');
+  }
+
+  getNotificationQueue(): Queue {
+    return this.dependencies.get('NotificationQueue');
+  }
+
+  getNotificationWorker(): Worker {
+    return this.dependencies.get('NotificationWorker');
   }
 
   getPresignedUrlController(): IPresignedUrlController {
@@ -877,8 +954,28 @@ export class DependencyContainer {
     return this.dependencies.get('ISendMessageUseCase');
   }
 
-  getNotificationScheduler(): INotificationScheduler {
-    return this.dependencies.get('INotificationScheduler');
+  async shutdown(): Promise<void> {
+    const notificationQueue = this.getNotificationQueue();
+    const notificationWorker = this.getNotificationWorker();
+    const sessionQueue = this.getSessionQueue();
+    const sessionWorker = this.getSessionWorker();
+
+    if (notificationWorker) {
+      await notificationWorker.close();
+      console.log('Notification Worker closed');
+    }
+    if (notificationQueue) {
+      await notificationQueue.close();
+      console.log('Notification Queue closed');
+    }
+    if (sessionWorker) {
+      await sessionWorker.close();
+      console.log('Session Worker closed');
+    }
+    if (sessionQueue) {
+      await sessionQueue.close();
+      console.log('Session Queue closed');
+    }
   }
 
   // For testing: Allow overriding dependencies

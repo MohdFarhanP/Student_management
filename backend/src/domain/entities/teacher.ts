@@ -18,6 +18,7 @@ export class Teacher implements ITeacher {
   specialization?: string;
   experienceYears?: number;
   qualification?: string;
+  refreshToken: string;
   availability?: { [key in Day]: number[] };
 
   constructor(data: Partial<ITeacher>) {
@@ -36,6 +37,7 @@ export class Teacher implements ITeacher {
     this.specialization = data.specialization || '';
     this.experienceYears = data.experienceYears || 0;
     this.qualification = data.qualification || '';
+    this.refreshToken = data.refreshToken;
     this.availability = data.availability || undefined;
   }
 }

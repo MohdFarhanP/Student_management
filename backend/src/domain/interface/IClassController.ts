@@ -9,4 +9,5 @@ export interface IClassController {
   getStudentByClass(req: Request, res: Response): Promise<void>;
   getClassesForTeacher(req: Request, res: Response): Promise<void>;
   getClassForStudent(req: Request, res: Response): Promise<void>;
+  getStudentIdByClass(req: Request, res: Response): Promise<void>
 }

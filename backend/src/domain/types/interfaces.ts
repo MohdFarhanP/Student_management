@@ -1,5 +1,7 @@
 import { Role, Gender, Day, Grade, Section, SubjectName, RecipientType, MediaType } from './enums';
 import mongoose, { ObjectId } from 'mongoose';
+import { SessionStatus, ParticipantRole } from './enums';
+
 
 // User entity (for authentication)
 export interface IUser {
@@ -59,6 +61,7 @@ export interface ITeacher {
   availability?: { [key in Day]: number[] };
   isInitialLogin?: boolean;
   isDeleted?: boolean
+  refreshToken?: string;
 }
 
 // Class entity
@@ -189,3 +192,35 @@ export interface IMessage {
     tutor: string | null;
     totalStudents: number;
   }
+
+  export interface ScheduleLiveSessionDTO {
+    title: string;
+    teacherId: string;
+    studentIds: string[];
+    scheduledAt: Date;
+  }  
+
+  export interface JoinLiveSessionDTO {
+    sessionId: string;
+    participantId: string;
+  }
+
+  export interface StudentIdsDTO {
+    studentIds: string[];
+  }
+  
+export interface ILiveSession {
+  id: string;
+  title: string;
+  teacherId: string;
+  studentIds: string[];
+  scheduledAt: Date;
+  status: SessionStatus;
+  roomId?: string; 
+  token?: string;
+}
+
+export interface IParticipant {
+  userId: string;
+  role: ParticipantRole;
+}
