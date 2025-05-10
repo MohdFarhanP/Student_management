@@ -45,6 +45,7 @@
         scheduledAt: effectiveScheduledAt, // Use the Date object directly
         status: SessionStatus.Scheduled,
         roomId,
+        participants: [],
       };
 
       // Save to database

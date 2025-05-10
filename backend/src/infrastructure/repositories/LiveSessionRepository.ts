@@ -23,4 +23,15 @@ export class LiveSessionRepository implements ILiveSessionRepository {
       throw new Error(`Live session with id ${id} not found`);
     }
   }
+
+  async update(id: string, updates: Partial<ILiveSession>): Promise<void> {
+    const session = await LiveSessionModel.findOneAndUpdate(
+      { id },
+      { $set: updates },
+      { new: true }
+    );
+    if (!session) {
+      throw new Error(`Live session with id ${id} not found`);
+    }
+  }
 }

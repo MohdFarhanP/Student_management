@@ -1,4 +1,4 @@
-import { Role, Gender, Day, Grade, Section, SubjectName, RecipientType, MediaType } from './enums';
+import { Role, Gender, Day, Grade, Section, SubjectName, RecipientType, MediaType, LeaveStatus } from './enums';
 import mongoose, { ObjectId } from 'mongoose';
 import { SessionStatus, ParticipantRole } from './enums';
 
@@ -218,9 +218,26 @@ export interface ILiveSession {
   status: SessionStatus;
   roomId?: string; 
   token?: string;
+  participants?: UserInfo[];
+}
+
+export interface UserInfo {
+  id: string;
+  email: string;
+  role: string;
 }
 
 export interface IParticipant {
   userId: string;
   role: ParticipantRole;
+}
+
+export interface Leave {
+  id: string;
+  studentId: string;
+  date: string; 
+  reason: string;
+  status: LeaveStatus;
+  createdAt: string; 
+  updatedAt: string; 
 }

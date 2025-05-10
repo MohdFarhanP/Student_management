@@ -5,7 +5,7 @@ import { ISendMessageUseCase } from '../../domain/interface/ISendMessageUseCase'
 import { INotificationRepository } from '../../domain/interface/INotificationRepository';
 import { ISendNotificationUseCase } from '../../domain/interface/ISendNotificationUseCase';
 import { IClassRepository } from '../../domain/interface/admin/IClassRepository';
-import { JoinLiveSessionDTO, ScheduleLiveSessionDTO, SendMessageDTO, SendNotificationDTO } from '../../domain/types/interfaces';
+import { JoinLiveSessionDTO, ScheduleLiveSessionDTO, SendMessageDTO, SendNotificationDTO, UserInfo } from '../../domain/types/interfaces';
 import { ValidationError, UnauthorizedError, ForbiddenError } from '../../domain/errors';
 import { Role, RecipientType, SessionStatus } from '../../domain/types/enums';
 import { IScheduleLiveSessionUseCase } from '../../domain/interface/IScheduleLiveSessionUseCase';
@@ -183,6 +183,18 @@ export class SocketServer implements ISocketServer {
           }
 
           const session = await this.scheduleLiveSessionUseCase.execute(dto);
+
+          const participants: UserInfo[] = [
+            { id: dto.teacherId, email: `user-${dto.teacherId}@example.com`, role: 'Teacher' }, // Ideally fetch email from a user service
+            ...dto.studentIds.map((studentId: string) => ({
+              id: studentId,
+              email: `user-${studentId}@example.com`,
+              role: 'Student',
+            })),
+          ];
+
+          await this.liveSessionRepository.update(dto.sessionId, { participants });
+
           socket.emit('live-session-scheduled', {
             sessionId: session.id,
             title: session.title,
@@ -191,6 +203,12 @@ export class SocketServer implements ISocketServer {
 
           // If the session starts immediately, notify students
           if (new Date(dto.scheduledAt).getTime() <= Date.now()) {
+
+            //   socket.emit('live-session-start', {
+            //     sessionId: session.id,
+            //     title: session.title,
+            // });
+
             session.studentIds.forEach((studentId: string) => {
               this.io.to(`user-${studentId}`).emit('live-session-start', {
                 sessionId: session.id,
@@ -215,12 +233,59 @@ export class SocketServer implements ISocketServer {
           }
 
           const response = await this.joinLiveSessionUseCase.execute(dto);
+          
           socket.emit('live-session-joined', response);
+
+          socket.join(dto.sessionId);
+          console.log(`User ${socket.data.userId} joined session room ${dto.sessionId}`);
+          
+          const updatedSession = await this.liveSessionRepository.findById(dto.sessionId);
+          const participants: UserInfo[] = updatedSession?.participants?.map((participant: any) => ({
+            id: participant.id,
+            email: participant.email || `user-${participant.id}@example.com`,
+            role: participant.role || 'Unknown',
+          })) || [];
+
+          this.io.to(dto.sessionId).emit('participants-updated', { participants });
         } catch (error) {
           console.error('Error joining live session:', error);
           socket.emit('error', error instanceof Error ? error.message : 'Failed to join live session');
         }
       });
+
+        socket.on('join-session-room', (sessionId: string) => {
+        socket.join(sessionId);
+        console.log(`User ${socket.data.userId} joined session room ${sessionId}`);
+      });
+
+    socket.on('leave-live-session', async ({ sessionId, participantId }: { sessionId: string; participantId: string }) => {
+      try {
+        if (!sessionId || !participantId) {
+          throw new ValidationError('Missing required fields for leaving live session');
+        }
+        if (participantId !== socket.data.userId) {
+          throw new UnauthorizedError('Unauthorized: Participant ID does not match socket user');
+        }
+
+        const session = await this.liveSessionRepository.findById(sessionId);
+        if (!session) {
+          throw new ValidationError('Live session not found');
+        }
+
+        // Remove the user from the participants list
+        const updatedParticipants = (session.participants || []).filter((p: UserInfo) => p.id !== participantId);
+        await this.liveSessionRepository.update(sessionId, { participants: updatedParticipants });
+
+        // Broadcast the updated participants list to all users in the session
+        socket.to(sessionId).emit('participants-updated', { participants: updatedParticipants });
+
+        // Leave the session room
+        socket.leave(sessionId);
+      } catch (error) {
+        console.error('Error leaving live session:', error);
+        socket.emit('error', error instanceof Error ? error.message : 'Failed to leave live session');
+      }
+    });
 
       // End a live session
       socket.on('end-live-session', async ({ sessionId }: { sessionId: string }) => {
@@ -241,8 +306,7 @@ export class SocketServer implements ISocketServer {
           }
 
           // Update session status to Ended
-          await this.liveSessionRepository.updateStatus(sessionId, SessionStatus.Ended);
-
+          await this.liveSessionRepository.update(sessionId, { status: SessionStatus.Ended, participants: [] });
           // Notify all participants
           this.io.emit('live-session-ended', { sessionId });
         } catch (error) {

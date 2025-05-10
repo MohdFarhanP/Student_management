@@ -38,14 +38,16 @@ export class AppError extends Error {
   }
 }
 
-export class ValidationError extends AppError {
+export class ValidationError extends Error {
   constructor(message: string) {
-    super(message, HttpStatus.BAD_REQUEST);
+    super(message);
+    this.name = 'ValidationError';
   }
 }
 
-export class UnauthorizedError extends AppError {
+export class UnauthorizedError extends Error {
   constructor(message: string) {
-    super(message, HttpStatus.UNAUTHORIZED);
+    super(message);
+    this.name = 'UnauthorizedError';
   }
 }

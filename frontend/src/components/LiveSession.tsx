@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import AgoraRTC, { IAgoraRTCClient, IAgoraRTCRemoteUser, ICameraVideoTrack, IMicrophoneAudioTrack } from 'agora-rtc-sdk-ng';
+import AgoraRTC, { IAgoraRTCClient, IAgoraRTCRemoteUser, ICameraVideoTrack, IMicrophoneAudioTrack, IRemoteVideoTrack, ILocalVideoTrack } from 'agora-rtc-sdk-ng';
 import { socket } from '../socket';
 import { Class } from '../pages/admin/TimetableManagement';
 import { fetchClasses, getStudentsIdByClass } from '../api/admin/classApi';
@@ -16,12 +16,18 @@ interface UserInfo {
   role: string;
 }
 
+interface RemoteUserInfo {
+  user: IAgoraRTCRemoteUser;
+  hasVideo: boolean;
+  hasAudio: boolean;
+}
+
 const appId = import.meta.env.VITE_AGORA_APP_ID;
 
 const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; userId: string }) => {
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
-  const [localTracks, setLocalTracks] = useState<{ audioTrack: IMicrophoneAudioTrack; videoTrack: ICameraVideoTrack } | null>(null);
-  const [remoteUsers, setRemoteUsers] = useState<IAgoraRTCRemoteUser[]>([]);
+  const [localTracks, setLocalTracks] = useState<{ audioTrack: IMicrophoneAudioTrack; videoTrack: ICameraVideoTrack | null } | null>(null);
+  const [remoteUsers, setRemoteUsers] = useState<RemoteUserInfo[]>([]);
   const [sessionTitle, setSessionTitle] = useState<string>('');
   const [scheduledAt, setScheduledAt] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -30,9 +36,33 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
   const [classes, setClasses] = useState<Class[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [studentIds, setStudentIds] = useState<string[]>([]);
+  const [micOn, setMicOn] = useState<boolean>(false);
+  const [videoOn, setVideoOn] = useState<boolean>(false);
+  const [hasCamera, setHasCamera] = useState<boolean>(true);
+  const [hasJoined, setHasJoined] = useState<boolean>(false);
   const isJoiningRef = useRef<boolean>(false);
+  const isSessionActiveRef = useRef<boolean>(false);
+  const playedVideosRef = useRef<Set<string>>(new Set());
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const agoraClient: IAgoraRTCClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+  const agoraClientRef = useRef<IAgoraRTCClient>(AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' }));
+
+  useEffect(() => {
+    const checkDevices = async () => {
+      try {
+        const devices = await AgoraRTC.getDevices();
+        const videoDevices = devices.filter((device: MediaDeviceInfo) => device.kind === 'videoinput');
+        if (videoDevices.length === 0) {
+          setHasCamera(false);
+          setError('No camera detected. You can still join the session with audio only.');
+        }
+      } catch (err) {
+        console.error('Failed to check devices:', err);
+        setError('Failed to access devices. Please check your permissions.');
+      }
+    };
+    checkDevices();
+  }, []);
 
   useEffect(() => {
     if (userRole === 'Teacher') {
@@ -56,7 +86,8 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       const fetchStudentIds = async () => {
         try {
           const studentIdsData = await getStudentsIdByClass(selectedClassId);
-          setStudentIds(studentIdsData?.studentIds || []);
+          const ids = Array.isArray(studentIdsData?.studentIds) ? studentIdsData.studentIds : [];
+          setStudentIds(ids);
         } catch (err) {
           setError('Failed to load student list: ' + (err instanceof Error ? err.message : String(err)));
           setStudentIds([]);
@@ -67,43 +98,169 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
   }, [userRole, selectedClassId]);
 
   const joinSession = useCallback((sessionId: string) => {
+    if (isJoiningRef.current || hasJoined) {
+      console.log('[DEBUG] Skipping joinSession: already joining or joined', { sessionId, isJoining: isJoiningRef.current, hasJoined });
+      return;
+    }
+    console.log('joinSession: Emitting join-live-session', { sessionId, participantId: userId });
     setLoading(true);
+    isJoiningRef.current = true;
     socket.emit('join-live-session', {
       sessionId,
       participantId: userId,
     });
+
+    // Set a timeout to reset loading state if joining takes too long
+    loadingTimeoutRef.current = setTimeout(() => {
+      setLoading(false);
+      setError('Failed to join session: Timeout waiting for server response.');
+    }, 10000); // 10 seconds timeout
   }, [userId]);
 
-  const renewToken = useCallback(async (sessionId: string, retries = 3) => {
-    setLoading(true);
-    const attemptRenew = async (attempt: number): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        socket.emit('renew-token', { sessionId, participantId: userId }, (response: { token?: string; error?: string }) => {
-          if (response.token) {
-            console.log('Token renewed:', response.token);
-            agoraClient.renewToken(response.token);
-            setLoading(false);
-            resolve();
-          } else {
-            const errorMessage = response.error || 'Failed to renew token';
-            if (attempt < retries) {
-              console.log(`Retrying token renewal, attempt ${attempt + 1}/${retries}...`);
-              setTimeout(() => attemptRenew(attempt + 1).then(resolve).catch(reject), 1000);
-            } else {
-              setError(errorMessage);
-              setLoading(false);
-              reject(new Error(errorMessage));
-            }
-          }
-        });
-      });
-    };
-    try {
-      await attemptRenew(1);
-    } catch (err) {
-      console.error('Token renewal failed after retries:', err);
+  const playVideoWithRetry = async (track: ILocalVideoTrack | IRemoteVideoTrack, elementId: string, retries: number = 5, delay: number = 1500) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      const element = document.getElementById(elementId);
+      if (!element) {
+        console.error(`Element ${elementId} not found in DOM on attempt ${attempt}`);
+        if (attempt === retries) {
+          throw new Error(`Element ${elementId} not found in DOM after ${retries} attempts`);
+        }
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      try {
+        console.log(`Attempt ${attempt} to play video on element ${elementId}`);
+        await track.play(element);
+        console.log('Video playing successfully on', elementId);
+        return;
+      } catch (err) {
+        const error = err as Error;
+        if (error.name === 'AbortError' && attempt < retries) {
+          console.warn(`AbortError on attempt ${attempt} for ${elementId}, retrying after ${delay}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          throw err;
+        }
+      }
     }
-  }, [userId, agoraClient]);
+  };
+
+  const toggleMic = () => {
+    if (localTracks && localTracks.audioTrack && !(localTracks.audioTrack as any).isClosed) {
+      localTracks.audioTrack.setEnabled(!micOn);
+      setMicOn(!micOn);
+    }
+  };
+
+  const toggleVideo = () => {
+    if (localTracks && localTracks.videoTrack && !(localTracks.videoTrack as any).isClosed) {
+      localTracks.videoTrack.setEnabled(!videoOn);
+      setVideoOn(!videoOn);
+    }
+  };
+
+  const cleanup = async () => {
+    if (localTracks) {
+      if (localTracks.audioTrack && !(localTracks.audioTrack as any).isClosed) {
+        try {
+          await localTracks.audioTrack.setEnabled(false);
+          localTracks.audioTrack.stop();
+          localTracks.audioTrack.close();
+        } catch (err) {
+          console.error('Error closing audio track:', err);
+        }
+      }
+      if (localTracks.videoTrack && !(localTracks.videoTrack as any).isClosed) {
+        try {
+          await localTracks.videoTrack.setEnabled(false);
+          localTracks.videoTrack.stop();
+          localTracks.videoTrack.close();
+        } catch (err) {
+          console.error('Error closing video track:', err);
+        }
+      }
+      setLocalTracks(null);
+    }
+    if (hasJoined) {
+      try {
+        await agoraClientRef.current.unpublish();
+        await agoraClientRef.current.leave();
+        console.log('Successfully left Agora session');
+      } catch (err) {
+        console.error('Error leaving Agora session:', err);
+      }
+      setHasJoined(false);
+    }
+    setRemoteUsers([]);
+    setUserList([]);
+    setMicOn(false);
+    setVideoOn(false);
+    playedVideosRef.current.clear();
+  };
+
+  const leaveSession = async () => {
+    await cleanup();
+    setSessionInfo(null);
+    isSessionActiveRef.current = false;
+
+    if (sessionInfo) {
+      socket.emit('leave-live-session', {
+        sessionId: sessionInfo.sessionId,
+        participantId: userId,
+      });
+    }
+
+    alert('You have left the session.');
+  };
+
+  const playLocalVideo = useCallback(async () => {
+    if (localTracks && localTracks.videoTrack && videoOn && !(localTracks.videoTrack as any).isClosed) {
+      const localVideoElementId = `local-video-${userId}`;
+      try {
+        await playVideoWithRetry(localTracks.videoTrack, localVideoElementId);
+      } catch (err) {
+        console.error(`Failed to play local video for user ${userId}:`, err);
+        setError((prevError) => {
+          const newError = 'Failed to play your video. Please check your camera.';
+          return prevError === newError ? prevError : newError;
+        });
+      }
+    }
+  }, [localTracks, videoOn, userId]);
+
+  useEffect(() => {
+    playLocalVideo();
+  }, [playLocalVideo]);
+
+  useEffect(() => {
+    const playRemoteVideos = async () => {
+      for (const remoteUser of remoteUsers) {
+        const user = remoteUser.user;
+        if (playedVideosRef.current.has(user.uid.toString())) {
+          continue;
+        }
+
+        if (user.videoTrack && remoteUser.hasVideo) {
+          console.log(`Playing video for user ${user.uid}, videoTrack available:`, !!user.videoTrack);
+          const remoteVideoElementId = `remote-video-${user.uid}`;
+          try {
+            await playVideoWithRetry(user.videoTrack, remoteVideoElementId);
+            playedVideosRef.current.add(user.uid.toString());
+          } catch (err) {
+            console.error(`Failed to play video for user ${user.uid}:`, err);
+            setError(`Failed to play video for user ${user.uid}. Please check the console for details.`);
+          }
+        } else {
+          console.warn(`No video track available for user ${user.uid}`);
+        }
+      }
+    };
+
+    if (remoteUsers.length > 0) {
+      playRemoteVideos();
+    }
+  }, [remoteUsers]);
 
   useEffect(() => {
     if (!appId) {
@@ -111,186 +268,289 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       return;
     }
 
-    console.log('Frontend Agora App ID:', appId);
+    socket.on('connect_error', (err) => {
+      console.error('Socket.IO connection error:', err);
+      setError((prevError) => {
+        const newError = 'Failed to connect to the live session server. Please try again later.';
+        return prevError === newError ? prevError : newError;
+      });
+      setLoading(false);
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+    });
+
+    socket.on('connect', () => {
+      console.log('Socket.IO connected successfully');
+      setError(null);
+    });
 
     const onLiveSessionScheduled = (data: SessionInfo) => {
+      console.log('Received live-session-scheduled:', data);
       setSessionInfo(data);
     };
 
     const onLiveSessionStart = (data: SessionInfo) => {
+      console.log('Received live-session-start:', data);
       setSessionInfo(data);
       alert(`Live session "${data.title}" is starting now! Joining the session...`);
       joinSession(data.sessionId);
     };
 
     const onError = ({ message }: { message: string }) => {
+      console.log('Received error:', message);
       setError(message);
       setLoading(false);
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
     };
 
-    const onLiveSessionJoined = async ({ roomId, token, participants }: { roomId: string; token: string; participants: UserInfo[] }) => {
+    const onLiveSessionJoined = async ({ roomId, token, participants }: { roomId: string; token: string; participants?: UserInfo[] }) => {
       if (!sessionInfo) return;
 
       setLoading(true);
       isJoiningRef.current = true;
+      isSessionActiveRef.current = true;
 
       try {
+        socket.emit('join-session-room', sessionInfo.sessionId);
+
         console.log('Joining Agora session:', { appId, roomId, token, userId });
-        await agoraClient.join(appId, roomId, token, userId);
-        console.log('Successfully joined Agora session');
+        await agoraClientRef.current.join(appId, roomId, token, userId);
+        console.log('Successfully joined Agora session with userId:', userId);
+        setHasJoined(true);
 
         console.log('Creating microphone and camera tracks...');
-        const tracks = await AgoraRTC.createMicrophoneAndCameraTracks();
-        setLocalTracks({
-          audioTrack: tracks[0],
-          videoTrack: tracks[1],
-        });
-        console.log('Local tracks created:', tracks);
+        let audioTrack: IMicrophoneAudioTrack;
+        let videoTrack: ICameraVideoTrack | null = null;
 
-        if (sessionInfo) {
-          console.log('Publishing tracks to Agora session...');
-          await agoraClient.publish(tracks);
-          console.log('Tracks published successfully');
-
-          const localVideoElement = document.getElementById(`local-video-${userId}`);
-          if (!localVideoElement) {
-            throw new Error(`Local video element local-video-${userId} not found in DOM`);
+        try {
+          const tracks = await AgoraRTC.createMicrophoneAndCameraTracks({}, { encoderConfig: '720p' });
+          audioTrack = tracks[0] as IMicrophoneAudioTrack;
+          videoTrack = tracks[1] as ICameraVideoTrack;
+        } catch (err) {
+          console.error('Failed to create both tracks:', err);
+          try {
+            audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+            setError('Failed to access camera. Joining with audio only.');
+          } catch (audioErr) {
+            console.error('Failed to create audio track:', audioErr);
+            throw new Error('Failed to access microphone: ' + (audioErr instanceof Error ? audioErr.message : String(audioErr)));
           }
-          console.log('Playing local video...');
-          tracks[1].play(`local-video-${userId}`);
-          console.log('Local video playing');
-        } else {
-          tracks[0]?.stop();
-          tracks[1]?.stop();
-          await agoraClient.leave();
-          return;
         }
 
-        setUserList(participants);
-
-        agoraClient.on('token-privilege-will-expire', () => {
-          console.log('Token will expire soon, renewing...');
-          renewToken(sessionInfo.sessionId);
+        console.log('Tracks created:', {
+          audioTrack: !!audioTrack,
+          videoTrack: !!videoTrack,
         });
-
-        agoraClient.on('token-privilege-did-expire', () => {
-          console.log('Token has expired, renewing...');
-          renewToken(sessionInfo.sessionId);
-        });
-
-        agoraClient.on('user-published', async (user: IAgoraRTCRemoteUser, mediaType: 'video' | 'audio') => {
-          console.log(`Remote user published: ${user.uid}, mediaType: ${mediaType}`);
-          await agoraClient.subscribe(user, mediaType);
-          if (mediaType === 'video') {
-            const remoteVideoTrack = user.videoTrack;
-            if (remoteVideoTrack) {
-              const remoteVideoElement = document.getElementById(`remote-video-${user.uid}`);
-              if (!remoteVideoElement) {
-                console.error(`Remote video element remote-video-${user.uid} not found in DOM`);
-                return;
-              }
-              remoteVideoTrack.play(`remote-video-${user.uid}`);
-              console.log(`Playing remote video for user ${user.uid}`);
-            }
+        setLocalTracks((prev) => {
+          if (prev?.audioTrack !== audioTrack || prev?.videoTrack !== videoTrack) {
+            return { audioTrack, videoTrack };
           }
+          return prev;
+        });
+
+        console.log('Received participants:', participants);
+        const participantList = Array.isArray(participants) ? participants : [];
+        console.log('Matching user IDs:', participantList.map(p => p.id), 'with userId:', userId);
+        setUserList(participantList);
+
+        agoraClientRef.current.on('user-published', async (user: IAgoraRTCRemoteUser, mediaType: 'video' | 'audio') => {
+          console.log(`Remote user published: ${user.uid}, mediaType: ${mediaType}, hasVideo: ${user.hasVideo}, hasAudio: ${user.hasAudio}`);
+          if (user.uid.toString() === userId) {
+            console.log(`Skipping subscription for self (userId: ${userId})`);
+            return;
+          }
+
+          try {
+            await agoraClientRef.current.subscribe(user, mediaType);
+            console.log(`Subscribed to ${mediaType} for user ${user.uid}`);
+          } catch (subscribeErr) {
+            console.error(`Failed to subscribe to ${mediaType} for user ${user.uid}:`, subscribeErr);
+            return;
+          }
+
           if (mediaType === 'audio') {
             const remoteAudioTrack = user.audioTrack;
             if (remoteAudioTrack) {
+              if (user.uid.toString() === userId) {
+                console.log(`Skipping audio playback for self (userId: ${userId})`);
+                return;
+              }
               remoteAudioTrack.play();
               console.log(`Playing remote audio for user ${user.uid}`);
+            } else {
+              console.warn(`No audio track available for user ${user.uid}`);
             }
           }
-          setRemoteUsers((prev) => [...prev, user]);
+
+          setRemoteUsers((prev) => {
+            const userExists = prev.find((u) => u.user.uid === user.uid);
+            if (userExists) {
+              const updatedUsers = prev.map((u) =>
+                u.user.uid === user.uid
+                  ? { ...u, hasVideo: mediaType === 'video' ? user.hasVideo : u.hasVideo, hasAudio: mediaType === 'audio' ? user.hasAudio : u.hasAudio }
+                  : u
+              );
+              console.log(`Updated remote users: Total ${updatedUsers.length}`, updatedUsers.map(u => u.user.uid));
+              return updatedUsers;
+            }
+            const newUsers = [...prev, { user, hasVideo: user.hasVideo, hasAudio: user.hasAudio }];
+            console.log(`New remote user joined: ${user.uid}, Total remote users: ${newUsers.length}`, newUsers.map(u => u.user.uid));
+            return newUsers;
+          });
         });
 
-        agoraClient.on('user-unpublished', (user: IAgoraRTCRemoteUser) => {
-          console.log(`Remote user unpublished: ${user.uid}`);
-          setRemoteUsers((prev) => prev.filter((u) => u.uid !== user.uid));
+        agoraClientRef.current.on('user-unpublished', (user: IAgoraRTCRemoteUser, mediaType: 'video' | 'audio') => {
+          console.log(`Remote user unpublished: ${user.uid}, mediaType: ${mediaType}`);
+          setRemoteUsers((prev) => {
+            const updatedUsers = prev.map((u) =>
+              u.user.uid === user.uid
+                ? { ...u, hasVideo: mediaType === 'video' ? false : u.hasVideo, hasAudio: mediaType === 'audio' ? false : u.hasAudio }
+                : u
+            );
+            console.log(`Remote user unpublished, Total remote users: ${updatedUsers.length}`, updatedUsers.map(u => u.user.uid));
+            return updatedUsers;
+          });
+          playedVideosRef.current.delete(user.uid.toString());
         });
 
-        agoraClient.on('user-left', (user: IAgoraRTCRemoteUser) => {
+        agoraClientRef.current.on('user-left', (user: IAgoraRTCRemoteUser) => {
           console.log(`Remote user left: ${user.uid}`);
-          setRemoteUsers((prev) => prev.filter((u) => u.uid !== user.uid));
-          setUserList((prev) => prev.filter((u) => u.id !== user.uid));
+          setRemoteUsers((prev) => {
+            const updatedUsers = prev.filter((u) => u.user.uid !== user.uid);
+            console.log(`Remote user ${user.uid} left, Total remote users: ${updatedUsers.length}`, updatedUsers.map(u => u.user.uid));
+            return updatedUsers;
+          });
+          setUserList((prev) => {
+            const updatedList = Array.isArray(prev) ? prev.filter((u) => u.id !== user.uid.toString()) : [];
+            console.log(`After user left, userList: Total ${updatedList.length}`, updatedList.map(u => u.id));
+            return updatedList;
+          });
+          playedVideosRef.current.delete(user.uid.toString());
+        });
+
+        agoraClientRef.current.on('connection-state-change', (curState: string, prevState: string) => {
+          console.log(`Connection state changed from ${prevState} to ${curState}`);
         });
 
         setLoading(false);
+        if (loadingTimeoutRef.current) {
+          clearTimeout(loadingTimeoutRef.current);
+        }
       } catch (err) {
         const errorMessage = 'Failed to join session: ' + (err instanceof Error ? err.message : String(err));
         console.error('Error in onLiveSessionJoined:', errorMessage);
         setError(errorMessage);
         setLoading(false);
+        if (loadingTimeoutRef.current) {
+          clearTimeout(loadingTimeoutRef.current);
+        }
       } finally {
         isJoiningRef.current = false;
       }
     };
 
     const onLiveSessionEnded = async ({ sessionId }: { sessionId: string }) => {
+      console.log('Received live-session-ended:', { sessionId });
       if (sessionInfo?.sessionId === sessionId) {
         while (isJoiningRef.current) {
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
-
+        isSessionActiveRef.current = false;
+        await cleanup();
         setSessionInfo(null);
-        setLocalTracks((tracks) => {
-          if (tracks) {
-            tracks.audioTrack?.stop();
-            tracks.videoTrack?.stop();
-          }
-          return null;
-        });
-        setRemoteUsers([]);
-        setUserList([]);
-        await agoraClient.leave();
         alert('Live session has ended.');
       }
+    };
+
+    const onParticipantJoined = ({ participants }: { participants: UserInfo[] }) => {
+      const participantList = Array.isArray(participants) ? participants : [];
+      setUserList(participantList);
+      console.log(`Participants updated, Total: ${participantList.length}`, participantList.map(p => p.id));
     };
 
     socket.on('live-session-scheduled', onLiveSessionScheduled);
     socket.on('live-session-start', onLiveSessionStart);
     socket.on('error', onError);
     socket.on('live-session-joined', onLiveSessionJoined);
+    socket.on('participants-updated', onParticipantJoined);
     socket.on('live-session-ended', onLiveSessionEnded);
 
     return () => {
+      socket.off('connect_error');
+      socket.off('connect');
       socket.off('live-session-scheduled', onLiveSessionScheduled);
       socket.off('live-session-start', onLiveSessionStart);
       socket.off('error', onError);
       socket.off('live-session-joined', onLiveSessionJoined);
+      socket.off('participants-updated', onParticipantJoined);
       socket.off('live-session-ended', onLiveSessionEnded);
 
-      const cleanup = async () => {
-        while (isJoiningRef.current) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-        }
-        await agoraClient.leave();
-        if (localTracks) {
-          localTracks.audioTrack?.stop();
-          localTracks.videoTrack?.stop();
-        }
-      };
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
       cleanup();
     };
-  }, [userRole, userId, sessionInfo, agoraClient, localTracks, joinSession, renewToken]);
+  }, [userRole, userId, sessionInfo, joinSession]);
+
+  useEffect(() => {
+    const publishTracks = async () => {
+      if (!hasJoined || !sessionInfo || !localTracks) return;
+
+      try {
+        const tracksToPublish: (IMicrophoneAudioTrack | ICameraVideoTrack)[] = [];
+        if (localTracks.audioTrack && micOn && !(localTracks.audioTrack as any).isClosed) {
+          tracksToPublish.push(localTracks.audioTrack);
+        }
+        if (localTracks.videoTrack && videoOn && !(localTracks.videoTrack as any).isClosed) {
+          tracksToPublish.push(localTracks.videoTrack);
+        }
+        if (tracksToPublish.length > 0) {
+          await agoraClientRef.current.publish(tracksToPublish);
+          console.log('Tracks published successfully:', tracksToPublish);
+        }
+      } catch (publishErr) {
+        console.error('Failed to publish tracks:', publishErr);
+        setError('Failed to publish tracks: ' + (publishErr instanceof Error ? publishErr.message : String(publishErr)));
+      }
+    };
+
+    publishTracks();
+  }, [micOn, videoOn, localTracks, hasJoined, sessionInfo]);
 
   const startSession = () => {
     if (!sessionTitle || !selectedClassId) {
       setError('Please enter a session title and select a class');
       return;
     }
-    if (studentIds.length === 0) {
+    if (!studentIds || studentIds.length === 0) {
       setError('No students found in the selected class');
       return;
     }
     setLoading(true);
     const sessionId = Date.now().toString();
+    console.log('startSession: Emitting schedule-live-session', {
+      sessionId,
+      title: sessionTitle,
+      teacherId: userId,
+      studentIds,
+      scheduledAt: new Date().toISOString(),
+    });
     socket.emit('schedule-live-session', {
       sessionId,
       title: sessionTitle,
       teacherId: userId,
-      studentIds: studentIds,
+      studentIds,
       scheduledAt: new Date().toISOString(),
     });
+
+    // Set a timeout to reset loading state if the session doesn't start
+    loadingTimeoutRef.current = setTimeout(() => {
+      setLoading(false);
+      setError('Failed to start session: Timeout waiting for server response.');
+    }, 10000); // 10 seconds timeout
   };
 
   const scheduleSession = () => {
@@ -298,30 +558,68 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       setError('Please enter a session title, select a class, and select a date/time');
       return;
     }
-    if (studentIds.length === 0) {
+    if (!studentIds || studentIds.length === 0) {
       setError('No students found in the selected class');
       return;
     }
     setLoading(true);
     const sessionId = Date.now().toString();
+    console.log('scheduleSession: Emitting schedule-live-session', {
+      sessionId,
+      title: sessionTitle,
+      teacherId: userId,
+      studentIds,
+      scheduledAt: new Date(scheduledAt).toISOString(),
+    });
     socket.emit('schedule-live-session', {
       sessionId,
       title: sessionTitle,
       teacherId: userId,
-      studentIds: studentIds,
+      studentIds,
       scheduledAt: new Date(scheduledAt).toISOString(),
     });
     alert(`Session "${sessionTitle}" scheduled for ${new Date(scheduledAt).toLocaleString()}`);
     setSessionTitle('');
     setScheduledAt('');
     setLoading(false);
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+    }
   };
 
   const endSession = async () => {
     if (sessionInfo) {
+      console.log('endSession: Emitting end-live-session', { sessionId: sessionInfo.sessionId });
       socket.emit('end-live-session', { sessionId: sessionInfo.sessionId });
     }
   };
+
+  const activeParticipants = userList.filter((user) =>
+    user.id === userId ||
+    remoteUsers.some((remoteUser) => remoteUser.user.uid.toString() === user.id)
+  );
+
+  // Combine local and remote users for the grid
+  const allParticipants = [];
+  if (localTracks) {
+    allParticipants.push({
+      id: userId,
+      email: userList.find((u) => u.id === userId)?.email || 'You',
+      role: userRole,
+      isLocal: true,
+      hasVideo: videoOn && localTracks.videoTrack != null,
+    });
+  }
+  remoteUsers.forEach((remoteUser) => {
+    const userInfo = userList.find((u) => u.id === remoteUser.user.uid.toString());
+    allParticipants.push({
+      id: remoteUser.user.uid.toString(),
+      email: userInfo?.email || `User ${remoteUser.user.uid}`,
+      role: userInfo?.role || 'Unknown',
+      isLocal: false,
+      hasVideo: remoteUser.hasVideo,
+    });
+  });
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -398,14 +696,14 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
               <div className="flex space-x-4">
                 <button
                   onClick={startSession}
-                  disabled={loading || !selectedClassId || studentIds?.length === 0}
+                  disabled={loading || !selectedClassId || !studentIds || studentIds.length === 0}
                   className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-300"
                 >
                   Start Session Now
                 </button>
                 <button
                   onClick={scheduleSession}
-                  disabled={loading || !scheduledAt || !selectedClassId || studentIds?.length === 0}
+                  disabled={loading || !scheduledAt || !selectedClassId || !studentIds || studentIds.length === 0}
                   className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:bg-green-300"
                 >
                   Schedule for Later
@@ -450,7 +748,7 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
                   <button
                     onClick={endSession}
                     disabled={loading}
-                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:bg-red-300"
+                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:bg-blue-300"
                   >
                     End Session
                   </button>
@@ -458,11 +756,11 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
               </div>
             </div>
 
-            {userList.length > 0 && (
+            {Array.isArray(activeParticipants) && activeParticipants.length > 0 && (
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">Participants ({userList.length})</h3>
+                <h3 className="text-lg font-semibold text-gray-700 mb-4">Participants ({activeParticipants.length})</h3>
                 <ul className="space-y-2">
-                  {userList.map((user) => (
+                  {activeParticipants.map((user) => (
                     <li key={user.id} className="text-gray-600">
                       {user.email} ({user.role})
                     </li>
@@ -471,46 +769,68 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {localTracks ? (
-                <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Your Video</h3>
-                  <div
-                    id={`local-video-${userId}`}
-                    className="w-full h-64 bg-gray-200 rounded-md"
-                  ></div>
-                </div>
-              ) : (
-                <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Your Video</h3>
-                  <div className="w-full h-64 bg-gray-200 rounded-md flex items-center justify-center">
-                    <p className="text-gray-500">Waiting for video...</p>
-                  </div>
-                </div>
-              )}
-
-              {remoteUsers.length > 0 ? (
-                remoteUsers.map((user) => (
-                  <div key={user.uid} className="bg-white p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                      {userList.find((u) => u.id === user.uid)?.email || 'Remote User'} (
-                      {userList.find((u) => u.id === user.uid)?.role || 'Unknown'})
-                    </h3>
+            {allParticipants.length > 0 ? (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-semibold text-gray-700 mb-4">Video Feeds</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {allParticipants.map((participant) => (
                     <div
-                      id={`remote-video-${user.uid}`}
-                      className="w-full h-64 bg-gray-200 rounded-md"
-                    ></div>
-                  </div>
-                ))
-              ) : (
-                <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">Remote Video</h3>
-                  <div className="w-full h-64 bg-gray-200 rounded-md flex items-center justify-center">
-                    <p className="text-gray-500">No remote users yet...</p>
-                  </div>
+                      key={participant.id}
+                      className="relative bg-gray-200 rounded-lg shadow overflow-hidden aspect-video"
+                    >
+                      <div
+                        id={participant.isLocal ? `local-video-${participant.id}` : `remote-video-${participant.id}`}
+                        className="w-full h-full"
+                      >
+                        {!participant.hasVideo && (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-300">
+                            <p className="text-gray-600 text-sm">
+                              {participant.isLocal ? 'Your camera is off' : 'No video'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-sm p-2">
+                        {participant.email} ({participant.role})
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-semibold text-gray-700 mb-4">Video Feeds</h3>
+                <div className="w-full h-64 bg-gray-200 rounded-md flex items-center justify-center">
+                  <p className="text-gray-500">No participants with video yet...</p>
+                </div>
+              </div>
+            )}
+
+            {localTracks && (
+              <div className="fixed bottom-4 right-4 flex space-x-4">
+                <button
+                  onClick={toggleMic}
+                  className={`px-4 py-2 rounded-md text-white ${micOn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
+                >
+                  {micOn ? 'Disable Mic' : 'Enable Mic'}
+                </button>
+                {hasCamera && (
+                  <button
+                    onClick={toggleVideo}
+                    className={`px-4 py-2 rounded-md text-white ${videoOn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
+                    disabled={!localTracks.videoTrack}
+                  >
+                    {videoOn ? 'Disable Camera' : 'Enable Camera'}
+                  </button>
+                )}
+                <button
+                  onClick={leaveSession}
+                  className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+                >
+                  Leave Session
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

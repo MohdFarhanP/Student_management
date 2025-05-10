@@ -96,3 +96,9 @@ export enum Role {
     Teacher = 'TEACHER',
     Student = 'STUDENT',
   }
+
+  export enum LeaveStatus {
+  Pending = 'Pending',
+  Approved = 'Approved',
+  Rejected = 'Rejected',
+}
