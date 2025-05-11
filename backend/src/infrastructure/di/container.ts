@@ -121,7 +121,6 @@ import { IDownloadNoteUseCase } from '../../domain/interface/IDownloadNoteUseCas
 import { IListNotesUseCase } from '../../domain/interface/IListNotesUseCase';
 import { NoteRepository } from '../repositories/notesRepository';
 import { INoteRepository } from '../../domain/interface/INotRepository';
-import { ICloudinaryService } from '../../domain/interface/ICloudinaryService';
 import { IUpdateStudentProfileImageUseCase } from '../../domain/interface/IUpdateStudentProfileImageUseCase';
 import { LoginUseCase } from '../../application/useCases/auth/LoginUseCase';
 import { LogoutUseCase } from '../../application/useCases/auth/LogoutUseCase';
@@ -162,6 +161,14 @@ import { GetClassForStudentUseCase } from '../../application/useCases/message/ge
 import { setupNotificationQueue } from '../../application/workers/notificationWorker';
 import { getStudentsIdByClassUseCase } from '../../application/useCases/admin/class/getStudentsIdByClassUseCase';
 import { IGetStudentsIdByClassUseCase } from '../../domain/interface/IGetStudentsIdByClassUseCase';
+import { ILeaveRepository } from '../../domain/interface/ILeaveRepository';
+import { LeaveRepository } from '../repositories/LeaveRepository';
+import { IApplyForLeaveUseCase } from '../../domain/interface/IApplyForLeaveUseCase';
+import { IViewLeaveHistoryUseCase } from '../../domain/interface/IViewLeaveHistoryUseCase';
+import { IApproveRejectLeaveUseCase } from '../../domain/interface/IApproveRejectLeaveUseCase';
+import { ApplyForLeaveUseCase } from '../../application/useCases/leave/ApplyForLeaveUseCase';
+import { ViewLeaveHistoryUseCase } from '../../application/useCases/leave/ViewLeaveHistoryUseCase';
+import { ApproveRejectLeaveUseCase } from '../../application/useCases/leave/ApproveRejectLeaveUseCase';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -182,6 +189,7 @@ export class DependencyContainer {
     this.dependencies.set('IMessageRepository', new MessageRepository());
     this.dependencies.set('INotificationRepository', new NotificationRepository());
     this.dependencies.set('ILiveSessionRepository', new LiveSessionRepository());
+    this.dependencies.set('ILeaveRepository', new LeaveRepository());
 
     // Services
     this.dependencies.set('IAuthService', new AuthService());
@@ -250,8 +258,35 @@ export class DependencyContainer {
       )
     );
 
+    // Use Cases (Message)
     this.dependencies.set('ISendMessageUseCase', new SendMessage(this.dependencies.get('IMessageRepository')));
 
+    // Use Cases (Leave)
+    this.dependencies.set(
+      'IApplyForLeaveUseCase',
+      new ApplyForLeaveUseCase(
+        this.dependencies.get('ILeaveRepository'),
+        this.dependencies.get('IUserRepository'),
+        this.dependencies.get('ISendNotificationUseCase')
+      )
+    );
+    this.dependencies.set(
+      'IViewLeaveHistoryUseCase',
+      new ViewLeaveHistoryUseCase(
+        this.dependencies.get('ILeaveRepository'),
+        this.dependencies.get('IUserRepository')
+      )
+    );
+    this.dependencies.set(
+      'IApproveRejectLeaveUseCase',
+      new ApproveRejectLeaveUseCase(
+        this.dependencies.get('ILeaveRepository'),
+        this.dependencies.get('IUserRepository'),
+        this.dependencies.get('ISendNotificationUseCase')
+      )
+    );
+
+    // Socket Server
     this.dependencies.set(
       'ISocketServer',
       new SocketServer(
@@ -264,7 +299,10 @@ export class DependencyContainer {
         this.dependencies.get('IScheduleLiveSessionUseCase'),
         this.dependencies.get('IJoinLiveSessionUseCase'),
         this.dependencies.get('ILiveSessionRepository'),
-        this.dependencies.get('IVideoService')
+        this.dependencies.get('IVideoService'),
+        this.dependencies.get('IApplyForLeaveUseCase'),
+        this.dependencies.get('IViewLeaveHistoryUseCase'),
+        this.dependencies.get('IApproveRejectLeaveUseCase')
       )
     );
 
@@ -341,7 +379,7 @@ export class DependencyContainer {
     this.dependencies.set(
       'IGetStudentsIdByClassUseCase',
       new getStudentsIdByClassUseCase(this.dependencies.get('IStudentRepository'))
-    )
+    );
 
     // Use Cases (Subject)
     this.dependencies.set(
@@ -485,9 +523,7 @@ export class DependencyContainer {
     // Use Cases (Notes)
     this.dependencies.set(
       'IUploadNoteUseCase',
-      new UploadNoteUseCase(
-        this.dependencies.get('INoteRepository')
-      )
+      new UploadNoteUseCase(this.dependencies.get('INoteRepository'))
     );
     this.dependencies.set(
       'IDownloadNoteUseCase',
@@ -564,7 +600,7 @@ export class DependencyContainer {
         this.dependencies.get('IGetStudentsByClassUseCase'),
         this.dependencies.get('IGetClassesForTeacherUseCase'),
         this.dependencies.get('IGetClassForStudentUseCase'),
-        this.dependencies.get('IGetStudentsIdByClassUseCase'),
+        this.dependencies.get('IGetStudentsIdByClassUseCase')
       )
     );
     this.dependencies.set(
@@ -795,6 +831,10 @@ export class DependencyContainer {
     return this.dependencies.get('INoteRepository');
   }
 
+  getLeaveRepository(): ILeaveRepository {
+    return this.dependencies.get('ILeaveRepository');
+  }
+
   getStudentExcelParser(): IExcelParser<Student> {
     return this.dependencies.get('StudentExcelParser');
   }
@@ -937,6 +977,18 @@ export class DependencyContainer {
 
   getListNotesUseCase(): IListNotesUseCase {
     return this.dependencies.get('IListNotesUseCase');
+  }
+
+  getApplyForLeaveUseCase(): IApplyForLeaveUseCase {
+    return this.dependencies.get('IApplyForLeaveUseCase');
+  }
+
+  getViewLeaveHistoryUseCase(): IViewLeaveHistoryUseCase {
+    return this.dependencies.get('IViewLeaveHistoryUseCase');
+  }
+
+  getApproveRejectLeaveUseCase(): IApproveRejectLeaveUseCase {
+    return this.dependencies.get('IApproveRejectLeaveUseCase');
   }
 
   getChatController(): IChatController {

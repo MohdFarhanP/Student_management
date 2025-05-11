@@ -50,7 +50,7 @@ const AppContent: React.FC = () => {
     }
 
     console.log('App.tsx: Connecting socket for user:', user.id);
-    socket.io.opts.query = { userId: user.id, userRole: user.role };
+    socket.auth = { userId: user.id, userRole: user.role };
 
     if (!socket.connected) {
       socket.connect();
@@ -58,6 +58,7 @@ const AppContent: React.FC = () => {
 
     socket.on('connect', () => {
       console.log('App.tsx: Socket connected, socket ID:', socket.id);
+      socket.emit('joinNotification');
     });
 
     socket.on('connect_error', (error: Error) => {

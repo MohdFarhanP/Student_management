@@ -46,17 +46,18 @@ export class UserRepository implements IUserRepository {
   async findByRefreshToken(token: string, role: Role): Promise<IUser | null> {
     try {
       const Model = this.getModel(role);
-    const user = await Model.findOne({ refreshToken: token });
-    if (!user) return null;
-    return {
-      id: user.id,
-      email: user.email,
-      role,
-      isInitialLogin: user.isInitialLogin ?? true,
-      refreshToken: user.refreshToken ?? null,
-    };
+      const user = await Model.findOne({ refreshToken: token });
+      if (!user) return null;
+      return {
+        id: user.id,
+        email: user.email,
+        role,
+        isInitialLogin: user.isInitialLogin ?? true,
+        refreshToken: user.refreshToken ?? null,
+      };
     } catch (error) {
-      console.log('errror on user repo : ',error)
+      console.log('error on user repo: ', error);
+      return null;
     }
   }
 
@@ -75,13 +76,44 @@ export class UserRepository implements IUserRepository {
   async updateRefreshToken(id: string, refreshToken: string | null): Promise<void> {
     try {
       const roles = [Role.Admin, Role.Student, Role.Teacher];
+      for (const role of roles) {
+        const Model = this.getModel(role);
+        const user = await Model.findByIdAndUpdate(id, { refreshToken }, { new: true });
+        if (user) break;
+      }
+    } catch (error) {
+      console.log('error on update refresh token', error);
+    }
+  }
+
+  async findById(id: string): Promise<IUser | null> {
+    const roles = [Role.Admin, Role.Student, Role.Teacher];
     for (const role of roles) {
       const Model = this.getModel(role);
-      const user = await Model.findByIdAndUpdate(id, { refreshToken },{ new: true } );
-      if (user) break;
+      const user = await Model.findById(id).exec();
+      if (user) {
+        return {
+          id: user.id,
+          email: user.email,
+          role,
+          password: user.password ?? '',
+          isInitialLogin: user.isInitialLogin ?? true,
+          refreshToken: user.refreshToken ?? null,
+        };
+      }
     }
-    } catch (error) {
-     console.log('error on update refresh token', error); 
-    }
+    return null;
+  }
+
+  async findTeachers(): Promise<IUser[]> {
+    const teachers = await TeacherModel.find().exec();
+    return teachers.map((user) => ({
+      id: user.id,
+      email: user.email,
+      role: Role.Teacher,
+      password: user.password ?? '',
+      isInitialLogin: user.isInitialLogin ?? true,
+      refreshToken: user.refreshToken ?? null,
+    }));
   }
 }

@@ -6,6 +6,7 @@ import NoteUpload from '../pages/teacher/NoteUpload';
 import LiveSession from '../components/LiveSession';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
+import LeaveManagement from '../components/LeaveManagement';
 
 const TeacherRoutes = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -21,6 +22,7 @@ const TeacherRoutes = () => {
           path="/live-session"
           element={<LiveSession userRole="Teacher" userId={user?.id || ''} />}
         />
+        <Route path="/leave/teacher" element={<LeaveManagement mode="teacher" />} />
       </Routes>
     </div>
   );

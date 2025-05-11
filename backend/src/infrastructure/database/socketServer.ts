@@ -7,12 +7,15 @@ import { ISendNotificationUseCase } from '../../domain/interface/ISendNotificati
 import { IClassRepository } from '../../domain/interface/admin/IClassRepository';
 import { JoinLiveSessionDTO, ScheduleLiveSessionDTO, SendMessageDTO, SendNotificationDTO, UserInfo } from '../../domain/types/interfaces';
 import { ValidationError, UnauthorizedError, ForbiddenError } from '../../domain/errors';
-import { Role, RecipientType, SessionStatus } from '../../domain/types/enums';
+import { Role, RecipientType, SessionStatus, LeaveStatus } from '../../domain/types/enums';
 import { IScheduleLiveSessionUseCase } from '../../domain/interface/IScheduleLiveSessionUseCase';
 import { IJoinLiveSessionUseCase } from '../../domain/interface/IJoinLiveSessionUseCase';
 import { ILiveSessionRepository } from '../../domain/interface/ILiveSessionRepository';
 import { IVideoService } from '../../domain/interface/IVideoService';
-
+import { IApplyForLeaveUseCase } from '../../domain/interface/IApplyForLeaveUseCase';
+import { IViewLeaveHistoryUseCase } from '../../domain/interface/IViewLeaveHistoryUseCase';
+import { IApproveRejectLeaveUseCase } from '../../domain/interface/IApproveRejectLeaveUseCase';
+import { ApproveRejectLeaveDTO, ViewLeaveHistoryDTO, ApplyForLeaveDTO } from '../../domain/types/interfaces';
 export class SocketServer implements ISocketServer {
   constructor(
     private io: SocketIOServer,
@@ -24,29 +27,49 @@ export class SocketServer implements ISocketServer {
     private scheduleLiveSessionUseCase: IScheduleLiveSessionUseCase,
     private joinLiveSessionUseCase: IJoinLiveSessionUseCase,
     private liveSessionRepository: ILiveSessionRepository,
-    private videoService: IVideoService // Add IVideoService dependency
+    private videoService: IVideoService,
+    private applyForLeaveUseCase: IApplyForLeaveUseCase,
+    private viewLeaveHistoryUseCase: IViewLeaveHistoryUseCase,
+    private approveRejectLeaveUseCase: IApproveRejectLeaveUseCase
   ) {
     console.log('SocketServer constructor called');
     console.log('SocketServer initialized with sendNotificationUseCase:', !!sendNotificationUseCase);
     console.log('SocketServer initialized with videoService:', !!videoService);
+    console.log('SocketServer initialized with leave use cases:', !!applyForLeaveUseCase, !!viewLeaveHistoryUseCase, !!approveRejectLeaveUseCase);
   }
 
   initialize() {
     console.log('SocketServer initializing...');
 
     this.io.use((socket, next) => {
-      const userId = socket.handshake.query.userId as string;
-      const userRole = socket.handshake.query.userRole as Role;
+      let userId: string | undefined;
+      let userRole: Role | undefined;
+
+      // Check auth first (preferred)
+      if (socket.handshake.auth && socket.handshake.auth.userId && socket.handshake.auth.userRole) {
+        userId = socket.handshake.auth.userId as string;
+        userRole = socket.handshake.auth.userRole as Role;
+        console.log(`Socket authenticated via auth for user ${userId} with role ${userRole}`);
+      }
+      // Fallback to query (temporary for compatibility)
+      else if (socket.handshake.query.userId && socket.handshake.query.userRole) {
+        userId = socket.handshake.query.userId as string;
+        userRole = socket.handshake.query.userRole as Role;
+        console.warn(`Socket authenticated via query for user ${userId} with role ${userRole} (deprecated, use auth)`);
+      }
+
       if (!userId || !userRole) {
+        console.error('Authentication error: userId and userRole required');
         return next(new ValidationError('Authentication error: userId and userRole required'));
       }
+
       socket.data.userId = userId;
       socket.data.userRole = userRole;
       next();
     });
 
     this.io.on('connection', (socket: Socket) => {
-      console.log(`User connected: ${socket.data.userId}`);
+      console.log(`User connected: ${socket.data.userId} (socket ID: ${socket.id})`);
 
       socket.on('joinRoom', async (chatRoomId: string, callback) => {
         if (!chatRoomId) {
@@ -128,7 +151,8 @@ export class SocketServer implements ISocketServer {
 
       socket.on('joinNotification', () => {
         socket.join(`user-${socket.data.userId}`);
-        console.log(`User ${socket.data.userId} joined notification room`);
+        socket.join(`role-${socket.data.userRole}`);
+        console.log(`User ${socket.data.userId} joined notification rooms: user-${socket.data.userId}, role-${socket.data.userRole}`);
       });
 
       socket.on('sendNotification', async (notification: SendNotificationDTO) => {
@@ -169,7 +193,85 @@ export class SocketServer implements ISocketServer {
         }
       });
 
-      // Schedule a live session
+      socket.on('apply-for-leave', async (dto: ApplyForLeaveDTO) => {
+        try {
+          if (!dto.studentId || !dto.date || !dto.reason) {
+            throw new ValidationError('Missing required fields: studentId, date, reason');
+          }
+          if (dto.studentId !== socket.data.userId) {
+            throw new UnauthorizedError('Unauthorized: Student ID does not match socket user');
+          }
+          if (socket.data.userRole !== Role.Student) {
+            throw new UnauthorizedError('Only students can apply for leaves');
+          }
+
+          console.log(`[DEBUG] Applying for leave: ${dto.studentId}, ${dto.date}`);
+          const leave = await this.applyForLeaveUseCase.execute(dto);
+          socket.emit('leave-applied', leave);
+          console.log(`[DEBUG] Leave applied successfully: ${leave.id}`);
+        } catch (error) {
+          console.error(`[DEBUG] Error applying for leave:`, error);
+          socket.emit('error', {
+            message: error instanceof Error ? error.message : 'Failed to apply for leave',
+            context: { studentId: dto.studentId, date: dto.date },
+          });
+        }
+      });
+
+      socket.on('view-leave-history', async (dto: ViewLeaveHistoryDTO) => {
+        try {
+          if (!dto.studentId && socket.data.userRole !== Role.Teacher) {
+            throw new UnauthorizedError('Only teachers can view pending leave requests');
+          }
+          if (dto.studentId && dto.studentId !== socket.data.userId) {
+            throw new UnauthorizedError('Unauthorized: Student ID does not match socket user');
+          }
+          if (dto.studentId && socket.data.userRole !== Role.Student) {
+            throw new UnauthorizedError('Only students can view their leave history');
+          }
+
+          console.log(`[DEBUG] Viewing leave history for student: ${dto.studentId || 'all pending (teacher)'}, userId: ${socket.data.userId}`);
+          const leaves = await this.viewLeaveHistoryUseCase.execute({
+            studentId: dto.studentId || '',
+            userId: socket.data.userId,
+          });
+          socket.emit('leave-history', leaves);
+          console.log(`[DEBUG] Leave history retrieved: ${leaves.length} leaves`);
+        } catch (error) {
+          console.error(`[DEBUG] Error viewing leave history:`, error);
+          socket.emit('error', {
+            message: error instanceof Error ? error.message : 'Failed to view leave history',
+            context: { studentId: dto.studentId, userId: socket.data.userId },
+          });
+        }
+      });
+
+      socket.on('approve-reject-leave', async (dto: ApproveRejectLeaveDTO) => {
+        try {
+          if (!dto.leaveId || !dto.teacherId || !dto.status) {
+            throw new ValidationError('Missing required fields: leaveId, teacherId, status');
+          }
+          if (dto.teacherId !== socket.data.userId) {
+            throw new UnauthorizedError('Unauthorized: Teacher ID does not match socket user');
+          }
+          if (socket.data.userRole !== Role.Teacher) {
+            throw new UnauthorizedError('Only teachers can approve or reject leaves');
+          }
+
+          console.log(`[DEBUG] Approving/Rejecting leave: ${dto.leaveId}, ${dto.status}`);
+          const leave = await this.approveRejectLeaveUseCase.execute(dto);
+          socket.emit('leave-updated', leave);
+          this.io.to(`user-${leave.studentId}`).emit('leave-updated', leave);
+          console.log(`[DEBUG] Leave updated successfully: ${leave.id}, ${leave.status}`);
+        } catch (error) {
+          console.error(`[DEBUG] Error approving/rejecting leave:`, error);
+          socket.emit('error', {
+            message: error instanceof Error ? error.message : 'Failed to approve/reject leave',
+            context: { leaveId: dto.leaveId, teacherId: dto.teacherId },
+          });
+        }
+      });
+
       socket.on('schedule-live-session', async (dto: ScheduleLiveSessionDTO & { sessionId: string }) => {
         try {
           if (!dto.sessionId || !dto.title || !dto.teacherId || !dto.studentIds || !dto.scheduledAt) {
@@ -185,7 +287,7 @@ export class SocketServer implements ISocketServer {
           const session = await this.scheduleLiveSessionUseCase.execute(dto);
 
           const participants: UserInfo[] = [
-            { id: dto.teacherId, email: `user-${dto.teacherId}@example.com`, role: 'Teacher' }, // Ideally fetch email from a user service
+            { id: dto.teacherId, email: `user-${dto.teacherId}@example.com`, role: 'Teacher' },
             ...dto.studentIds.map((studentId: string) => ({
               id: studentId,
               email: `user-${studentId}@example.com`,
@@ -195,20 +297,13 @@ export class SocketServer implements ISocketServer {
 
           await this.liveSessionRepository.update(dto.sessionId, { participants });
 
-          socket.emit('live-session-scheduled', {
-            sessionId: session.id,
-            title: session.title,
-            scheduledAt: session.scheduledAt,
-          });
+          // socket.emit('live-session-scheduled', {
+          //   sessionId: session.id,
+          //   title: session.title,
+          //   scheduledAt: session.scheduledAt,
+          // });
 
-          // If the session starts immediately, notify students
           if (new Date(dto.scheduledAt).getTime() <= Date.now()) {
-
-            //   socket.emit('live-session-start', {
-            //     sessionId: session.id,
-            //     title: session.title,
-            // });
-
             session.studentIds.forEach((studentId: string) => {
               this.io.to(`user-${studentId}`).emit('live-session-start', {
                 sessionId: session.id,
@@ -222,7 +317,6 @@ export class SocketServer implements ISocketServer {
         }
       });
 
-      // Join a live session
       socket.on('join-live-session', async (dto: JoinLiveSessionDTO) => {
         try {
           if (!dto.sessionId || !dto.participantId) {
@@ -233,12 +327,12 @@ export class SocketServer implements ISocketServer {
           }
 
           const response = await this.joinLiveSessionUseCase.execute(dto);
-          
+
           socket.emit('live-session-joined', response);
 
           socket.join(dto.sessionId);
           console.log(`User ${socket.data.userId} joined session room ${dto.sessionId}`);
-          
+
           const updatedSession = await this.liveSessionRepository.findById(dto.sessionId);
           const participants: UserInfo[] = updatedSession?.participants?.map((participant: any) => ({
             id: participant.id,
@@ -253,41 +347,37 @@ export class SocketServer implements ISocketServer {
         }
       });
 
-        socket.on('join-session-room', (sessionId: string) => {
+      socket.on('join-session-room', (sessionId: string) => {
         socket.join(sessionId);
         console.log(`User ${socket.data.userId} joined session room ${sessionId}`);
       });
 
-    socket.on('leave-live-session', async ({ sessionId, participantId }: { sessionId: string; participantId: string }) => {
-      try {
-        if (!sessionId || !participantId) {
-          throw new ValidationError('Missing required fields for leaving live session');
+      socket.on('leave-live-session', async ({ sessionId, participantId }: { sessionId: string; participantId: string }) => {
+        try {
+          if (!sessionId || !participantId) {
+            throw new ValidationError('Missing required fields for leaving live session');
+          }
+          if (participantId !== socket.data.userId) {
+            throw new UnauthorizedError('Unauthorized: Participant ID does not match socket user');
+          }
+
+          const session = await this.liveSessionRepository.findById(sessionId);
+          if (!session) {
+            throw new ValidationError('Live session not found');
+          }
+
+          const updatedParticipants = (session.participants || []).filter((p: UserInfo) => p.id !== participantId);
+          await this.liveSessionRepository.update(sessionId, { participants: updatedParticipants });
+
+          socket.to(sessionId).emit('participants-updated', { participants: updatedParticipants });
+
+          socket.leave(sessionId);
+        } catch (error) {
+          console.error('Error leaving live session:', error);
+          socket.emit('error', error instanceof Error ? error.message : 'Failed to leave live session');
         }
-        if (participantId !== socket.data.userId) {
-          throw new UnauthorizedError('Unauthorized: Participant ID does not match socket user');
-        }
+      });
 
-        const session = await this.liveSessionRepository.findById(sessionId);
-        if (!session) {
-          throw new ValidationError('Live session not found');
-        }
-
-        // Remove the user from the participants list
-        const updatedParticipants = (session.participants || []).filter((p: UserInfo) => p.id !== participantId);
-        await this.liveSessionRepository.update(sessionId, { participants: updatedParticipants });
-
-        // Broadcast the updated participants list to all users in the session
-        socket.to(sessionId).emit('participants-updated', { participants: updatedParticipants });
-
-        // Leave the session room
-        socket.leave(sessionId);
-      } catch (error) {
-        console.error('Error leaving live session:', error);
-        socket.emit('error', error instanceof Error ? error.message : 'Failed to leave live session');
-      }
-    });
-
-      // End a live session
       socket.on('end-live-session', async ({ sessionId }: { sessionId: string }) => {
         try {
           if (!sessionId) {
@@ -305,9 +395,7 @@ export class SocketServer implements ISocketServer {
             throw new UnauthorizedError('Unauthorized: Only the session host can end the session');
           }
 
-          // Update session status to Ended
           await this.liveSessionRepository.update(sessionId, { status: SessionStatus.Ended, participants: [] });
-          // Notify all participants
           this.io.emit('live-session-ended', { sessionId });
         } catch (error) {
           console.error('Error ending live session:', error);
@@ -315,7 +403,6 @@ export class SocketServer implements ISocketServer {
         }
       });
 
-      // Renew token handler
       socket.on('renew-token', async ({ sessionId, participantId }, callback) => {
         try {
           console.log(`Renewing token for session ${sessionId}, participant ${participantId}`);
@@ -335,7 +422,7 @@ export class SocketServer implements ISocketServer {
       });
 
       socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
+        console.log(`User disconnected: ${socket.data.userId} (socket ID: ${socket.id})`);
       });
     });
   }
