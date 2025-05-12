@@ -5,4 +5,7 @@ export interface ILeaveRepository {
   findByStudentId(studentId: string): Promise<Leave[]>;
   findById(id: string): Promise<Leave | null>;
   update(id: string, data: Partial<Leave>): Promise<Leave>;
+
+  //   findByStudentId(studentId: string): Promise<ILeaveDocument[]>;
+  // findPendingByTeacherId(teacherId: string): Promise<ILeaveDocument[]>;
 }

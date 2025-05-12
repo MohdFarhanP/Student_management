@@ -5,4 +5,7 @@ export interface INoteRepository {
   findByHash(fileHash: string): Promise<Note | null>;
   findById(id: string): Promise<Note | null>;
   findAll(): Promise<Note[]>;
+
+    // findByUploadedBy(uploadedBy: string): Promise<INote[]>;
+
 }

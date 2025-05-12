@@ -12,4 +12,10 @@ export interface ITeacherRepository {
   update(id: string, data: Partial<ITeacher>): Promise<Teacher>;
   create(data: Partial<ITeacher>): Promise<Teacher>;
   delete(id: string): Promise<void>;
+
+  //   findAll(): Promise<ITeacher[]>;
+  // findById(id: string): Promise<ITeacher | null>;
+  // create(teacher: ITeacher): Promise<ITeacher>;
+  // update(id: string, teacher: Partial<ITeacher>): Promise<ITeacher | null>;
+  // delete(id: string): Promise<void>;
 }

@@ -9,4 +9,7 @@ export interface ITimetableRepository {
     day: string,
     period: number
   ): Promise<Timetable | null>;
+
+    // findByClassId(classId: string): Promise<TimetableData | null>;
+
 }

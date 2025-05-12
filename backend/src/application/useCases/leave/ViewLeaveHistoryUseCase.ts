@@ -26,7 +26,9 @@ export class ViewLeaveHistoryUseCase implements IViewLeaveHistoryUseCase {
       if (user.role !== Role.Teacher) {
         throw new UnauthorizedError('Only teachers can view pending leave requests');
       }
-      return this.leaveRepository.findByStudentId(''); // Fetch all pending leaves
+      const leave = await this.leaveRepository.findByStudentId('');
+      console.log("leave finded for teacher ", leave)
+      return leave
     }
 
     // Student viewing their own leave history
@@ -36,7 +38,8 @@ export class ViewLeaveHistoryUseCase implements IViewLeaveHistoryUseCase {
     if (dto.studentId !== dto.userId) {
       throw new UnauthorizedError('Students can only view their own leave history');
     }
-
-    return this.leaveRepository.findByStudentId(dto.studentId);
+    const le = this.leaveRepository.findByStudentId(dto.studentId);
+    console.log('finded the history for students ', le);
+    return le
   }
 }

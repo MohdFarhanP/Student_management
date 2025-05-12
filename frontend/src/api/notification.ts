@@ -8,9 +8,15 @@ interface ApiResponse<T> {
   message: string;
   data?: T;
 }
-
-export const FetchNotifications = () =>
-  apiRequest<ApiResponse<Notification>>('get', `${NOTIFICATION_API_URL}`);
+interface FetchNotificationsParams {
+  userId: string;
+  userRole:string
+}
+export const FetchNotifications = (data:FetchNotificationsParams) =>
+  apiRequest<ApiResponse<Notification[]>,FetchNotificationsParams>('get', `${NOTIFICATION_API_URL}?userId=${data.userId}&userRole=${data.userRole}`)
+    .then((res)=> {
+      return res.data
+    });
 
 export const MarkNotificationAsRead = (notificationId: string) =>
   apiRequest('put', `${NOTIFICATION_API_URL}/${notificationId}/read`);

@@ -16,4 +16,11 @@ export interface IStudentRepository {
   getStudentsByClass(classId: string): Promise<Student[]>;
   addStudentToClass(classId: string, studentId: string): Promise<void>;
   removeStudentFromClass(classId: string, studentId: string): Promise<void>;
+  
+  // findAll(): Promise<IStudent[]>;
+  // findById(id: string): Promise<IStudent | null>;
+  
+  // create(student: IStudent): Promise<IStudent>;
+  // update(id: string, student: Partial<IStudent>): Promise<IStudent | null>;
+  // delete(id: string): Promise<void>;
 }

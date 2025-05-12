@@ -258,3 +258,22 @@ export interface ApproveRejectLeaveDTO {
   teacherId: string;
   status: LeaveStatus.Approved | LeaveStatus.Rejected;
 }
+
+export interface AdminDashboardStats {
+  totalStudents: number;
+  totalTeachers: number;
+  totalClasses: number;
+  pendingLeaves: number;
+}
+
+export interface StudentDashboardStats {
+  attendancePercentage: number;
+  pendingLeaves: number;
+  upcomingSessions: number;
+}
+
+export interface TeacherDashboardStats {
+  todayClasses: number;
+  pendingLeaves: number;
+  upcomingSessions: number;
+}

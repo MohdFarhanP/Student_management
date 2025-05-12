@@ -72,18 +72,33 @@ export class NotificationRepository implements INotificationRepository {
     }
   }
 
-  async findByUserId(userId: string): Promise<INotification[]> {
+  async findByUserId(userId: string,userRole:string): Promise<INotification[]> {
     try {
       if (!userId) {
         throw new ValidationError('User ID is required');
       }
-      const docs = await NotificationModel.find({
-        $or: [
-          { recipientType: RecipientType.Global },
-          { recipientType: RecipientType.Role, recipientIds: userId },
-          { recipientType: RecipientType.Student, recipientIds: userId },
-        ],
-      }).sort({ createdAt: -1 });
+      console.log('this is user id and the role  for findByUserId',userId, userRole)
+const filters: any[] = [
+      { recipientType: RecipientType.Global },
+    ];
+
+    if (userRole === 'Teacher' || userRole === 'Admin') {
+      filters.push({
+        recipientType: RecipientType.Role,
+        recipientIds: { $in: [userRole] },
+      });
+    }
+
+    if (userRole === 'Student') {
+      filters.push({
+        recipientType: RecipientType.Student,
+        recipientIds: { $in: [userId] },
+      });
+    }
+
+    const docs = await NotificationModel.find({ $or: filters }).sort({ createdAt: -1 });
+
+
       return docs.map(
         (doc) =>
           new NotificationEntity({

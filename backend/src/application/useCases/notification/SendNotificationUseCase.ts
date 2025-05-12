@@ -24,8 +24,7 @@ import { INotification } from '../../../domain/types/interfaces';
        }
        if (notification.scheduledAt && new Date(notification.scheduledAt) < new Date()) {
          throw new ValidationError('Scheduled time cannot be in the past');
-       }
-
+       }       
        const saved = await this.notificationRepository.save(notification);
 
        if (notification.scheduledAt) {

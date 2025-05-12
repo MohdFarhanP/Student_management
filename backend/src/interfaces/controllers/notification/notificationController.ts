@@ -15,12 +15,22 @@ export class NotificationController implements INotificationController {
 
   async getNotifications(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
+      const {userId, userRole} = req.query;
+      console.log('this is the req.body getnotifications on controller ',req.body)
+      
+      if (typeof userId !== 'string' || typeof userRole !== 'string') {
+        throw new Error('Invalid query parameters');
+      }
       if (!userId) {
         throw new UnauthorizedError('User not authenticated');
       }
-      const notifications = await this.getNotificationsUseCase.execute(userId);
-      res.status(HttpStatus.OK).json(notifications);
+      
+      const notifications = await this.getNotificationsUseCase.execute(userId, userRole);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Notification fetched successfully',
+        data: notifications,
+      });
     } catch (error) {
       if (error instanceof AppError) {
         res.status(error.statusCode).json({ error: error.message });

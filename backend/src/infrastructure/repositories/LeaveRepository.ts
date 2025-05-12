@@ -16,7 +16,7 @@ export class LeaveRepository implements ILeaveRepository {
   async findByStudentId(studentId: string): Promise<Leave[]> {
     const query = studentId ? { studentId } : { status: LeaveStatus.Pending };
     const leaves = await LeaveModel.find(query).exec();
-    return leaves.map((leave) => ({
+    return await leaves.map((leave) => ({
       id: leave._id.toString(),
       ...leave.toObject(),
     }));

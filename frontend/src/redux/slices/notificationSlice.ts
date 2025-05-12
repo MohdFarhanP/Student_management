@@ -14,6 +14,10 @@ export interface Notification {
   createdAt: string;
   scheduledAt?: string;
 }
+interface FetchNotificationsArgs {
+  userId: string;
+  userRole: string;
+}
 
 interface NotificationState {
   notifications: Notification[];
@@ -27,11 +31,11 @@ const initialState: NotificationState = {
   error: null,
 };
 
-export const fetchNotifications = createAsyncThunk(
+export const fetchNotifications = createAsyncThunk<Notification[],FetchNotificationsArgs>(
   'notification/fetchNotifications',
-  async (_, { rejectWithValue }) => {
+  async ({ userId ,userRole}, { rejectWithValue }) => {
     try {
-      const response = await FetchNotifications();
+      const response = await FetchNotifications({ userId, userRole});
       console.log('fetched data form backend' ,response)
       return Array.isArray(response) ? response : [];
     } catch (error) {

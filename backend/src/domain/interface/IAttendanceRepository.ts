@@ -10,4 +10,7 @@ export interface IAttendanceRepository {
     day: string
   ): Promise<Attendance | null>;
   findByStudentId(studentId: string): Promise<Attendance[]>;
+
+  //   findByStudentId(studentId: string): Promise<IAttendance[]>;
+  // create(attendance: IAttendance): Promise<IAttendance>;
 }

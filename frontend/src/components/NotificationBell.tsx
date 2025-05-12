@@ -20,7 +20,7 @@ const NotificationBell: React.FC = () => {
     if (!user) return;
 
     socket.io.opts.query = { userId: user.id, userRole: user.role };
-    dispatch(fetchNotifications());
+    dispatch(fetchNotifications({ userId: user.id, userRole: user.role }));
     socket.emit('joinNotification');
 
     socket.on('notification', (notification: Notification) => {

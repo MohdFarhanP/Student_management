@@ -16,6 +16,7 @@ import { IApplyForLeaveUseCase } from '../../domain/interface/IApplyForLeaveUseC
 import { IViewLeaveHistoryUseCase } from '../../domain/interface/IViewLeaveHistoryUseCase';
 import { IApproveRejectLeaveUseCase } from '../../domain/interface/IApproveRejectLeaveUseCase';
 import { ApproveRejectLeaveDTO, ViewLeaveHistoryDTO, ApplyForLeaveDTO } from '../../domain/types/interfaces';
+
 export class SocketServer implements ISocketServer {
   constructor(
     private io: SocketIOServer,
@@ -218,7 +219,7 @@ export class SocketServer implements ISocketServer {
         }
       });
 
-      socket.on('view-leave-history', async (dto: ViewLeaveHistoryDTO) => {
+      socket.on('view-leave-history', async (dto: ViewLeaveHistoryDTO,callback) => {
         try {
           if (!dto.studentId && socket.data.userRole !== Role.Teacher) {
             throw new UnauthorizedError('Only teachers can view pending leave requests');
@@ -235,7 +236,7 @@ export class SocketServer implements ISocketServer {
             studentId: dto.studentId || '',
             userId: socket.data.userId,
           });
-          socket.emit('leave-history', leaves);
+          callback({ success: true, leaves });
           console.log(`[DEBUG] Leave history retrieved: ${leaves.length} leaves`);
         } catch (error) {
           console.error(`[DEBUG] Error viewing leave history:`, error);
