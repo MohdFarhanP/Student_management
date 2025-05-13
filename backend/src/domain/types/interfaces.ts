@@ -195,6 +195,7 @@ export interface IMessage {
 
   export interface ScheduleLiveSessionDTO {
     title: string;
+    classId:string;
     teacherId: string;
     studentIds: string[];
     scheduledAt: Date;
@@ -212,6 +213,7 @@ export interface IMessage {
 export interface ILiveSession {
   id: string;
   title: string;
+  classId:string;
   teacherId: string;
   studentIds: string[];
   scheduledAt: Date;
@@ -263,7 +265,6 @@ export interface AdminDashboardStats {
   totalStudents: number;
   totalTeachers: number;
   totalClasses: number;
-  pendingLeaves: number;
 }
 
 export interface StudentDashboardStats {
@@ -276,4 +277,41 @@ export interface TeacherDashboardStats {
   todayClasses: number;
   pendingLeaves: number;
   upcomingSessions: number;
+}
+
+export interface TopClassDto {
+  className: string;
+  attendancePercentage: number;
+}
+
+export interface AttendanceDataDto {
+  day: string;
+  attendance: number;
+}
+
+export interface ClassSubjectDto {
+  className: string;
+  subject: string;
+  classId: string;
+}
+
+export interface ScheduleDto {
+  period: number;
+  subject: string;
+  className: string;
+}
+
+export interface SessionDto {
+  title: string;
+  className: string;
+  time: string;
+  isOngoing: boolean;
+  joinLink: string;
+}
+
+export interface NewSessionDto {
+  title: string;
+  classId: string;
+  date: string; 
+  duration: number; 
 }

@@ -18,6 +18,25 @@ interface ApiResponse<T> {
   message: string;
   data?: T;
 }
+interface ClassSubject {
+  className: string;
+  subject: string;
+  classId: string;
+}
+
+interface Schedule {
+  period: number;
+  subject: string;
+  className: string;
+}
+
+interface Session {
+  title: string;
+  className: string;
+  time: string;
+  isOngoing: boolean;
+  joinLink: string;
+}
 
 export const getTeachersNames = () =>
   apiRequest<ApiResponse<TeacherName[]>>(
@@ -56,3 +75,15 @@ export const deleteTeacher = (teacherId: string) =>
     'delete',
     `${ADMIN_TEACHER_API_URL}/${teacherId}`
   );
+
+export const getTeacherClasses = async () =>
+  apiRequest<ApiResponse<ClassSubject[]>>('get', `${ADMIN_TEACHER_API_URL}/classes`)
+    .then((res)=> res.data);
+
+export const getTodaySchedule = async ()=>
+  apiRequest<ApiResponse<Schedule[]>>('get', `${ADMIN_TEACHER_API_URL}/schedule/today`)
+    .then((res)=> res.data);
+
+export const getLiveSessions = async () =>
+  apiRequest<ApiResponse<Session[]>>('get', `${ADMIN_TEACHER_API_URL}/sessions`)
+    .then((res)=> res.data);

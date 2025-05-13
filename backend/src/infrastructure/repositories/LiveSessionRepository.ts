@@ -34,4 +34,20 @@ export class LiveSessionRepository implements ILiveSessionRepository {
       throw new Error(`Live session with id ${id} not found`);
     }
   }
+  
+  async findByStudentId(studentId: string): Promise<ILiveSession[]> {
+    return LiveSessionModel.find({
+      studentIds: studentId,
+      status: 'Scheduled',
+      scheduledAt: { $gte: new Date() },
+    }).lean();
+  }
+
+  async findByTeacherId(teacherId: string): Promise<ILiveSession[]> {
+    return LiveSessionModel.find({
+      teacherId,
+      status: 'Scheduled',
+      scheduledAt: { $gte: new Date() },
+    }).lean();
+  }
 }

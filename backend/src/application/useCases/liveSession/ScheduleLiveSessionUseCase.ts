@@ -40,6 +40,7 @@
       const session: ILiveSession = {
         id: dto.sessionId, // Use the sessionId from the frontend
         title: dto.title,
+        classId:dto.classId,
         teacherId: dto.teacherId,
         studentIds: dto.studentIds,
         scheduledAt: effectiveScheduledAt, // Use the Date object directly

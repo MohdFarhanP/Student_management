@@ -28,28 +28,6 @@ const mapToStudentData = (data: any): Partial<IStudent> => ({
   },
 });
 
-interface PopulatedStudent {
-  _id: string | mongoose.Types.ObjectId;
-  name: string;
-  email: string;
-  roleNumber: string;
-  dob: string;
-  gender: 'Male' | 'Female'; // MongoDB returns string literals
-  age: number;
-  class?: { name: string } | null;
-  profileImage?: string;
-  address: {
-    houseName: string;
-    place: string;
-    district: string;
-    pincode: number;
-    phoneNo: number;
-    guardianName: string;
-    guardianContact?: string | null | undefined;
-  };
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 export class StudentRepository implements IStudentRepository {
   async insertMany(students: Student[]): Promise<void> {

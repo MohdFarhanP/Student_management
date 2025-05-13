@@ -7,7 +7,4 @@ export interface INotificationRepository {
   findByUserId(userId: string, userRole:string): Promise<INotification[]>;
   markAsSent(notificationId: string): Promise<void>;
   markAsRead(notificationId: string, userId: string): Promise<void>;
-
-  //   findByRecipientId(recipientId: string): Promise<INotification[]>;
-  // create(notification: INotification): Promise<INotification>;
 }

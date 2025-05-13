@@ -25,7 +25,20 @@ interface Student {
   gender: 'Male' | 'Female';
   profileImage: string;
 }
+interface TopClass {
+  className: string;
+  attendancePercentage: number;
+}
+interface AttendanceData {
+  day: string;
+  attendance: number;
+}
 
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
 interface Class {
   _id: string;
   name: string;
@@ -106,3 +119,21 @@ export const fetchStudentClass = () =>
     console.log(res.data)
     return res.data;
   });
+
+// Fetch top classes 
+export const getTopClasses = () => {
+  return apiRequest<ApiResponse<TopClass[]>>('get', `${ADMIN_CLASS_API_URL}/top-classes`)
+    .then((response) =>{
+      console.log(response,'top class getting in frontend ');
+      return response.data;
+    });
+};
+
+// Fetch weekly attendance for a class
+export const getWeeklyAttendance = (classId: string)=> {
+  return apiRequest<ApiResponse<AttendanceData[]>>('get', `${ADMIN_CLASS_API_URL}/weekly-attendance/${classId}`)
+    .then((response) => {
+      console.log(response,'getweeklyattemdance');
+      return response.data
+    })
+};

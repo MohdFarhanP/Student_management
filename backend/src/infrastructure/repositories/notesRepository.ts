@@ -62,4 +62,18 @@ export class NoteRepository implements INoteRepository {
       })
     );
   }
+  
+   async findByUploadedBy(uploadedBy: string): Promise<Note[]> {
+    const docs = await NoteModel.find({ uploadedBy }).lean();
+    return docs.map((doc) =>
+      Note.create({
+        id: doc._id.toString(),
+        title: doc.title,
+        fileUrl: doc.fileUrl,
+        fileHash: doc.fileHash,
+        uploadedBy: doc.uploadedBy,
+        createdAt: doc.createdAt,
+      })
+    );
+  }
 }

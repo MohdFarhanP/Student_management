@@ -12,6 +12,8 @@ import { IClassController } from '../../../domain/interface/IClassController';
 import { IApiResponse, IClass, StudentIdsDTO } from '../../../domain/types/interfaces';
 import { ForbiddenError, NotFoundError } from '../../../domain/errors';
 import { IGetStudentsIdByClassUseCase } from '../../../domain/interface/IGetStudentsIdByClassUseCase';
+import { IFetchTopClassUseCase } from '../../../domain/interface/IFetchTopClassUseCase';
+import { IFetchWeeklyAttendanceUseCase } from '../../../domain/interface/IFetchWeeklyAttendanceUseCase';
 
 export class ClassController implements IClassController {
   constructor(
@@ -23,7 +25,9 @@ export class ClassController implements IClassController {
     private getStudentsByClassUseCase: IGetStudentsByClassUseCase,
     private getClassesForTeacherUseCase: IGetClassesForTeacherUseCase,
     private getClassForStudentUseCase: IGetClassForStudentUseCase,
-    private getStudentsIdByClassUseCase: IGetStudentsIdByClassUseCase
+    private getStudentsIdByClassUseCase: IGetStudentsIdByClassUseCase,
+    private fetchTopClassUseCase: IFetchTopClassUseCase,
+    private fetchWeeklyAttendanceUseCase: IFetchWeeklyAttendanceUseCase,
   ) {}
 
   async addClasses(req: Request, res: Response): Promise<void> {
@@ -52,6 +56,23 @@ export class ClassController implements IClassController {
         message: 'Classes fetched successfully',
         data: { classes, totalCount },
       } as IApiResponse<{ classes: any[]; totalCount: number }>);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
+    }
+  }
+
+  async getTopClass(req: Request, res: Response): Promise<void> {
+    try {
+      const classes = await this.fetchTopClassUseCase.execute();
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Top Classes fetched successfully',
+        data: classes
+      } as IApiResponse<{className: string; attendancePercentage: number}[]>);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(HttpStatus.BAD_REQUEST).json({
@@ -194,6 +215,23 @@ export class ClassController implements IClassController {
           message: error instanceof Error ? error.message : 'Failed to fetch class',
         } as IApiResponse<never>);
       }
+    }
+  }
+  async getWeeklyAttendance(req: Request, res: Response): Promise<void> {
+    try {
+      const { classId } = req.params;
+      const attendance = await this.fetchWeeklyAttendanceUseCase.execute(classId);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Weekly attendance fetched successfully',
+        data: attendance,
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message,
+      });
     }
   }
 } 

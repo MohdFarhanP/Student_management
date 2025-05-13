@@ -87,8 +87,8 @@ const SendNotification: React.FC = () => {
   };
 
   return (
-    <div className="rounded-lg bg-gray-100 p-4 text-gray-800">
-      <h2 className="mb-4 text-xl">Send Notification</h2>
+    <div className="bg-white rounded-2xl shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4 text-gray-800">Send Notificaion</h2>
       {error && <div className="mb-4 text-red-500">{error}</div>}
       {success && <div className="mb-4 text-green-500">{success}</div>}
       <input
@@ -96,18 +96,18 @@ const SendNotification: React.FC = () => {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title"
-        className="mb-2 w-full rounded border p-2"
+        className="mb-2 w-full rounded border p-2 text-black"
       />
       <textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Message"
-        className="mb-2 w-full rounded border p-2"
+        className="mb-2 w-full rounded border p-2 text-black"
       />
       <select
         value={recipientType}
         onChange={(e) => setRecipientType(e.target.value as 'global' | 'role' | 'Student')}
-        className="mb-2 w-full rounded border p-2"
+        className="mb-2 w-full rounded border p-2 text-black"
       >
         <option value="global">Global</option>
         {user.role === 'Admin' && <option value="role">Role</option>}
@@ -123,14 +123,14 @@ const SendNotification: React.FC = () => {
               ? 'Enter roles (e.g., teacher,student)'
               : 'Enter student IDs (comma-separated)'
           }
-          className="mb-2 w-full rounded border p-2"
+          className="mb-2 w-full rounded border p-2 text-black  "
         />
       )}
       <input
         type="datetime-local"
         value={scheduledAt}
         onChange={(e) => setScheduledAt(e.target.value)}
-        className="mb-2 w-full rounded border p-2"
+        className="mb-2 w-full rounded border p-2 text-black"
       />
       <button onClick={handleSend} className="rounded bg-blue-500 p-2 text-white">
         Send

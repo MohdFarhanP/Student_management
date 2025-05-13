@@ -3,13 +3,15 @@ import { ClassEntity } from '../../../domain/entities/class';
 import { ClassModel } from '../../database/models/classModel';
 import { TeacherModel } from '../../database/models/teacherModel';
 import { IClassRepository } from '../../../domain/interface/admin/IClassRepository';
-import { IClass } from '../../../domain/types/interfaces';
+import { IClass, TopClassDto } from '../../../domain/types/interfaces';
+import { AttendanceModel } from '../../database/models/attendanceModel';
 
 
 export class ClassRepository implements IClassRepository {
   constructor(
     private classModel = ClassModel,
-    private teacherModel = TeacherModel
+    private teacherModel = TeacherModel,
+    private attendanceModel = AttendanceModel,
   ) {}
 
   async findAll(page: number, limit: number): Promise<{ data: ClassEntity[]; totalCount: number }> {
@@ -244,5 +246,37 @@ export class ClassRepository implements IClassRepository {
           (error instanceof Error ? error.message : 'Unknown error')
       );
     }
+  }
+  async getTopClasses(limit: number): Promise<TopClassDto[]> {
+    const classes = await this.attendanceModel.aggregate([
+      {
+        $group: {
+          _id: '$classId',
+          present: { $sum: { $cond: [{ $eq: ['$status', 'present'] }, 1, 0] } },
+          total: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: 'classes',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'class',
+        },
+      },
+      { $unwind: '$class' },
+      {
+        $project: {
+          className: '$class.name',
+          attendancePercentage: { $multiply: [{ $divide: ['$present', '$total'] }, 100] },
+        },
+      },
+      { $sort: { attendancePercentage: -1 } },
+      { $limit: limit },
+    ]);
+    return classes.map((cls) => ({
+      className: cls.className,
+      attendancePercentage: Math.round(cls.attendancePercentage),
+    }));
   }
 }

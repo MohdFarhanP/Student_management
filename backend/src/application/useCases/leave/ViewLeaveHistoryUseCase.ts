@@ -27,7 +27,6 @@ export class ViewLeaveHistoryUseCase implements IViewLeaveHistoryUseCase {
         throw new UnauthorizedError('Only teachers can view pending leave requests');
       }
       const leave = await this.leaveRepository.findByStudentId('');
-      console.log("leave finded for teacher ", leave)
       return leave
     }
 

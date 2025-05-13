@@ -2,6 +2,6 @@ import { AdminDashboardStats, StudentDashboardStats, TeacherDashboardStats } fro
 
 export interface IDashboardRepository {
   getAdminDashboardStats(): Promise<AdminDashboardStats>;
-  getStudentDashboardStats(studentId: string): Promise<StudentDashboardStats>;
-  getTeacherDashboardStats(teacherId: string): Promise<TeacherDashboardStats>;
+  // getStudentDashboardStats(studentId: string): Promise<StudentDashboardStats>;
+  // getTeacherDashboardStats(teacherId: string): Promise<TeacherDashboardStats>;
 }

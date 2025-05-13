@@ -9,6 +9,9 @@ import { ITeacherController } from '../../../domain/interface/ITeacherController
 import { IApiResponse, TeacherNameDTO } from '../../../domain/types/interfaces';
 import { ITeacher } from '../../../domain/types/interfaces';
 import { Teacher } from '../../../domain/entities/teacher';
+import { IFetchTeacherClassesUseCase } from '../../../domain/interface/IFetchTeacherClassesUseCase';
+import { IFetchTodayScheduleUseCase } from '../../../domain/interface/IFetchTodayScheduleUseCase';
+import { IFetchLiveSessionsUseCase } from '../../../domain/interface/IFetchLiveSessionsUseCase';
 
 export class TeacherController implements ITeacherController {
   constructor(
@@ -16,7 +19,11 @@ export class TeacherController implements ITeacherController {
     private editTeacherUseCase: IEditTeacherUseCase,
     private getAllTeachersUseCase: IGetAllTeachersUseCase,
     private addTeacherUseCase: IAddTeacherUseCase,
-    private deleteTeacherUseCase: IDeleteTeacherUseCase
+    private deleteTeacherUseCase: IDeleteTeacherUseCase,
+    private fetchTeacherClassesUseCase: IFetchTeacherClassesUseCase,
+    private fetchTodayScheduleUseCase: IFetchTodayScheduleUseCase,
+    private fetchLiveSessionsUseCase: IFetchLiveSessionsUseCase,
+
   ) {}
 
   async getTeachers(req: Request, res: Response): Promise<void> {
@@ -122,6 +129,39 @@ export class TeacherController implements ITeacherController {
         success: false,
         message,
       } as IApiResponse<never>);
+    }
+  }
+
+  async getClasses(req: Request, res: Response): Promise<void> {
+    try {
+      const teacherId = req.user.id; // From authenticateUser middleware
+      const classes = await this.fetchTeacherClassesUseCase.execute(teacherId);
+      res.status(HttpStatus.OK).json({ success: true, message: 'Classes fetched successfully', data: classes });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message });
+    }
+  }
+
+  async getTodaySchedule(req: Request, res: Response): Promise<void> {
+    try {
+      const teacherId = req.user.id;
+      const schedule = await this.fetchTodayScheduleUseCase.execute(teacherId);
+      res.status(HttpStatus.OK).json({ success: true, message: 'Schedule fetched successfully', data: schedule });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message });
+    }
+  }
+
+  async getLiveSessions(req: Request, res: Response): Promise<void> {
+    try {
+      const teacherId = req.user.id;
+      const sessions = await this.fetchLiveSessionsUseCase.execute(teacherId);
+      res.status(HttpStatus.OK).json({ success: true, message: 'Sessions fetched successfully', data: sessions });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ success: false, message });
     }
   }
 }

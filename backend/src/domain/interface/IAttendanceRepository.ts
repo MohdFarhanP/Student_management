@@ -1,4 +1,5 @@
 import { Attendance } from "../entities/attendance";
+import { AttendanceDataDto } from "../types/interfaces";
 
 export interface IAttendanceRepository {
   save(attendance: Attendance): Promise<void>;
@@ -10,7 +11,5 @@ export interface IAttendanceRepository {
     day: string
   ): Promise<Attendance | null>;
   findByStudentId(studentId: string): Promise<Attendance[]>;
-
-  //   findByStudentId(studentId: string): Promise<IAttendance[]>;
-  // create(attendance: IAttendance): Promise<IAttendance>;
+  getWeeklyAttendance(classId: string): Promise<AttendanceDataDto[]>;
 }

@@ -6,6 +6,7 @@ const LiveSessionSchema = new Schema<ILiveSession>(
   {
     id: { type: String, required: true, unique: true },
     title: { type: String, required: true },
+    classId: {type: String},
     teacherId: { type: String, required: true },
     studentIds: { type: [String], required: true },
     scheduledAt: { type: Date, required: true },

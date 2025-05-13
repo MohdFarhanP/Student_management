@@ -65,6 +65,20 @@ router.post('/:grade/subjects', authenticateUser, (req, res, next) => {
   subjectController.createSubject.bind(subjectController)(req, res, next);
 });
 
+router.get('/top-classes', authenticateUser, (req, res, next) => {
+  if (!classController) {
+    throw new Error('ClassController not initialized. Dependency injection failed.');
+  }
+  classController.getTopClass.bind(classController)(req, res, next);
+});
+
+router.get('/weekly-attendance/:classId', authenticateUser, (req, res, next) => {
+    if (!classController) {
+      return next(new Error('ClassController not initialized. Dependency injection failed.'));
+    }
+    classController.getWeeklyAttendance.bind(classController)(req, res, next);
+  });
+
 router.get('/:grade/subjects', authenticateUser, (req, res, next) => {
   if (!subjectController) {
     throw new Error('SubjectController not initialized. Dependency injection failed.');

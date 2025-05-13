@@ -16,7 +16,6 @@ export class NotificationController implements INotificationController {
   async getNotifications(req: Request, res: Response) {
     try {
       const {userId, userRole} = req.query;
-      console.log('this is the req.body getnotifications on controller ',req.body)
       
       if (typeof userId !== 'string' || typeof userRole !== 'string') {
         throw new Error('Invalid query parameters');

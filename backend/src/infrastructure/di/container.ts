@@ -169,6 +169,17 @@ import { IApproveRejectLeaveUseCase } from '../../domain/interface/IApproveRejec
 import { ApplyForLeaveUseCase } from '../../application/useCases/leave/ApplyForLeaveUseCase';
 import { ViewLeaveHistoryUseCase } from '../../application/useCases/leave/ViewLeaveHistoryUseCase';
 import { ApproveRejectLeaveUseCase } from '../../application/useCases/leave/ApproveRejectLeaveUseCase';
+import { FetchTopClassUseCase } from '../../application/useCases/admin/class/fetchTopClassUseCase';
+import { IFetchTopClassUseCase } from '../../domain/interface/IFetchTopClassUseCase';
+import { IFetchWeeklyAttendanceUseCase } from '../../domain/interface/IFetchWeeklyAttendanceUseCase';
+import { FetchWeeklyAttendanceUseCase } from '../../application/useCases/admin/FetchWeeklyAttendanceUseCase';
+import { IGetAdminDashboardStatsUseCase } from '../../domain/interface/IGetAdminDashboardStatsUseCase';
+import { GetAdminDashboardStatsUseCase } from '../../application/useCases/dashboard/GetAdminDashboardStatsUseCase';
+import { DashboardRepositoryMongo } from '../repositories/DashboardRepositoryMongo';
+import { IDashboardRepository } from '../../domain/interface/IDashboardRepository';
+import { FetchTeacherClassesUseCase } from '../../application/useCases/admin/teacher/FetchTeacherClassesUseCase';
+import { FetchTodayScheduleUseCase } from '../../application/useCases/admin/teacher/FetchTodayScheduleUseCase';
+import { FetchLiveSessionsUseCase } from '../../application/useCases/admin/teacher/FetchLiveSessionsUseCase';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -190,6 +201,7 @@ export class DependencyContainer {
     this.dependencies.set('INotificationRepository', new NotificationRepository());
     this.dependencies.set('ILiveSessionRepository', new LiveSessionRepository());
     this.dependencies.set('ILeaveRepository', new LeaveRepository());
+    this.dependencies.set('IDashboardRepository', new DashboardRepositoryMongo())
 
     // Services
     this.dependencies.set('IAuthService', new AuthService());
@@ -258,6 +270,9 @@ export class DependencyContainer {
       )
     );
 
+    // Use Cases (Dashboard)
+    this.dependencies.set('IGetAdminDashboardStatsUseCase',new GetAdminDashboardStatsUseCase(this.dependencies.get('IDashboardRepository')))
+
     // Use Cases (Message)
     this.dependencies.set('ISendMessageUseCase', new SendMessage(this.dependencies.get('IMessageRepository')));
 
@@ -302,7 +317,8 @@ export class DependencyContainer {
         this.dependencies.get('IVideoService'),
         this.dependencies.get('IApplyForLeaveUseCase'),
         this.dependencies.get('IViewLeaveHistoryUseCase'),
-        this.dependencies.get('IApproveRejectLeaveUseCase')
+        this.dependencies.get('IApproveRejectLeaveUseCase'),
+        this.dependencies.get('IGetAdminDashboardStatsUseCase'),
       )
     );
 
@@ -351,6 +367,14 @@ export class DependencyContainer {
     this.dependencies.set(
       'IFetchClassUseCase',
       new FetchClassUseCase(this.dependencies.get('IClassRepository'))
+    );
+    this.dependencies.set(
+      'IFetchTopClassUseCase',
+      new FetchTopClassUseCase(this.dependencies.get('IClassRepository'))
+    );
+    this.dependencies.set(
+      'IFetchWeeklyAttendanceUseCase',
+      new FetchWeeklyAttendanceUseCase(this.dependencies.get('IAttendanceRepository'))
     );
     this.dependencies.set(
       'IGetClassesUseCase',
@@ -474,6 +498,18 @@ export class DependencyContainer {
     this.dependencies.set(
       'IUpdateTeacherAvailabilityUseCase',
       new UpdateTeacherAvailabilityUseCase(this.dependencies.get('ITeacherRepository'))
+    );
+    this.dependencies.set(
+      'IFetchTeacherClassesUseCase',
+      new FetchTeacherClassesUseCase(this.dependencies.get('ITeacherRepository'))
+    );
+    this.dependencies.set(
+      'IFetchTodayScheduleUseCase',
+      new FetchTodayScheduleUseCase(this.dependencies.get('ITeacherRepository'))
+    );
+    this.dependencies.set(
+      'IFetchLiveSessionsUseCase',
+      new FetchLiveSessionsUseCase(this.dependencies.get('ITeacherRepository'))
     );
 
     // Use Cases (Timetable)
@@ -600,7 +636,9 @@ export class DependencyContainer {
         this.dependencies.get('IGetStudentsByClassUseCase'),
         this.dependencies.get('IGetClassesForTeacherUseCase'),
         this.dependencies.get('IGetClassForStudentUseCase'),
-        this.dependencies.get('IGetStudentsIdByClassUseCase')
+        this.dependencies.get('IGetStudentsIdByClassUseCase'),
+        this.dependencies.get('IFetchTopClassUseCase'),
+        this.dependencies.get('IFetchWeeklyAttendanceUseCase'),
       )
     );
     this.dependencies.set(
@@ -630,7 +668,10 @@ export class DependencyContainer {
         this.dependencies.get('IEditTeacherUseCase'),
         this.dependencies.get('IGetAllTeachersUseCase'),
         this.dependencies.get('IAddTeacherUseCase'),
-        this.dependencies.get('IDeleteTeacherUseCase')
+        this.dependencies.get('IDeleteTeacherUseCase'),
+        this.dependencies.get('IFetchTeacherClassesUseCase'),
+        this.dependencies.get('IFetchTodayScheduleUseCase'),
+        this.dependencies.get('IFetchLiveSessionsUseCase'),
       )
     );
     this.dependencies.set(

@@ -493,7 +493,7 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       }
       cleanup();
     };
-  }, [userRole, userId, sessionInfo, joinSession]);
+  }, [userRole, userId, sessionInfo, joinSession ]);
 
   useEffect(() => {
     const publishTracks = async () => {
@@ -541,6 +541,7 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
     socket.emit('schedule-live-session', {
       sessionId,
       title: sessionTitle,
+      classId: selectedClassId,
       teacherId: userId,
       studentIds,
       scheduledAt: new Date().toISOString(),
@@ -567,6 +568,7 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
     console.log('scheduleSession: Emitting schedule-live-session', {
       sessionId,
       title: sessionTitle,
+      classId: selectedClassId,
       teacherId: userId,
       studentIds,
       scheduledAt: new Date(scheduledAt).toISOString(),
@@ -574,6 +576,7 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
     socket.emit('schedule-live-session', {
       sessionId,
       title: sessionTitle,
+      classId: selectedClassId,
       teacherId: userId,
       studentIds,
       scheduledAt: new Date(scheduledAt).toISOString(),

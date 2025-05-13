@@ -3,11 +3,13 @@ import { ITeacherRepository } from '../../../domain/interface/admin/ITeacherRepo
 import { Teacher } from '../../../domain/entities/teacher';
 import { ClassModel } from '../../database/models/classModel';
 import { SubjectModel } from '../../database/models/subjectModel';
+import { LiveSessionModel } from '../../database/models/liveSessionModel'; 
 import mongoose, { Types } from 'mongoose';
 import { ObjectId } from '../../../types';
-import { ITeacher } from '../../../domain/types/interfaces';
-import { Gender } from '../../../domain/types/enums';
+import { ClassSubjectDto, ITeacher, ScheduleDto, SessionDto } from '../../../domain/types/interfaces';
+import { Gender, SessionStatus } from '../../../domain/types/enums';
 import { Day } from '../../../domain/types/enums';
+import TimetableModel from '../../database/models/timeTableModel';
 
 interface PopulatedTeacher {
   _id: string | mongoose.Types.ObjectId;
@@ -293,5 +295,107 @@ export class TeacherRepository implements ITeacherRepository {
   async delete(id: string): Promise<void> {
     const result = await TeacherModel.findByIdAndUpdate(id, { isDeleted: true });
     if (!result) throw new Error('Teacher not found or already deleted');
+  }
+
+async getTeacherClasses(teacherId: string): Promise<ClassSubjectDto[]> {
+  const classes = await ClassModel
+    .find({
+      $or: [
+        { teachers: new Types.ObjectId(teacherId) },
+        { tutor: new Types.ObjectId(teacherId) }
+      ]
+    })
+    .populate('subjects', 'subjectName');
+
+  return classes.flatMap((cls) => {
+    if (!Array.isArray(cls.subjects)) return [];
+
+    const data = cls.subjects.map((sub: any) => ({
+      className: cls.name,
+      subject: sub?.subjectName || null,
+      classId: cls._id.toString(),
+    }));
+    return data;
+  });
+}
+
+
+async getTodaySchedule(teacherId: string): Promise<ScheduleDto[]> {
+  const today = new Date();
+  const dayName = today.toLocaleString('en-US', { weekday: 'long' }) as
+    | 'Monday'
+    | 'Tuesday'
+    | 'Wednesday'
+    | 'Thursday'
+    | 'Friday';
+
+  // Get all timetables with class names populated
+  const timetables = await TimetableModel
+    .find()
+    .populate('classId', 'name') // Populate class name
+    .lean();
+
+  const schedules: ScheduleDto[] = [];
+
+  for (const timetable of timetables) {
+    const slots = timetable.schedule?.[dayName] || [];
+
+    for (const slot of slots) {
+      if (slot.teacherId?.toString() === teacherId && slot.subject) {
+        schedules.push({
+          period: slot.period,
+          subject: slot.subject,
+          className: (timetable.classId as any).name,
+        });
+      }
+    }
+  }
+
+  // Optional: sort by period
+  return schedules.sort((a, b) => a.period - b.period);
+}
+
+
+async getLiveSessions(teacherId: string): Promise<SessionDto[]> {
+    const now = new Date();
+    const sessions = await LiveSessionModel
+      .find({
+        teacherId,
+        scheduledAt: { $gte: now }, // Only future sessions
+        status: { $in: [SessionStatus.Scheduled, SessionStatus.Ongoing] }, // Scheduled or Ongoing
+      })
+      .lean();
+
+    const sessionDtos: SessionDto[] = [];
+    for (const ses of sessions) {
+      const classDoc = await ClassModel
+        .findOne({ _id: ses.classId })
+        .select('name')
+        .lean();
+      const className = classDoc ? classDoc.name : 'Unknown Class';
+
+      const startTime = new Date(ses.scheduledAt);
+      const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+      const isOngoing =
+        ses.status === SessionStatus.Ongoing &&
+        now >= startTime &&
+        now <= endTime;
+
+      sessionDtos.push({
+        title: ses.title,
+        className,
+        time: `${startTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        })} - ${endTime.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}`,
+        isOngoing,
+        joinLink: `/join-session/${ses.id}`,
+      });
+    }
+
+    return sessionDtos;
   }
 }

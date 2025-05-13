@@ -45,4 +45,23 @@ router.delete('/:teacherId', authenticateUser, (req, res, next) => {
   teacherController.deleteTeacher.bind(teacherController)(req, res, next);
 });
 
+router.get('/classes', authenticateUser, (req, res, next) => {
+  if (!teacherController) {
+    throw new Error('TeacherController not initialized. Dependency injection failed.');
+  }
+  teacherController.getClasses.bind(teacherController)(req, res, next);
+});
+router.get('/schedule/today', authenticateUser, (req, res, next) => {
+  if (!teacherController) {
+    throw new Error('TeacherController not initialized. Dependency injection failed.');
+  }
+  teacherController.getTodaySchedule.bind(teacherController)(req, res, next);
+});
+router.get('/sessions', authenticateUser, (req, res, next) => {
+  if (!teacherController) {
+    throw new Error('TeacherController not initialized. Dependency injection failed.');
+  }
+  teacherController.getLiveSessions.bind(teacherController)(req, res, next);
+});
+
 export default router;

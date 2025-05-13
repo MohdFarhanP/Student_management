@@ -1,6 +1,5 @@
 import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
 import { IGetAllTeachersUseCase } from '../../../../domain/interface/IGetAllTeachersUseCase';
-import { Teacher } from '../../../../domain/entities/teacher';
 import { TeacherNameDTO } from '../../../../domain/types/interfaces';
 
 export class GetAllTeachersUseCase implements IGetAllTeachersUseCase {

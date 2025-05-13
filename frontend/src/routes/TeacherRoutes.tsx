@@ -7,6 +7,7 @@ import LiveSession from '../components/LiveSession';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import LeaveManagement from '../components/LeaveManagement';
+import TeacherDashboard from '../pages/teacher/TeacherDashboard';
 
 const TeacherRoutes = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -14,6 +15,7 @@ const TeacherRoutes = () => {
   return (
     <div>
       <Routes>
+        <Route path="/dashboard" element={<TeacherDashboard />} />
         <Route path="/profile" element={<TeacherProfile />} />
         <Route path="/attendance" element={<TeacherAttendanceDashboard />} />
         <Route path="/chat" element={<TeacherChat />} />

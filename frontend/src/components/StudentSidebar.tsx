@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
 import { logoutUser } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
-import { MdLogout, MdEventAvailable, MdChat, MdSettings, MdClose } from 'react-icons/md';
+import { MdLogout, MdEventAvailable, MdChat, MdSettings, MdClose, MdDashboard } from 'react-icons/md';
 import defaultImage from '../assets/profile.jpg';
 
 const StudentSidebar: React.FC = () => {
@@ -25,6 +25,11 @@ const StudentSidebar: React.FC = () => {
   };
 
   const menuItems = [
+    {
+      name: 'Dashboard',
+      icon: <MdDashboard size={22} />,
+      path: '/student/dashboard',
+    },
     {
       name: 'Profile',
       icon: <MdEventAvailable size={22} />,

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ChatWindow from '../../components/ChatWindow';
-import NotificationBell from '../../components/NotificationBell';
 import TeacherSidebar from '../../components/TeacherSidebar';
 import { RootState, AppDispatch } from '../../redux/store';
 import { addMessage, setMessages, setError } from '../../redux/slices/chatSlice';
@@ -9,7 +8,7 @@ import { Message } from '../../types/message';
 import { socket } from '../../socket';
 import { fetchClasses } from '../../api/admin/classApi';
 import SendNotificationModal from '../../components/SendNotificationModal';
-import { MdSend } from 'react-icons/md';
+import { MdOutlineNotificationsNone } from 'react-icons/md';
 
 interface Class {
   _id: string;
@@ -201,11 +200,10 @@ const TeacherChat: React.FC = () => {
                     title="Send Notification"
                     className="p-2 text-gray-800 dark:text-gray-100 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                   >
-                    <MdSend size={24} />
+                    <MdOutlineNotificationsNone size={25} />
                   </button>
                 }
               />
-              <NotificationBell />
             </div>
           </div>
           {error && (

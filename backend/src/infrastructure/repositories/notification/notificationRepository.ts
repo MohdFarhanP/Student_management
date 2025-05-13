@@ -77,7 +77,6 @@ export class NotificationRepository implements INotificationRepository {
       if (!userId) {
         throw new ValidationError('User ID is required');
       }
-      console.log('this is user id and the role  for findByUserId',userId, userRole)
 const filters: any[] = [
       { recipientType: RecipientType.Global },
     ];
