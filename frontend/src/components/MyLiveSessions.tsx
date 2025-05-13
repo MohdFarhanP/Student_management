@@ -10,20 +10,14 @@ interface LiveSession {
 
 interface MyLiveSessionsProps {
   sessions: LiveSession[];
-  onScheduleNew: () => void;
 }
 
-const MyLiveSessions: React.FC<MyLiveSessionsProps> = ({ sessions, onScheduleNew }) => {
+const MyLiveSessions: React.FC<MyLiveSessionsProps> = ({ sessions }) => {
   return (
     <div className="bg-white rounded-2xl shadow-md p-6 w-full">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-800">My Live Sessions</h2>
-        <button
-          onClick={onScheduleNew}
-          className="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
-        >
-          + Schedule New
-        </button>
+     
       </div>
       {sessions.length === 0 ? (
         <p className="text-gray-500">No sessions scheduled.</p>
