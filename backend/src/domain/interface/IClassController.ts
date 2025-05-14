@@ -11,6 +11,6 @@ export interface IClassController {
   getClassForStudent(req: Request, res: Response): Promise<void>;
   getStudentIdByClass(req: Request, res: Response): Promise<void>
   getTopClass(req: Request, res: Response): Promise<void>;
-  getWeeklyAttendance(req: Request, res: Response): Promise<void>
-
+  getWeeklyAttendance(req: Request, res: Response): Promise<void>;
+  getClassesById(req: Request, res: Response): Promise<void>
 }

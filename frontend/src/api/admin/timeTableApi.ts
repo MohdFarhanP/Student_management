@@ -1,5 +1,5 @@
 import { apiRequest } from '../apiClient';
-import { TimetableData } from '../../types/timetable';
+import { TimetableData, TimetableSlot } from '../../types/timetable';
 import { toast } from 'react-toastify';
 
 const ADMIN_TIMETABLE_API = `/admin/timetable`;
@@ -25,6 +25,10 @@ interface ApiResponse<T> {
 
 export const fetchTimetable = (classId: string) =>
   apiRequest<ApiResponse<TimetableData>>('get', `${ADMIN_TIMETABLE_API}/${classId}`)
+    .then((res)=> res.data);
+
+export const fetchTimetableForToday = (classId: string) =>
+  apiRequest<ApiResponse<TimetableSlot[]>>('get', `${ADMIN_TIMETABLE_API}/today/${classId}`)
     .then((res)=> res.data);
 
 export const updateTimetableSlot = (

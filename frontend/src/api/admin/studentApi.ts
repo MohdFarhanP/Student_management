@@ -30,22 +30,26 @@ interface StudentsResponse {
   students: IStudent[];
   totalCount: number;
 }
-
+export interface ILiveSessions {
+  title: string;
+  time: string;
+  isOngoing: boolean;
+  joinLink?: string; // not implemented yet
+}
 interface ApiResponse<T> {
   success: boolean;
   message: string;
   data?: T;
 }
 export const getStudents = (page: number, limit: number) =>
-  apiRequest<ApiResponse<StudentsResponse>>(
-    'get',
-    `${ADMIN_STUDENT_API_URL}/students`,
-    undefined,
-    {
-      params: { page, limit },
-    }
-  )
+  apiRequest<ApiResponse<StudentsResponse>>('get',`${ADMIN_STUDENT_API_URL}/students`,undefined,
+    { params: { page, limit },})
     .then((res)=> res.data );
+    
+export const getStdLiveSessions = (id: string) =>
+  apiRequest<ApiResponse<ILiveSessions[]>>('get', `${ADMIN_STUDENT_API_URL}/sessions/${id}`)
+    .then((res)=> res.data);
+    
 
 export const addStudent = (data: Partial<IStudent>) =>
   apiRequest<ApiResponse<IStudent>, Partial<IStudent>>(

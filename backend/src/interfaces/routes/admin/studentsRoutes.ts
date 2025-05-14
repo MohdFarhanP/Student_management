@@ -45,4 +45,11 @@ router.get('/profile/:email', authenticateUser, (req, res, next) => {
   studentController.getProfile.bind(studentController)(req, res, next);
 });
 
+router.get('/sessions/:userId', authenticateUser, (req, res, next) => {
+  if (!studentController) {
+    throw new Error('StudentController not initialized. Dependency injection failed.');
+  }
+  studentController.getSessions.bind(studentController)(req, res, next);
+});
+
 export default router;

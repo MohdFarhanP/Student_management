@@ -11,7 +11,7 @@ export class GetClassesUseCase implements IGetClassesUseCase {
 
       // Transform ClassEntity to IClassData
       const classData: IClassData[] = classes.map((classEntity) => ({
-        _id: classEntity.id || '',
+        id: classEntity.id || '',
         name: classEntity.name,
         grade: classEntity.grade.toString(), 
         section: classEntity.section.toString(),

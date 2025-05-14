@@ -9,11 +9,12 @@ import { IGetStudentsByClassUseCase } from '../../../domain/interface/IGetStuden
 import { IGetClassesForTeacherUseCase } from '../../../domain/interface/IGetClassesForTeacherUseCase';
 import { IGetClassForStudentUseCase } from '../../../domain/interface/IGetClassForStudentUseCase';
 import { IClassController } from '../../../domain/interface/IClassController';
-import { IApiResponse, IClass, StudentIdsDTO } from '../../../domain/types/interfaces';
+import { IApiResponse, IClass, IClassData, StudentIdsDTO } from '../../../domain/types/interfaces';
 import { ForbiddenError, NotFoundError } from '../../../domain/errors';
 import { IGetStudentsIdByClassUseCase } from '../../../domain/interface/IGetStudentsIdByClassUseCase';
 import { IFetchTopClassUseCase } from '../../../domain/interface/IFetchTopClassUseCase';
 import { IFetchWeeklyAttendanceUseCase } from '../../../domain/interface/IFetchWeeklyAttendanceUseCase';
+import { IGetClassesByIdUseCase } from '../../../domain/interface/IGetClassesByIdUseCase';
 
 export class ClassController implements IClassController {
   constructor(
@@ -28,6 +29,7 @@ export class ClassController implements IClassController {
     private getStudentsIdByClassUseCase: IGetStudentsIdByClassUseCase,
     private fetchTopClassUseCase: IFetchTopClassUseCase,
     private fetchWeeklyAttendanceUseCase: IFetchWeeklyAttendanceUseCase,
+    private getClassesByIdUseCase: IGetClassesByIdUseCase,
   ) {}
 
   async addClasses(req: Request, res: Response): Promise<void> {
@@ -56,6 +58,23 @@ export class ClassController implements IClassController {
         message: 'Classes fetched successfully',
         data: { classes, totalCount },
       } as IApiResponse<{ classes: any[]; totalCount: number }>);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
+    }
+  }
+  async getClassesById(req: Request, res: Response): Promise<void> {
+    try {
+      const { userId } = req.query;
+      const classInfo = await this.getClassesByIdUseCase.execute(userId.toString());
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Classes fetched successfully',
+        data: classInfo ,
+      } as IApiResponse<IClassData>);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(HttpStatus.BAD_REQUEST).json({

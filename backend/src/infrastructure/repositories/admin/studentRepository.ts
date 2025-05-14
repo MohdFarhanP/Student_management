@@ -1,10 +1,11 @@
 import { studentModel } from '../../database/models/studentModel';
 import { ClassModel } from '../../database/models/classModel';
-import mongoose from 'mongoose';
 import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository';
 import { Student } from '../../../domain/entities/student';
-import { IStudent } from '../../../domain/types/interfaces';
+import { ILiveSessionDto, IStudent } from '../../../domain/types/interfaces';
 import { Gender } from '../../../domain/types/enums';
+import { LiveSessionModel } from '../../database/models/liveSessionModel';
+import { format } from 'date-fns';
 
 // Utility function to map MongoDB data to IStudent with Gender enum
 const mapToStudentData = (data: any): Partial<IStudent> => ({
@@ -141,6 +142,33 @@ export class StudentRepository implements IStudentRepository {
     if (!result) throw new Error('Student not found');
   }
 
+  async getSessions(userId: string): Promise< ILiveSessionDto[] | null> {
+    const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date();
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const sessions = await LiveSessionModel.find({
+    studentIds: { $in: [userId] },
+    scheduledAt: { $gte: startOfDay, $lte: endOfDay },
+    status: 'SCHEDULED'
+  }).lean();
+
+  const now = new Date();
+
+  return sessions.map(session => {
+    const start = new Date(session.scheduledAt);
+    const end = new Date(start.getTime() + 60 * 60000); // Add 1 hour
+
+    return {
+      title: session.title,
+      time: `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`,
+      isOngoing: now >= start && now <= end
+      // joinLink want to be add later
+    };
+  });
+  }
   async getProfile(email: string): Promise<Student | null> {
     const rawStudent = await studentModel
       .findOne({ email, isDeleted: false })

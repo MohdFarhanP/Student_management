@@ -6,9 +6,10 @@ import { IEditStudentUseCase } from '../../../domain/interface/IEditStudentUseCa
 import { IDeleteStudentUseCase } from '../../../domain/interface/IDeleteStudentUseCase';
 import { IGetStudentProfileUseCase } from '../../../domain/interface/IGetStudentProfileUseCase';
 import { IStudentController } from '../../../domain/interface/IStudentController';
-import { IApiResponse } from '../../../domain/types/interfaces';
+import { IApiResponse, ILiveSessionDto } from '../../../domain/types/interfaces';
 import { IStudent } from '../../../domain/types/interfaces';
 import { Student } from '../../../domain/entities/student';
+import { IGetStdSessionsUsecase } from '../../../domain/interface/IGetStdSessionsUsecase';
 
 export class StudentController implements IStudentController {
   constructor(
@@ -16,7 +17,8 @@ export class StudentController implements IStudentController {
     private addStudentUseCase: IAddStudentUseCase,
     private editStudentUseCase: IEditStudentUseCase,
     private deleteStudentUseCase: IDeleteStudentUseCase,
-    private getStudentProfileUseCase: IGetStudentProfileUseCase
+    private getStudentProfileUseCase: IGetStudentProfileUseCase,
+    private getStdSessionsUsecase: IGetStdSessionsUsecase,
   ) {}
 
   async getStudents(req: Request, res: Response): Promise<void> {
@@ -62,6 +64,30 @@ export class StudentController implements IStudentController {
         message: 'Profile fetched successfully',
         data: profile,
       } as IApiResponse<Student>);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
+    }
+  }
+  async getSessions(req: Request, res: Response): Promise<void> {
+    try {
+      const { userId } = req.params;
+      const sessions = await this.getStdSessionsUsecase.execute(userId);
+      if (!sessions) {
+        res.status(HttpStatus.NOT_FOUND).json({
+          success: false,
+          message: 'Student sessions not found',
+        } as IApiResponse<never>);
+        return;
+      }
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Student sessions fetched successfully',
+        data: sessions,
+      } as IApiResponse<ILiveSessionDto[]>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(HttpStatus.BAD_REQUEST).json({

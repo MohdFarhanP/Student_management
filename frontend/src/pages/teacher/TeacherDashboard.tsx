@@ -8,9 +8,7 @@ import TodaySchedule from '../../components/TodaySchedule';
 import MyLiveSessions from '../../components/MyLiveSessions';
 import { toast } from 'react-toastify';
 import { getTeacherClasses, getTodaySchedule, getLiveSessions } from '../../api/admin/teacherApi';
-import { getStudentsIdByClass } from '../../api/admin/classApi';
-import { socket } from '../../socket';
-import { v4 as uuidv4 } from 'uuid';
+
 
 interface ClassSubject {
   className: string;

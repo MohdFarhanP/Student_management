@@ -13,13 +13,11 @@ import profile from '../../assets/profile.jpg';
 import { toast } from 'react-toastify';
 
 interface Class {
+  _id: string;
   name: string;
-  grade: string;
-  section: string;
-  roomNo: string;
-  tutor: string;
-  totalStudents?: string;
-  _id?: string;
+  chatRoomId?:string;
+  section?: string;
+  grade?: string;
 }
 
 interface Student {
@@ -41,7 +39,7 @@ const TeacherAttendanceDashboard: React.FC = () => {
   );
   const dispatch = useDispatch<AppDispatch>();
 
-  const [classes, setClasses] = useState<Class[]>([]);
+  const [classes, setClasses] = useState<Partial<Class>[]>();
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
@@ -65,8 +63,8 @@ const TeacherAttendanceDashboard: React.FC = () => {
         await dispatch(fetchTeacherProfile(user.email)).unwrap();
         const classesData = await fetchClasses();
         setClasses(classesData);
-        if (classesData.length > 0) {
-          setSelectedClassId(classesData[0]._id ?? '');
+        if (classesData!.length > 0) {
+          setSelectedClassId(classesData![0]._id ?? '');
         }
       } catch (err: unknown) {
         toast.error(
@@ -94,14 +92,14 @@ const TeacherAttendanceDashboard: React.FC = () => {
           studentsData
         );
         setStudents(
-          studentsData.map((student) => ({
+          studentsData!.map((student) => ({
             ...student,
-            class: classes.find((c) => c._id === student.class)?.name || '',
+            class: classes!.find((c) => c._id === student.class)?.name || '',
           }))
         );
-        setTimetable(timetableData);
+        setTimetable(timetableData!);
         const initialAttendance: Record<string, AttendanceStatus> = {};
-        studentsData.forEach(
+        studentsData!.forEach(
           (student) => (initialAttendance[student.id] = 'present')
         );
         setAttendance(initialAttendance);
@@ -203,7 +201,7 @@ const TeacherAttendanceDashboard: React.FC = () => {
                   className="mt-1 block w-full rounded-md border border-gray-300 bg-white p-2 text-black focus:ring-black dark:border-gray-600 dark:bg-gray-600 dark:text-white dark:focus:ring-gray-400"
                 >
                   <option value="">Select a class</option>
-                  {classes.map((cls) => (
+                  {classes!.map((cls) => (
                     <option key={cls._id} value={cls._id}>
                       {cls.name}
                     </option>

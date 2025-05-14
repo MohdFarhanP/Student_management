@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { IManageTimetableUseCase } from '../../../domain/interface/IManageTimetableUseCase';
 import { ITimetableController } from '../../../domain/interface/ITimetableController';
-import { IApiResponse } from '../../../domain/types/interfaces';
+import { IApiResponse, TimetableSchedule, TimetableSlot } from '../../../domain/types/interfaces';
 import HttpStatus from '../../../utils/httpStatus';
 import mongoose from 'mongoose';
 import { Day } from '../../../domain/types/enums';
@@ -147,6 +147,28 @@ export class TimetableController implements ITimetableController {
         message: timetable.schedule ? 'Timetable fetched successfully' : 'No timetable found',
         data: timetable.toJSON(),
       } as IApiResponse<Timetable>);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
+    }
+  }
+  async getTimetableForToday(req: Request, res: Response): Promise<void> {
+    try {
+      const { classId } = req.params;
+      if (!mongoose.Types.ObjectId.isValid(classId)) {
+        throw new Error('Invalid classId format');
+      }
+
+      const classIdObj = new mongoose.Types.ObjectId(classId);
+      const timetable = await this.manageTimetable.getTimetableForToday(classIdObj);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: timetable ? 'Timetable fetched successfully' : 'No timetable found',
+        data: timetable,
+      } as IApiResponse<TimetableSlot[]>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(HttpStatus.BAD_REQUEST).json({

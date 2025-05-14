@@ -52,6 +52,7 @@ interface ApiResponse<T> {
 export const studentsProfileFetch = (email: string) =>
   apiRequest<ApiResponse<StudentProfile>>('get', `${STUDENT_API_URL}/profile/${email}`)
     .then((res)=> res.data);
+
 export const fetchAttendance = (id: string) =>
   apiRequest<ApiResponse<Attendance[]>>('get', `${STUDENT_API_URL}/attendance/${id}`)
     .then((res)=> res.data);

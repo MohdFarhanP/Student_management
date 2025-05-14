@@ -1,5 +1,5 @@
 import { ClassEntity } from "../../entities/class";
-import { IClass, TopClassDto } from "../../types/interfaces";
+import { IClass, IClassData, TopClassDto } from "../../types/interfaces";
 
 export interface IClassRepository {
   findAll(page: number, limit: number): Promise<{ data: ClassEntity[]; totalCount: number }>;
@@ -16,4 +16,5 @@ export interface IClassRepository {
   getClassesForTeacher(teacherId: string): Promise<Partial<IClass>[]>;
   getClassForStudent(studentId: string): Promise<Partial<IClass> | null>;
   getTopClasses(limit?: number): Promise<TopClassDto[]>;
+  findByUserId(userId: string): Promise<IClassData | null>
 }

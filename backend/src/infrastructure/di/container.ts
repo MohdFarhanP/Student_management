@@ -180,6 +180,8 @@ import { IDashboardRepository } from '../../domain/interface/IDashboardRepositor
 import { FetchTeacherClassesUseCase } from '../../application/useCases/admin/teacher/FetchTeacherClassesUseCase';
 import { FetchTodayScheduleUseCase } from '../../application/useCases/admin/teacher/FetchTodayScheduleUseCase';
 import { FetchLiveSessionsUseCase } from '../../application/useCases/admin/teacher/FetchLiveSessionsUseCase';
+import { GetClassesByIdUseCase } from '../../application/useCases/admin/class/GetClassesByIdUseCase';
+import { GetStdSessionsUsecase } from '../../application/useCases/student/getStdSessionsUsecase';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -404,6 +406,10 @@ export class DependencyContainer {
       'IGetStudentsIdByClassUseCase',
       new getStudentsIdByClassUseCase(this.dependencies.get('IStudentRepository'))
     );
+    this.dependencies.set(
+      'IGetClassesByIdUseCase',
+      new GetClassesByIdUseCase(this.dependencies.get('IClassRepository'))
+    );
 
     // Use Cases (Subject)
     this.dependencies.set(
@@ -461,6 +467,10 @@ export class DependencyContainer {
     this.dependencies.set(
       'IGetAllStudentsUseCase',
       new GetAllStudentsUseCase(this.dependencies.get('IStudentRepository'))
+    );
+    this.dependencies.set(
+      'IGetStdSessionsUsecase',
+      new GetStdSessionsUsecase(this.dependencies.get('IStudentRepository'))
     );
     this.dependencies.set(
       'IAdminGetStudentProfileUseCase',
@@ -639,6 +649,7 @@ export class DependencyContainer {
         this.dependencies.get('IGetStudentsIdByClassUseCase'),
         this.dependencies.get('IFetchTopClassUseCase'),
         this.dependencies.get('IFetchWeeklyAttendanceUseCase'),
+        this.dependencies.get('IGetClassesByIdUseCase'),
       )
     );
     this.dependencies.set(
@@ -658,7 +669,8 @@ export class DependencyContainer {
         this.dependencies.get('IAddStudentUseCase'),
         this.dependencies.get('IEditStudentUseCase'),
         this.dependencies.get('IDeleteStudentUseCase'),
-        this.dependencies.get('IAdminGetStudentProfileUseCase')
+        this.dependencies.get('IAdminGetStudentProfileUseCase'),
+        this.dependencies.get('IGetStdSessionsUsecase')
       )
     );
     this.dependencies.set(

@@ -184,13 +184,13 @@ export interface IMessage {
   
   // DTO for frontend
   export interface IClassData {
-    _id: string;
+    id: string;
     name: string;
     grade: string;
     section: string;
     roomNo: string;
     tutor: string | null;
-    totalStudents: number;
+    totalStudents?: number;
   }
 
   export interface ScheduleLiveSessionDTO {
@@ -314,4 +314,10 @@ export interface NewSessionDto {
   classId: string;
   date: string; 
   duration: number; 
+}
+export interface ILiveSessionDto {
+  title: string;
+  time: string;
+  isOngoing: boolean;
+  joinLink?: string; // not implemented yet
 }

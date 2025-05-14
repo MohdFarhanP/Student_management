@@ -38,4 +38,11 @@ router.get('/:classId', authenticateUser, (req, res, next) => {
   timetableController.getTimetable.bind(timetableController)(req, res, next);
 });
 
+router.get('/today/:classId', authenticateUser, (req, res, next) => {
+  if (!timetableController) {
+    throw new Error('TimetableController not initialized. Dependency injection failed.');
+  }
+  timetableController.getTimetableForToday.bind(timetableController)(req, res, next);
+});
+
 export default router;

@@ -17,7 +17,7 @@ const Login: React.FC = () => {
   const { user, loading, error } = useSelector(
     (state: RootState) => state.auth
   );
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string>('Admin');
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
 
@@ -84,7 +84,7 @@ const Login: React.FC = () => {
               Please Select Your Role
             </h2>
             <div className="flex justify-center gap-4">
-              {['Admin', 'Student', 'Teacher'].map((role) => (
+              {[ 'Student', 'Teacher'].map((role) => (
                 <button
                   key={role}
                   type="button"

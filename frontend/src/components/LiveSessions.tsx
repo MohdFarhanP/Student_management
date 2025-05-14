@@ -1,12 +1,8 @@
 import React from "react";
+import { ILiveSessions } from "../api/admin/studentApi";
 
-interface LiveSession {
-  title: string;
-  time: string;
-  isOngoing: boolean;
-  joinLink: string;
-}
-const LiveSessions: React.FC<{ sessions: LiveSession[] }> = ({ sessions }) => (
+
+const LiveSessions: React.FC<{ sessions: ILiveSessions[] }> = ({ sessions }) => (
   <div className="bg-white p-6 rounded-2xl shadow-md">
     <h2 className="text-xl font-semibold text-gray-800 mb-3">Live Sessions</h2>
     {sessions.length === 0 ? (

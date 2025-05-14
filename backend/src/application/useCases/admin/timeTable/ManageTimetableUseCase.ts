@@ -5,6 +5,7 @@ import { IManageTimetableUseCase } from '../../../../domain/interface/IManageTim
 import { IUpdateTeacherAvailabilityUseCase } from '../../../../domain/interface/IUpdateTeacherAvailabilityUseCase';
 import { Day } from '../../../../domain/types/enums';
 import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
+import {TimetableSlot } from '../../../../domain/types/interfaces';
 
 export class ManageTimetableUseCase implements IManageTimetableUseCase {
   constructor(
@@ -101,6 +102,14 @@ export class ManageTimetableUseCase implements IManageTimetableUseCase {
   async getTimetable(classId: ObjectId): Promise<Timetable> {
     try {
       const timetable = await this.timetableRepo.getByClassId(classId);
+      return timetable;
+    } catch (error) {
+      throw error instanceof Error ? error : new Error('Failed to fetch timetable');
+    }
+  }
+  async getTimetableForToday(classId: ObjectId): Promise<TimetableSlot[] | []> {
+    try {
+      const timetable = await this.timetableRepo.TodayTimeTable(classId);
       return timetable;
     } catch (error) {
       throw error instanceof Error ? error : new Error('Failed to fetch timetable');

@@ -29,6 +29,12 @@ router.get('/classdata', authenticateUser, (req, res, next) => {
   }
   classController.getClasses.bind(classController)(req, res, next);
 });
+router.get('/classInfo', authenticateUser, (req, res, next) => {
+  if (!classController) {
+    throw new Error('ClassController not initialized. Dependency injection failed.');
+  }
+  classController.getClassesById.bind(classController)(req, res, next);
+});
 
 router.put('/update/:id', authenticateUser, (req, res, next) => {
   if (!classController) {

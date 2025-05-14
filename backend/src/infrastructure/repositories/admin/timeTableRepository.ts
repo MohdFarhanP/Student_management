@@ -4,6 +4,8 @@ import { ITimetableRepository } from '../../../domain/interface/admin/ITimetable
 import { Timetable } from '../../../domain/entities/timetable';
 import TimetableModel from '../../database/models/timeTableModel';
 import { Day } from '../../../domain/types/enums';
+import { TimetableSlot } from '../../../domain/types/interfaces';
+import { TeacherModel } from '../../database/models/teacherModel';
 
 export class TimetableRepository implements ITimetableRepository {
   async getByClassId(classId: ObjectId): Promise<Timetable> {
@@ -55,4 +57,44 @@ export class TimetableRepository implements ITimetableRepository {
       );
     }
   }
+
+async TodayTimeTable(classId: mongoose.Types.ObjectId): Promise<TimetableSlot[] | []> {
+  try {
+    const getToday = (): string => {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      return days[new Date().getDay()];
+    };
+
+    const today = getToday();
+
+    const timetable = await TimetableModel.findOne({ classId }).lean();
+
+    if (!timetable || !timetable.schedule || !timetable.schedule[today]) {
+      return [];
+    }
+
+    const todaysPeriods = timetable.schedule[today];
+
+    const enrichedPeriods = await Promise.all(
+      todaysPeriods.map(async (period) => {
+        if (!period.teacherId) {
+          return { ...period, teacherName: null };
+        }
+
+        const teacher = await TeacherModel.findById(period.teacherId).select('name').lean();
+        return {
+          ...period,
+          teacherName: teacher ? teacher.name : null
+        };
+      })
+    );
+
+    return enrichedPeriods;
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch timetable for classId ${classId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
 }

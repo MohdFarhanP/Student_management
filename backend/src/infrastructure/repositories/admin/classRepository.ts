@@ -3,7 +3,7 @@ import { ClassEntity } from '../../../domain/entities/class';
 import { ClassModel } from '../../database/models/classModel';
 import { TeacherModel } from '../../database/models/teacherModel';
 import { IClassRepository } from '../../../domain/interface/admin/IClassRepository';
-import { IClass, TopClassDto } from '../../../domain/types/interfaces';
+import { IClass, IClassData, TopClassDto } from '../../../domain/types/interfaces';
 import { AttendanceModel } from '../../database/models/attendanceModel';
 
 
@@ -14,6 +14,29 @@ export class ClassRepository implements IClassRepository {
     private attendanceModel = AttendanceModel,
   ) {}
 
+async findByUserId(userId: string): Promise<IClassData | null> {
+  try {
+    const classDetails = await this.classModel
+      .findOne({ students: userId }) 
+      .populate('tutor', 'name email')
+      .populate('timetable') 
+      .select('name grade section roomNo tutor timetable')
+      .lean();
+   
+      if (!classDetails) return null;
+
+    return {
+      id: classDetails._id.toString(),
+      name: classDetails.name,
+      grade: classDetails.grade,
+      section: classDetails.section,
+      roomNo: classDetails.roomNo,
+      tutor: classDetails.tutor ? (classDetails.tutor as any).name : null,
+    };
+  } catch (error) {
+    throw new Error(`Failed to fetch class details: ${(error as Error).message}`);
+  }
+}
   async findAll(page: number, limit: number): Promise<{ data: ClassEntity[]; totalCount: number }> {
     try {
       const skip = (page - 1) * limit;

@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import { Timetable } from '../../entities/timetable';
-
+import { TimetableSchedule, TimetableSlot } from '../../types/interfaces';
+import { ObjectId } from '../../../types';
 export interface ITimetableRepository {
   getByClassId(classId: Types.ObjectId): Promise<Timetable>;
   save(timetable: Timetable): Promise<void>;
@@ -9,7 +10,5 @@ export interface ITimetableRepository {
     day: string,
     period: number
   ): Promise<Timetable | null>;
-
-    // findByClassId(classId: string): Promise<TimetableData | null>;
-
+  TodayTimeTable(classId: ObjectId): Promise<TimetableSlot[] | []>
 }

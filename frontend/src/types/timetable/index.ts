@@ -3,6 +3,7 @@ export interface TimetableSlot {
   teacherId: string | null;
   teacherName?: string;
   subject: string | null;
+  _id?: string;
 }
 
 export interface TimetableSchedule {

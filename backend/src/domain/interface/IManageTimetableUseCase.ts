@@ -1,6 +1,7 @@
 import { ObjectId } from '../../types';
 import { Timetable } from '../entities/timetable';
 import { Day } from '../types/enums';
+import { TimetableSlot } from '../types/interfaces';
 
 export interface IManageTimetableUseCase {
   assignTeacher(
@@ -19,4 +20,5 @@ export interface IManageTimetableUseCase {
   ): Promise<Timetable>;
   deleteTimetableSlot(classId: ObjectId, day: Day, period: number): Promise<Timetable>;
   getTimetable(classId: ObjectId): Promise<Timetable>;
+  getTimetableForToday(classId: ObjectId): Promise<TimetableSlot[] | []>
 }
