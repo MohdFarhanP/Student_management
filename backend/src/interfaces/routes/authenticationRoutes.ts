@@ -24,7 +24,7 @@ router.post('/logout', (req, res, next) => {
   userController.logout.bind(userController)(req, res, next);
 });
 
-router.put('/update-password', authenticateUser, (req, res, next) => {
+router.patch('/update-password', authenticateUser, (req, res, next) => {
   if (!userController) {
     throw new Error('UserController not initialized. Dependency injection failed.');
   }

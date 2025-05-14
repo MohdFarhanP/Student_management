@@ -10,14 +10,14 @@ export const setTimetableController = (controller: ITimetableController) => {
   timetableController = controller;
 };
 
-router.put('/:classId/assign', authenticateUser, (req, res, next) => {
+router.patch('/:classId/assign', authenticateUser, (req, res, next) => {
   if (!timetableController) {
     throw new Error('TimetableController not initialized. Dependency injection failed.');
   }
   timetableController.assignTeacher.bind(timetableController)(req, res, next);
 });
 
-router.put('/:classId/slot', authenticateUser, (req, res, next) => {
+router.patch('/:classId/slot', authenticateUser, (req, res, next) => {
   if (!timetableController) {
     throw new Error('TimetableController not initialized. Dependency injection failed.');
   }

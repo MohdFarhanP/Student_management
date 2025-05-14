@@ -36,7 +36,7 @@ router.get('/classInfo', authenticateUser, (req, res, next) => {
   classController.getClassesById.bind(classController)(req, res, next);
 });
 
-router.put('/update/:id', authenticateUser, (req, res, next) => {
+router.patch('/update/:id', authenticateUser, (req, res, next) => {
   if (!classController) {
     throw new Error('ClassController not initialized. Dependency injection failed.');
   }
@@ -113,7 +113,7 @@ router.delete('/:classGrade/subjects/:subjectId', authenticateUser, (req, res, n
   subjectController.deleteSubject.bind(subjectController)(req, res, next);
 });
 
-router.put('/:classGrade/subjects/:subjectId', authenticateUser, (req, res, next) => {
+router.patch('/:classGrade/subjects/:subjectId', authenticateUser, (req, res, next) => {
   if (!subjectController) {
     throw new Error('SubjectController not initialized. Dependency injection failed.');
   }

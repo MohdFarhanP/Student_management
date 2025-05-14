@@ -32,7 +32,10 @@ export const addSubject = async (cls: string, subjectData: ISubjectData) => {
   const uploadedNotes = subjectData.notes
     ? await Promise.all(subjectData.notes.map((file) => uploadToS3(file)))
     : [];
-  const validNotes = uploadedNotes.filter((url): url is string => typeof url === 'string');
+  const validNotes = uploadedNotes
+    .map((note) => note.fileUrl)
+    .filter((url): url is string => typeof url === 'string');
+
   const finalSubjectData: FinalSubjectData = {
     ...subjectData,
     notes: validNotes,
@@ -65,10 +68,13 @@ export const updateSubject = async (
   const uploadedNotes = subject.notes
     ? await Promise.all(subject.notes.map((file) => uploadToS3(file)))
     : [];
-  const validNotes = uploadedNotes.filter((url): url is string => typeof url === 'string');
+  const validNotes = uploadedNotes
+    .map((note) => note.fileUrl)
+    .filter((url): url is string => typeof url === 'string');
+
   const finalSubjectData = { ...subject, notes: validNotes };
   return apiRequest<ApiResponse<ISubject>, FinalSubjectData>(
-    'put',
+    'patch',
     `${ADMIN_SUBJECT_API}/${classGrade}/subjects/${subjectId}`,
     finalSubjectData,
     {

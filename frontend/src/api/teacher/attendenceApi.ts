@@ -27,19 +27,3 @@ export const markAttendanceStd = async (
   );
   console.log(response.message);
 };
-
-export const batchMarkAttendanceStd = async (
-  classId: string,
-  changes: { studentId: string; status: 'present' | 'absent' }[],
-  date: string,
-  period: number,
-  day: string,
-  teacherId: string
-) => {
-  const response = await apiRequest<{ message: string }, any>(
-    'post',
-    `${Teacher_API_URL}/attendance/${classId}/batch`,
-    { changes, date, period, day, teacherId }
-  );
-  console.log(response.message);
-};

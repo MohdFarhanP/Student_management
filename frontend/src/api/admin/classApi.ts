@@ -105,7 +105,7 @@ export const getClassNames = () =>
 
 export const updateClass = (data: IClassData) =>
   apiRequest<ApiResponse<void>, IClassData>(
-    'put',
+    'patch',
     `${ADMIN_CLASS_API_URL}/update/${data.id}`,
     data
   ).then((res) => {

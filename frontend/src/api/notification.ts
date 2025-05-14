@@ -19,4 +19,4 @@ export const FetchNotifications = (data:FetchNotificationsParams) =>
     });
 
 export const MarkNotificationAsRead = (notificationId: string) =>
-  apiRequest('put', `${NOTIFICATION_API_URL}/${notificationId}/read`);
+  apiRequest('patch', `${NOTIFICATION_API_URL}/${notificationId}/read`);

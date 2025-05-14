@@ -16,10 +16,6 @@ export const uploadNoteApi = (data: NoteUploadParams) =>
 export const fetchNotesApi = () =>
   apiRequest<ApiResponse<INote[]>>('get', NOTES_API_URL).then((res) => res).then((res) => res.data);
 
-// export const downloadNoteApi = (noteId: string) =>
-//   apiRequest<ApiResponse<void>>('get', `${NOTES_API_URL}/download/${noteId}`).then(() => undefined);
-
-
 export const downloadNoteApi = async (noteId: string): Promise<string> => {
 
   const response = await apiRequest<ApiResponse<{ downloadUrl: string }>>(

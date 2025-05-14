@@ -36,7 +36,7 @@ export const updateTimetableSlot = (
   data: AssignTeacherFormData
 ) =>
   apiRequest<ApiResponse<TimetableData>, AssignTeacherFormData>(
-    'put',
+    'patch',
     `${ADMIN_TIMETABLE_API}/${classId}/slot`,
     data
   ).then((res) => {
@@ -59,7 +59,7 @@ export const assignTeacherToClass = (
   data: AssignTeacherFormData
 ) =>
   apiRequest<ApiResponse<TimetableData>, AssignTeacherFormData>(
-    'put',
+    'patch',
     `${ADMIN_TIMETABLE_API}/${classId}/assign`,
     data
   ).then((res) => {

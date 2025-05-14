@@ -31,7 +31,7 @@ router.post('/teacher', authenticateUser, (req, res, next) => {
   teacherController.addTeacher.bind(teacherController)(req, res, next);
 });
 
-router.put('/:teacherId', authenticateUser, (req, res, next) => {
+router.patch('/:teacherId', authenticateUser, (req, res, next) => {
   if (!teacherController) {
     throw new Error('TeacherController not initialized. Dependency injection failed.');
   }

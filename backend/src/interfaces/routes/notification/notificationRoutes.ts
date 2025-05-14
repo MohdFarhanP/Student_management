@@ -17,7 +17,7 @@ router.get('/', authenticateUser, (req, res, next) => {
   notificationController.getNotifications.bind(notificationController)(req, res, next);
 });
 
-router.put('/:id/read', authenticateUser, (req, res, next) => {
+router.patch('/:id/read', authenticateUser, (req, res, next) => {
   if (!notificationController) {
     throw new Error('NotificationController not initialized. Dependency injection failed.');
   }

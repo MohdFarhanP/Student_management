@@ -37,7 +37,7 @@ export const adminLogin = (data: ICredentials) =>
 
 export const updateUserPassword = (password: string) =>
   apiRequest<ApiResponse<User>, UpdateUserPasswordParams>(
-    'put',
+    'patch',
     `${AUTH_API_URL}/update-password`,
     { password }
   ).then((res) => res.data);

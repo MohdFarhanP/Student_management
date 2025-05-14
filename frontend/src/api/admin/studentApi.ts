@@ -60,7 +60,7 @@ export const addStudent = (data: Partial<IStudent>) =>
 
 export const editStudent = (studentId: string, data: Partial<IStudent>) =>
   apiRequest<ApiResponse<IStudent>, Partial<IStudent>>(
-    'put',
+    'patch',
     `${ADMIN_STUDENT_API_URL}/${studentId}`,
     data
   ).then((res)=>res.data);

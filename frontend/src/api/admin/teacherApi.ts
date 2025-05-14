@@ -57,7 +57,7 @@ export const getTeachers = (page: number, limit: number) =>
 
 export const editTeacher = (teacherId: string, data: ITeacher) =>
   apiRequest<ApiResponse<TeachersResponse>, ITeacher>(
-    'put',
+    'patch',
     `${ADMIN_TEACHER_API_URL}/${teacherId}`,
     data
   )
