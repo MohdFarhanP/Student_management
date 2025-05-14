@@ -20,6 +20,7 @@ const Login: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string>('Admin');
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     if (user && !loading) {
@@ -53,6 +54,10 @@ const Login: React.FC = () => {
       toast.error('Password must be at least 6 characters');
       return;
     }
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
     try {
       await dispatch(updatePassword(newPassword)).unwrap();
       toast.success('Password updated successfully');
@@ -78,28 +83,29 @@ const Login: React.FC = () => {
           <p className="text-sm text-gray-500">
             Welcome back! Enter your credentials to log in.
           </p>
-
-          <div className="mt-6">
-            <h2 className="mb-3 text-center text-xl font-semibold text-black">
-              Please Select Your Role
-            </h2>
-            <div className="flex justify-center gap-4">
-              {[ 'Student', 'Teacher'].map((role) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => setSelectedRole(role)}
-                  className={`rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-black shadow-sm transition-all hover:bg-gray-100 hover:shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                    selectedRole === role
-                      ? 'border-blue-500 bg-gray-200'
-                      : 'bg-white'
-                  }`}
-                >
-                  {role}
-                </button>
-              ))}
+          {!showResetPassword &&(
+            <div className="mt-6">
+              <h2 className="mb-3 text-center text-xl font-semibold text-black">
+                Please Select Your Role
+              </h2>
+              <div className="flex justify-center gap-4">
+                {[ 'Student', 'Teacher'].map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => setSelectedRole(role)}
+                    className={`rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-black shadow-sm transition-all hover:bg-gray-100 hover:shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+                      selectedRole === role
+                        ? 'border-blue-500 bg-gray-200'
+                        : 'bg-white'
+                    }`}
+                  >
+                    {role}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {!showResetPassword ? (
             <form onSubmit={handleSubmit(onSubmit)} className="mt-6">
@@ -170,6 +176,15 @@ const Login: React.FC = () => {
                 placeholder="New Password"
                 className="w-full rounded-lg border border-gray-300 p-3 text-black focus:border-blue-500 focus:ring-blue-500"
               />
+              <div className="mb-4">
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm New Password"
+                  className="w-full rounded-lg border border-gray-300 mt-3 p-3 text-black focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
               <button
                 onClick={handleResetPassword}
                 className="mt-4 w-full rounded-lg bg-gray-800 p-3 text-white transition hover:bg-black"
@@ -192,3 +207,5 @@ const Login: React.FC = () => {
 };
 
 export default Login;
+
+
