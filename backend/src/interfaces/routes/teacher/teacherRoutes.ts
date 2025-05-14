@@ -41,6 +41,13 @@ router.post('/attendance/:classId/mark', authenticateUser, (req, res, next) => {
   attendanceController.markAttendance.bind(attendanceController)(req, res, next);
 });
 
+router.post('/attendance/:classId/batch', authenticateUser, (req, res, next) => {
+  if (!attendanceController) {
+    throw new Error('AttendanceController not initialized.');
+  }
+  attendanceController.batchMarkAttendance.bind(attendanceController)(req, res, next);
+});
+
 router.get('/classes', authenticateUser, (req, res, next) => {
   if (!classController) {
     throw new Error('ClassController not initialized. Dependency injection failed.');

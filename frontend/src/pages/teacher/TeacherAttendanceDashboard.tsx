@@ -15,7 +15,7 @@ import { toast } from 'react-toastify';
 interface Class {
   _id: string;
   name: string;
-  chatRoomId?:string;
+  chatRoomId?: string;
   section?: string;
   grade?: string;
 }
@@ -39,7 +39,7 @@ const TeacherAttendanceDashboard: React.FC = () => {
   );
   const dispatch = useDispatch<AppDispatch>();
 
-  const [classes, setClasses] = useState<Partial<Class>[]>();
+  const [classes, setClasses] = useState<Partial<Class>[] | undefined>(undefined);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
@@ -80,26 +80,22 @@ const TeacherAttendanceDashboard: React.FC = () => {
   // Update students, timetable, and attendance when classId or day changes
   useEffect(() => {
     const fetchUpdatedData = async () => {
-      if (!selectedClassId) return; // Prevent fetch if no class is selected
+      if (!selectedClassId) return;
       setLoading(true);
       try {
         const [studentsData, timetableData] = await Promise.all([
           getStudentsByClass(selectedClassId),
           fetchTimetable(selectedClassId),
         ]);
-        console.log(
-          'this is the students data from the teacher attendance management ',
-          studentsData
-        );
         setStudents(
-          studentsData!.map((student) => ({
+          studentsData?.map((student) => ({
             ...student,
-            class: classes!.find((c) => c._id === student.class)?.name || '',
-          }))
+            class: classes?.find((c) => c._id === student.class)?.name || '',
+          })) || []
         );
         setTimetable(timetableData!);
         const initialAttendance: Record<string, AttendanceStatus> = {};
-        studentsData!.forEach(
+        studentsData?.forEach(
           (student) => (initialAttendance[student.id] = 'present')
         );
         setAttendance(initialAttendance);
@@ -124,44 +120,44 @@ const TeacherAttendanceDashboard: React.FC = () => {
     );
   };
 
-  // Handle attendance change for a student
-  const handleAttendanceChange = (
+  // Handle attendance change and save immediately
+  const handleAttendanceChange = async (
     studentId: string,
     status: AttendanceStatus
   ) => {
-    setAttendance((prev) => ({
-      ...prev,
-      [studentId]: status,
-    }));
-  };
-
-  // Save all attendance records
-  const handleSaveAttendance = async () => {
     if (!isTeacherAssigned()) {
       toast.error('You are not assigned to this period');
       return;
     }
+
+    // Optimistic UI update
+    setAttendance((prev) => ({
+      ...prev,
+      [studentId]: status,
+    }));
+
     setLoading(true);
     try {
       if (!teacher?.id)
         throw new Error('Teacher not authenticated or ID not found');
-      const promises = Object.entries(attendance).map(([studentId, status]) =>
-        markAttendanceStd(
-          selectedClassId,
-          studentId,
-          selectedDate,
-          selectedPeriod,
-          status,
-          selectedDay,
-          teacher?.id ?? ''
-        )
+      await markAttendanceStd(
+        selectedClassId,
+        studentId,
+        selectedDate,
+        selectedPeriod,
+        status,
+        selectedDay,
+        teacher.id
       );
-      await Promise.all(promises);
+      toast.success('Attendance updated successfully');
     } catch (err: unknown) {
+      // Revert UI on failure
+      setAttendance((prev) => ({
+        ...prev,
+        [studentId]: prev[studentId] === 'present' ? 'absent' : 'present',
+      }));
       toast.error(
-        (err instanceof Error
-          ? err.message
-          : 'Failed to save attendance') as string
+        err instanceof Error ? err.message : 'Failed to save attendance'
       );
     } finally {
       setLoading(false);
@@ -201,7 +197,7 @@ const TeacherAttendanceDashboard: React.FC = () => {
                   className="mt-1 block w-full rounded-md border border-gray-300 bg-white p-2 text-black focus:ring-black dark:border-gray-600 dark:bg-gray-600 dark:text-white dark:focus:ring-gray-400"
                 >
                   <option value="">Select a class</option>
-                  {classes!.map((cls) => (
+                  {classes?.map((cls) => (
                     <option key={cls._id} value={cls._id}>
                       {cls.name}
                     </option>
@@ -307,7 +303,7 @@ const TeacherAttendanceDashboard: React.FC = () => {
                           className="h-10 w-10 rounded-full object-cover"
                           onError={(e) => (e.currentTarget.src = profile)}
                         />
-                      </td>{' '}
+                      </td>
                       <td className="border-b px-4 py-2 text-gray-800 dark:text-gray-200">
                         {student.name}
                       </td>
@@ -336,15 +332,6 @@ const TeacherAttendanceDashboard: React.FC = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
-            <div className="mt-4">
-              <button
-                onClick={handleSaveAttendance}
-                disabled={filteredStudents.length === 0 || !isTeacherAssigned()}
-                className="rounded-md bg-black/95 px-4 py-2 text-white transition-colors hover:bg-black disabled:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600 dark:disabled:bg-gray-800"
-              >
-                Save Attendance
-              </button>
             </div>
           </div>
         </div>

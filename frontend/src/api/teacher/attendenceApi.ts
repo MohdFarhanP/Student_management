@@ -1,4 +1,3 @@
-import { toast } from 'react-toastify';
 import { apiRequest } from '../apiClient';
 
 const Teacher_API_URL = '/teacher';
@@ -26,5 +25,21 @@ export const markAttendanceStd = async (
     `${Teacher_API_URL}/attendance/${classId}/mark`,
     { studentId, date, period, status, day, teacherId }
   );
-  toast.success(response.message);
+  console.log(response.message);
+};
+
+export const batchMarkAttendanceStd = async (
+  classId: string,
+  changes: { studentId: string; status: 'present' | 'absent' }[],
+  date: string,
+  period: number,
+  day: string,
+  teacherId: string
+) => {
+  const response = await apiRequest<{ message: string }, any>(
+    'post',
+    `${Teacher_API_URL}/attendance/${classId}/batch`,
+    { changes, date, period, day, teacherId }
+  );
+  console.log(response.message);
 };

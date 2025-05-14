@@ -17,7 +17,7 @@ export class AttendanceRepository implements IAttendanceRepository {
         day,
       },
       {
-        $setOnInsert: {
+        $set: {
           status,
           createdBy: new Types.ObjectId(createdBy as string),
         },
