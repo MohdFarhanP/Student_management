@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ImSpinner2 } from 'react-icons/im';
@@ -50,7 +49,7 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
   onSubmit,
 }) => {
   const [subjectName, setSubjectName] = useState(subject.subjectName);
-  const [selectedTeachers, setSelectedTeachers] = useState<string[]>(subject.teachers.map((t)=> t._id));
+  const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   const [existingNotes, setExistingNotes] = useState<string[]>(subject.notes);
   const [newNotesFiles, setNewNotesFiles] = useState<File[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -63,7 +62,6 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
         const responseTeachers = await getTeachersNames();
         if (responseTeachers) {
           setTeachers(responseTeachers);
-          console.log('Fetched teachers:', responseTeachers);
         }
       } catch (error) {
         console.error('Error fetching teachers:', error);
@@ -71,7 +69,7 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
       }
     };
     fetchTeachers();
-    setSelectedTeachers(subject.teachers.map(t => t._id));
+    setSelectedTeachers(subject.teachers.map((t) => typeof t === 'string' ? t : t._id));
     setSubjectName(subject.subjectName);
     setExistingNotes(subject.notes);
     setNewNotesFiles([]);
@@ -147,161 +145,163 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
       });
       setErrors({});
       onClose();
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        toast.error(error.response?.data?.message || 'Failed to edit subject.');
-      } else {
-        toast.error((error as Error).message || 'Unknown error occurred.');
-      }
+    } catch (error) {
+      toast.error('Failed to edit subject.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="mb-4 text-xl font-semibold text-gray-800">
-          Edit Subject
-        </h2>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Subject Name
-          </label>
-          <select
-            value={subjectName}
-            onChange={(e) => {
-              setSubjectName(e.target.value);
-              setErrors((prev) => ({ ...prev, subjectName: undefined }));
-            }}
-            className="mt-1 w-full rounded-md border p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none"
-            disabled={loading}
-          >
-            <option value="">Select a subject</option>
-            {SUBJECT_OPTIONS.map((subject) => (
-              <option key={subject} value={subject}>
-                {subject}
-              </option>
-            ))}
-          </select>
-          {errors.subjectName && (
-            <p className="mt-1 text-sm text-red-500">{errors.subjectName}</p>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Select Teachers
-          </label>
-          <div className="mt-1 flex flex-wrap gap-2">
-            {teachers.map((teacher) => {
-              const isSelected = selectedTeachers
-                .map((id) => id.toLowerCase())
-                .includes(teacher.id.toLowerCase());
-              return (
-                <button
-                  key={teacher.id}
-                  type="button"
-                  onClick={() => handleTeacherSelection(teacher.id)}
-                  className={`rounded-md px-3 py-1 text-sm transition-colors duration-200 ${
-                    isSelected
-                      ? 'bg-black text-white hover:bg-gray-800'
-                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                  }`}
-                  disabled={loading}
-                >
-                  {teacher.name}
-                </button>
-              );
-            })}
-          </div>
-          {errors.teachers && (
-            <p className="mt-1 text-sm text-red-500">{errors.teachers}</p>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Existing Notes
-          </label>
-          {existingNotes.length > 0 ? (
-            <ul className="mt-1 list-disc pl-5 text-sm text-gray-600">
-              {existingNotes.map((note, index) => (
-                <li key={index} className="flex items-center justify-between">
-                  <span>{note.split('/').pop()}</span>
-                  <button
-                    onClick={() => removeExistingNote(note)}
-                    className="text-red-500 hover:text-red-700"
-                    disabled={loading}
-                  >
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-1 text-sm text-gray-600">No existing notes</p>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Upload New Notes (PDF)
-          </label>
-          <input
-            type="file"
-            accept="application/pdf"
-            multiple
-            onChange={handleFileChange}
-            className="mt-1 w-full cursor-pointer rounded-md border border-gray-300 p-2 text-gray-700 focus:ring-1 focus:ring-gray-500"
-            disabled={loading}
-          />
-          {newNotesFiles.length > 0 && (
-            <ul className="mt-2 list-disc pl-5 text-sm text-gray-600">
-              {newNotesFiles.map((file, index) => (
-                <li key={index} className="flex items-center justify-between">
-                  <span>{file.name}</span>
-                  <button
-                    onClick={() => removeNewNote(file.name)}
-                    className="text-red-500 hover:text-red-700"
-                    disabled={loading}
-                  >
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="flex justify-end space-x-3">
+    <div className="modal modal-open">
+      <div className="modal-box w-11/12 max-w-md bg-base-100 dark:bg-gray-800">
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white">
+            Edit Subject
+          </h3>
           <button
             onClick={onClose}
             disabled={loading}
-            className="rounded-md bg-gray-300 px-4 py-2 text-black transition hover:bg-gray-400"
+            className="btn btn-sm btn-circle btn-ghost text-gray-600 dark:text-gray-300"
           >
-            Cancel
+            ✕
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="rounded-md bg-black/90 px-4 py-2 text-white transition hover:bg-black"
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <ImSpinner2 className="animate-spin" /> Saving...
-              </span>
-            ) : (
-              'Save Changes'
-            )}
-          </button>
+        </div>
+        <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto">
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
+                Subject Name
+              </label>
+              <select
+                value={subjectName}
+                onChange={(e) => {
+                  setSubjectName(e.target.value);
+                  setErrors((prev) => ({ ...prev, subjectName: undefined }));
+                }}
+                className="select select-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                disabled={loading}
+              >
+                <option value="">Select a subject</option>
+                {SUBJECT_OPTIONS.map((subject) => (
+                  <option key={subject} value={subject}>
+                    {subject}
+                  </option>
+                ))}
+              </select>
+              {errors.subjectName && (
+                <p className="mt-1 text-xs text-error">{errors.subjectName}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
+                Select Teachers
+              </label>
+              <div className="mt-1 flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                {teachers.map((teacher) => {
+                  const isSelected = selectedTeachers
+                    .map((id) => id.toLowerCase())
+                    .includes(teacher.id.toLowerCase());
+                  return (
+                    <button
+                      key={teacher.id}
+                      type="button"
+                      onClick={() => handleTeacherSelection(teacher.id)}
+                      className={`btn btn-sm ${
+                        isSelected ? 'btn-primary' : 'btn-outline btn-neutral'
+                      } text-xs sm:text-sm`}
+                      disabled={loading}
+                    >
+                      {teacher.name}
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.teachers && (
+                <p className="mt-1 text-xs text-error">{errors.teachers}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
+                Existing Notes
+              </label>
+              {existingNotes.length > 0 ? (
+                <ul className="mt-1 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                  {existingNotes.map((note, index) => (
+                    <li key={index} className="flex items-center justify-between">
+                      <span className="truncate">{note.split('/').pop()}</span>
+                      <button
+                        onClick={() => removeExistingNote(note)}
+                        className="text-red-500 hover:text-red-700 text-xs"
+                        disabled={loading}
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  No existing notes
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
+                Upload New Notes (PDF)
+              </label>
+              <input
+                type="file"
+                accept="application/pdf"
+                multiple
+                onChange={handleFileChange}
+                className="file-input file-input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                disabled={loading}
+              />
+              {newNotesFiles.length > 0 && (
+                <ul className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                  {newNotesFiles.map((file, index) => (
+                    <li key={index} className="flex items-center justify-between">
+                      <span className="truncate">{file.name}</span>
+                      <button
+                        onClick={() => removeNewNote(file.name)}
+                        className="text-red-500 hover:text-red-700 text-xs"
+                        disabled={loading}
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={onClose}
+                disabled={loading}
+                className="btn btn-outline btn-sm sm:btn-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="btn btn-primary btn-sm sm:btn-md"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <ImSpinner2 className="animate-spin" /> Saving...
+                  </span>
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

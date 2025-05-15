@@ -44,15 +44,15 @@ export class NotificationController implements INotificationController {
 
   async markAsRead(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const userId = req.user?.id;
-      if (!userId) {
+      const { notificationId } = req.params;
+      const {id,role} = req.user;
+      if (!id) {
         throw new UnauthorizedError('User not authenticated');
       }
-      if (!id) {
+      if (!notificationId) {
         throw new ValidationError('Notification ID is required');
       }
-      await this.markNotificationAsRead.execute(id, userId);
+      await this.markNotificationAsRead.execute(notificationId, id, role);
       res.status(HttpStatus.OK).json({ success: true });
     } catch (error) {
       if (error instanceof AppError) {

@@ -250,7 +250,9 @@ export class DependencyContainer {
       'IJoinLiveSessionUseCase',
       new JoinLiveSession(
         this.dependencies.get('ILiveSessionRepository'),
-        this.dependencies.get('IVideoService')
+        this.dependencies.get('IVideoService'),
+        this.dependencies.get('IStudentRepository'),
+        this.dependencies.get('ITeacherRepository')
       )
     );
 
@@ -321,6 +323,8 @@ export class DependencyContainer {
         this.dependencies.get('IViewLeaveHistoryUseCase'),
         this.dependencies.get('IApproveRejectLeaveUseCase'),
         this.dependencies.get('IGetAdminDashboardStatsUseCase'),
+        this.dependencies.get('ITeacherRepository'),
+        this.dependencies.get('IStudentRepository')
       )
     );
 

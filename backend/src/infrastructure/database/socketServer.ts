@@ -17,6 +17,8 @@ import { IViewLeaveHistoryUseCase } from '../../domain/interface/IViewLeaveHisto
 import { IApproveRejectLeaveUseCase } from '../../domain/interface/IApproveRejectLeaveUseCase';
 import { ApproveRejectLeaveDTO, ViewLeaveHistoryDTO, ApplyForLeaveDTO } from '../../domain/types/interfaces';
 import { IGetAdminDashboardStatsUseCase } from '../../domain/interface/IGetAdminDashboardStatsUseCase';
+import { ITeacherRepository } from '../../domain/interface/admin/ITeacherRepository';
+import { IStudentRepository } from '../../domain/interface/admin/IStudentRepository';
 
 interface AdminDashboardResponse {
   success: boolean;
@@ -40,15 +42,17 @@ export class SocketServer implements ISocketServer {
     private viewLeaveHistoryUseCase: IViewLeaveHistoryUseCase,
     private approveRejectLeaveUseCase: IApproveRejectLeaveUseCase,
     private getAdminDashboardStatsUseCase: IGetAdminDashboardStatsUseCase,
+    private teacherRepository: ITeacherRepository,
+    private studentRepository: IStudentRepository,
   ) {
-    // console.log('SocketServer constructor called');
-    // console.log('SocketServer initialized with sendNotificationUseCase:', !!sendNotificationUseCase);
-    // console.log('SocketServer initialized with videoService:', !!videoService);
-    // console.log('SocketServer initialized with leave use cases:', !!applyForLeaveUseCase, !!viewLeaveHistoryUseCase, !!approveRejectLeaveUseCase);
+    console.log('SocketServer constructor called');
+    console.log('SocketServer initialized with sendNotificationUseCase:', !!sendNotificationUseCase);
+    console.log('SocketServer initialized with videoService:', !!videoService);
+    console.log('SocketServer initialized with leave use cases:', !!applyForLeaveUseCase, !!viewLeaveHistoryUseCase, !!approveRejectLeaveUseCase);
   }
 
   initialize() {
-    // console.log('SocketServer initializing...');
+    console.log('SocketServer initializing...');
 
     this.io.use((socket, next) => {
       let userId: string | undefined;
@@ -58,13 +62,13 @@ export class SocketServer implements ISocketServer {
       if (socket.handshake.auth && socket.handshake.auth.userId && socket.handshake.auth.userRole) {
         userId = socket.handshake.auth.userId as string;
         userRole = socket.handshake.auth.userRole as Role;
-        // console.log(`Socket authenticated via auth for user ${userId} with role ${userRole}`);
+        console.log(`Socket authenticated via auth for user ${userId} with role ${userRole}`);
       }
       // Fallback to query (temporary for compatibility)
       else if (socket.handshake.query.userId && socket.handshake.query.userRole) {
         userId = socket.handshake.query.userId as string;
         userRole = socket.handshake.query.userRole as Role;
-        // console.warn(`Socket authenticated via query for user ${userId} with role ${userRole} (deprecated, use auth)`);
+        console.warn(`Socket authenticated via query for user ${userId} with role ${userRole} (deprecated, use auth)`);
       }
 
       if (!userId || !userRole) {
@@ -78,7 +82,7 @@ export class SocketServer implements ISocketServer {
     });
 
     this.io.on('connection', (socket: Socket) => {
-      // console.log(`User connected: ${socket.data.userId} (socket ID: ${socket.id})`);
+      console.log(`User connected: ${socket.data.userId} (socket ID: ${socket.id})`);
 
       socket.on('joinRoom', async (chatRoomId: string, callback) => {
         if (!chatRoomId) {
@@ -161,7 +165,7 @@ export class SocketServer implements ISocketServer {
       socket.on('joinNotification', () => {
         socket.join(`user-${socket.data.userId}`);
         socket.join(`role-${socket.data.userRole}`);
-        // console.log(`User ${socket.data.userId} joined notification rooms: user-${socket.data.userId}, role-${socket.data.userRole}`);
+        console.log(`User ${socket.data.userId} joined notification rooms: user-${socket.data.userId}, role-${socket.data.userRole}`);
       });
 
       socket.on('sendNotification', async (notification: SendNotificationDTO) => {
@@ -202,8 +206,9 @@ export class SocketServer implements ISocketServer {
         }
       });
 
-      socket.on('apply-for-leave', async (dto: ApplyForLeaveDTO) => {
+      socket.on('apply-for-leave', async (dto: ApplyForLeaveDTO, callback: (response: { success: boolean; error?: string }) => void) => {
         try {
+          console.log('Received apply-for-leave event with data:', dto);
           if (!dto.studentId || !dto.date || !dto.reason) {
             throw new ValidationError('Missing required fields: studentId, date, reason');
           }
@@ -214,21 +219,25 @@ export class SocketServer implements ISocketServer {
             throw new UnauthorizedError('Only students can apply for leaves');
           }
 
-          // console.log(`[DEBUG] Applying for leave: ${dto.studentId}, ${dto.date}`);
+          console.log(`[DEBUG] Applying for leave: ${dto.studentId}, ${dto.date}`);
           const leave = await this.applyForLeaveUseCase.execute(dto);
-          socket.emit('leave-applied', leave);
-          // console.log(`[DEBUG] Leave applied successfully: ${leave.id}`);
+          socket.emit('leave-applied', { leave }); // Emit leave object in a payload
+          console.log(`[DEBUG] Leave applied successfully: ${leave.id}`);
+          callback({ success: true });
         } catch (error) {
-          // console.error(`[DEBUG] Error applying for leave:`, error);
+          console.error(`[DEBUG] Error applying for leave:`, error);
+          const message = error instanceof Error ? error.message : 'Failed to apply for leave';
           socket.emit('error', {
-            message: error instanceof Error ? error.message : 'Failed to apply for leave',
-            context: { studentId: dto.studentId, date: dto.date },
+            message,
+            context: { studentId: dto?.studentId, date: dto?.date },
           });
+          callback({ success: false, error: message });
         }
       });
 
-      socket.on('view-leave-history', async (dto: ViewLeaveHistoryDTO,callback) => {
+      socket.on('view-leave-history', async (dto: ViewLeaveHistoryDTO, callback: (response: { success: boolean; leaves?: any[]; error?: string }) => void) => {
         try {
+          console.log('Received view-leave-history event with data:', dto);
           if (!dto.studentId && socket.data.userRole !== Role.Teacher) {
             throw new UnauthorizedError('Only teachers can view pending leave requests');
           }
@@ -239,24 +248,27 @@ export class SocketServer implements ISocketServer {
             throw new UnauthorizedError('Only students can view their leave history');
           }
 
-          // console.log(`[DEBUG] Viewing leave history for student: ${dto.studentId || 'all pending (teacher)'}, userId: ${socket.data.userId}`);
+          console.log(`[DEBUG] Viewing leave history for student: ${dto.studentId || 'all pending (teacher)'}, userId: ${socket.data.userId}`);
           const leaves = await this.viewLeaveHistoryUseCase.execute({
             studentId: dto.studentId || '',
             userId: socket.data.userId,
           });
           callback({ success: true, leaves });
-          // console.log(`[DEBUG] Leave history retrieved: ${leaves.length} leaves`);
+          console.log(`[DEBUG] Leave history retrieved: ${leaves.length} leaves`);
         } catch (error) {
-          // console.error(`[DEBUG] Error viewing leave history:`, error);
+          console.error(`[DEBUG] Error viewing leave history:`, error);
+          const message = error instanceof Error ? error.message : 'Failed to view leave history';
           socket.emit('error', {
-            message: error instanceof Error ? error.message : 'Failed to view leave history',
+            message,
             context: { studentId: dto.studentId, userId: socket.data.userId },
           });
+          callback({ success: false, error: message });
         }
       });
 
-      socket.on('approve-reject-leave', async (dto: ApproveRejectLeaveDTO) => {
+      socket.on('approve-reject-leave', async (dto: ApproveRejectLeaveDTO, callback: (response: { success: boolean; error?: string }) => void) => {
         try {
+          console.log('Received approve-reject-leave event with data:', dto);
           if (!dto.leaveId || !dto.teacherId || !dto.status) {
             throw new ValidationError('Missing required fields: leaveId, teacherId, status');
           }
@@ -267,17 +279,20 @@ export class SocketServer implements ISocketServer {
             throw new UnauthorizedError('Only teachers can approve or reject leaves');
           }
 
-          // console.log(`[DEBUG] Approving/Rejecting leave: ${dto.leaveId}, ${dto.status}`);
+          console.log(`[DEBUG] Approving/Rejecting leave: ${dto.leaveId}, ${dto.status}`);
           const leave = await this.approveRejectLeaveUseCase.execute(dto);
-          socket.emit('leave-updated', leave);
-          this.io.to(`user-${leave.studentId}`).emit('leave-updated', leave);
-          // console.log(`[DEBUG] Leave updated successfully: ${leave.id}, ${leave.status}`);
+          socket.emit('leave-updated', { leave }); // Emit leave object in a payload
+          this.io.to(`user-${leave.studentId}`).emit('leave-updated', { leave });
+          console.log(`[DEBUG] Leave updated successfully: ${leave.id}, ${leave.status}`);
+          callback({ success: true });
         } catch (error) {
-          // console.error(`[DEBUG] Error approving/rejecting leave:`, error);
+          console.error(`[DEBUG] Error approving/rejecting leave:`, error);
+          const message = error instanceof Error ? error.message : 'Failed to approve/reject leave';
           socket.emit('error', {
-            message: error instanceof Error ? error.message : 'Failed to approve/reject leave',
+            message,
             context: { leaveId: dto.leaveId, teacherId: dto.teacherId },
           });
+          callback({ success: false, error: message });
         }
       });
 
@@ -294,14 +309,22 @@ export class SocketServer implements ISocketServer {
           }
 
           const session = await this.scheduleLiveSessionUseCase.execute(dto);
+    
+          const userData = await this.teacherRepository.getById(dto.teacherId);
+          
+          const students = await this.studentRepository.findManyByIds(dto.studentIds);
+
+          
+          const studentUsers: UserInfo[] = students.map(student => ({
+            id: student.id.toString(),
+            email: student.email,
+            name: student.name,
+            role: 'Student',
+          }));
 
           const participants: UserInfo[] = [
-            { id: dto.teacherId, email: `user-${dto.teacherId}@example.com`, role: 'Teacher' },
-            ...dto.studentIds.map((studentId: string) => ({
-              id: studentId,
-              email: `user-${studentId}@example.com`,
-              role: 'Student',
-            })),
+            { id: dto.teacherId, email: userData.email, name: userData.name, role: 'Teacher' },
+            ...studentUsers,
           ];
 
           await this.liveSessionRepository.update(dto.sessionId, { participants });
@@ -321,7 +344,7 @@ export class SocketServer implements ISocketServer {
             });
           }
         } catch (error) {
-          // console.error('Error scheduling live session:', error);
+          console.error('Error scheduling live session:', error);
           socket.emit('error', error instanceof Error ? error.message : 'Failed to schedule live session');
         }
       });
@@ -340,11 +363,12 @@ export class SocketServer implements ISocketServer {
           socket.emit('live-session-joined', response);
 
           socket.join(dto.sessionId);
-          // console.log(`User ${socket.data.userId} joined session room ${dto.sessionId}`);
+          console.log(`User ${socket.data.userId} joined session room ${dto.sessionId}`);
 
           const updatedSession = await this.liveSessionRepository.findById(dto.sessionId);
           const participants: UserInfo[] = updatedSession?.participants?.map((participant: any) => ({
             id: participant.id,
+            name: participant.name,
             email: participant.email || `user-${participant.id}@example.com`,
             role: participant.role || 'Unknown',
           })) || [];
@@ -358,7 +382,7 @@ export class SocketServer implements ISocketServer {
 
       socket.on('join-session-room', (sessionId: string) => {
         socket.join(sessionId);
-        // console.log(`User ${socket.data.userId} joined session room ${sessionId}`);
+        console.log(`User ${socket.data.userId} joined session room ${sessionId}`);
       });
 
       socket.on('leave-live-session', async ({ sessionId, participantId }: { sessionId: string; participantId: string }) => {
@@ -414,13 +438,13 @@ export class SocketServer implements ISocketServer {
 
       socket.on('renew-token', async ({ sessionId, participantId }, callback) => {
         try {
-          // console.log(`Renewing token for session ${sessionId}, participant ${participantId}`);
+          console.log(`Renewing token for session ${sessionId}, participant ${participantId}`);
           const session = await this.liveSessionRepository.findById(sessionId);
           if (!session || !session.roomId) {
             throw new Error('Session or room ID not found');
           }
           const token = this.videoService.generateToken(session.roomId, participantId);
-          // console.log('Token renewed successfully:', token);
+          console.log('Token renewed successfully:', token);
           callback({ token });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -431,22 +455,23 @@ export class SocketServer implements ISocketServer {
       });
 
       socket.on('get-admin-dashboard-stats', async (data, callback) => {
-      try {
-        const stats = await this.getAdminDashboardStatsUseCase.execute();
-        callback({
-          success: true,
-          stats,
-        } as AdminDashboardResponse);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        callback({
-          success: false,
-          error: message,
-        } as AdminDashboardResponse);
-      }
-    });
+        try {
+          const stats = await this.getAdminDashboardStatsUseCase.execute();
+          callback({
+            success: true,
+            stats,
+          } as AdminDashboardResponse);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unknown error';
+          callback({
+            success: false,
+            error: message,
+          } as AdminDashboardResponse);
+        }
+      });
+
       socket.on('disconnect', () => {
-        // console.log(`User disconnected: ${socket.data.userId} (socket ID: ${socket.id})`);
+        console.log(`User disconnected: ${socket.data.userId} (socket ID: ${socket.id})`);
       });
     });
   }

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
 import { fetchNotifications, markNotificationAsRead, addNotification, Notification } from '../redux/slices/notificationSlice';
 import { socket } from '../socket';
+import { BellIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 
 const NotificationBell: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -42,56 +43,90 @@ const NotificationBell: React.FC = () => {
   if (!user) return null;
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative rounded-full bg-blue-500 p-2 text-white"
-      >
-        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-          />
-        </svg>
-        {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-            {unreadCount}
-          </span>
-        )}
-      </button>
-      {isOpen && (
-        <div className="absolute right-0 mt-2 max-h-96 w-80 overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
-          {error && <div className="mb-2 text-red-500">{error}</div>}
-          {notifications.length === 0 ? (
-            <p>No notifications</p>
-          ) : (
-            notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`mb-2 rounded p-2 ${notification.isRead ? 'bg-gray-100' : 'bg-blue-100'}`}
-              >
-                <h3 className="font-bold">{notification.title}</h3>
-                <p>{notification.message}</p>
-                <p className="text-xs text-gray-500">
-                  {notification.scheduledAt
-                    ? `Scheduled: ${convertToIST(notification.scheduledAt)}`
-                    : `Created: ${convertToIST(notification.createdAt)}`}
-                </p>
-                {!notification.isRead && (
-                  <button
-                    onClick={() => handleMarkAsRead(notification.id)}
-                    className="text-sm text-blue-500"
-                  >
-                    Mark as Read
-                  </button>
-                )}
-              </div>
-            ))
+    <div className="relative z-50">
+      <div className="dropdown dropdown-end">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="btn btn-primary btn-circle btn-md relative"
+        >
+          <BellIcon className="h-6 w-6 text-primary-content" />
+          {unreadCount > 0 && (
+            <span className="absolute top-0 right-0 badge badge-error badge-sm text-white">
+              {unreadCount}
+            </span>
           )}
-        </div>
-      )}
+        </button>
+        {isOpen && (
+          <div className="dropdown-content mt-2 w-80 max-h-96 overflow-y-auto card bg-base-100 dark:bg-gray-800 shadow-xl z-50">
+            <div className="card-body p-4">
+              {error && (
+                <div className="mb-4">
+                  <div className="alert alert-error shadow-lg">
+                    <div>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="stroke-current flex-shrink-0 h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span>{error}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {notifications.length === 0 ? (
+                <p className="text-center text-gray-500 dark:text-gray-400">
+                  No notifications
+                </p>
+              ) : (
+                notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`card mb-2 p-3 ${
+                      notification.isRead
+                        ? 'bg-base-100 dark:bg-gray-700'
+                        : 'bg-primary/10 dark:bg-primary/20'
+                    } shadow-sm hover:shadow-md transition-shadow`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <BellIcon className="h-5 w-5 text-primary dark:text-primary-content mt-1" />
+                      <div className="flex-1">
+                        <h3 className="text-sm font-semibold text-base-content dark:text-white">
+                          {notification.title}
+                        </h3>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {notification.scheduledAt
+                            ? `Scheduled: ${convertToIST(notification.scheduledAt)}`
+                            : `Created: ${convertToIST(notification.createdAt)}`}
+                        </p>
+                        {!notification.isRead && (
+                          <button
+                            onClick={() => handleMarkAsRead(notification.id)}
+                            className="btn btn-ghost btn-xs text-primary dark:text-primary-content mt-2"
+                          >
+                            <CheckCircleIcon className="h-4 w-4 mr-1" />
+                            Mark as Read
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

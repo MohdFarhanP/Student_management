@@ -137,22 +137,37 @@ const filters: any[] = [
     }
   }
 
-  async markAsRead(notificationId: string, userId: string): Promise<void> {
+  async markAsRead(notificationId: string, userId: string, userRole: string): Promise<void> {
     try {
+      const notification = await NotificationModel.findById(notificationId);
+      if (!notification) {
+        throw new NotFoundError('Notification not found');
+      }
+
+      const isGlobal = notification.recipientType === 'global';
+      const isIndividual = notification.recipientType === 'Student' && notification.recipientIds.includes(userId);
+      const isRoleBased = notification.recipientType === 'role' && notification.recipientIds.includes(userRole);
+
+      if (!isGlobal && !isIndividual && !isRoleBased) {
+        throw new NotFoundError('Notification not accessible to this user');
+      }
+
       const result = await NotificationModel.updateOne(
-        { _id: notificationId, recipientIds: userId },
+        { _id: notificationId },
         { $set: { isRead: true } }
       );
+
       if (result.matchedCount === 0) {
-        throw new NotFoundError('Notification not found or not accessible');
+        throw new NotFoundError('Notification could not be updated');
       }
+
     } catch (error) {
-      if (error instanceof NotFoundError) {
-        throw error;
-      }
+      if (error instanceof NotFoundError) throw error;
+
       throw new ValidationError(
         `Failed to mark notification as read: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
+
 }

@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ImSpinner2 } from 'react-icons/im';
@@ -10,7 +9,7 @@ interface AddSubjectModalProps {
   onSubmit: (subject: {
     subjectName: string;
     teachers: string[];
-    notes: File[];
+    notes: File[] | null;
   }) => void;
 }
 
@@ -40,7 +39,6 @@ const SUBJECT_OPTIONS = [
   'General Knowledge',
 ];
 
-
 const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   isOpen,
   onClose,
@@ -68,7 +66,6 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
   const validateForm = () => {
     const newErrors: { subjectName?: string; teachers?: string } = {};
 
-    // Validate subjectName
     const trimmedSubjectName = subjectName.trim();
     if (!trimmedSubjectName) {
       newErrors.subjectName = 'Subject name is required.';
@@ -80,7 +77,6 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
       newErrors.subjectName = 'Subject name can only contain letters, numbers, spaces, hyphens, or underscores.';
     }
 
-    // Validate selectedTeachers
     if (selectedTeachers.length === 0) {
       newErrors.teachers = 'At least one teacher must be selected.';
     }
@@ -110,6 +106,10 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
     setErrors((prev) => ({ ...prev, teachers: undefined }));
   };
 
+  const removeNote = (fileName: string) => {
+    setNotesFiles((prev) => prev.filter((file) => file.name !== fileName));
+  };
+
   const handleSubmit = async () => {
     if (!validateForm()) {
       return;
@@ -122,134 +122,139 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
         teachers: selectedTeachers,
         notes: notesFiles,
       });
-
       setSubjectName('');
       setSelectedTeachers([]);
       setNotesFiles([]);
       setErrors({});
       onClose();
-    } catch (error: unknown) {
-      if (error instanceof AxiosError) {
-        toast.error(error.response?.data?.message || 'Failed to add subject.');
-      }
+    } catch (error) {
+      toast.error('Failed to add subject.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="max-h-screen w-full max-w-md overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="mb-4 text-xl font-semibold text-gray-800">
-          Add New Subject
-        </h2>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Subject Name
-          </label>
-          <select
-            value={subjectName}
-            onChange={(e) => {
-              setSubjectName(e.target.value);
-              setErrors((prev) => ({ ...prev, subjectName: undefined }));
-            }}
-            className="mt-1 w-full rounded-md border p-2 text-gray-900 focus:ring-1 focus:ring-gray-500 focus:outline-none"
-            disabled={loading}
-          >
-            <option value="">Select a subject</option>
-            {SUBJECT_OPTIONS.map((subject) => (
-              <option key={subject} value={subject}>
-                {subject}
-              </option>
-            ))}
-          </select>
-
-          {errors.subjectName && (
-            <p className="mt-1 text-sm text-red-500">{errors.subjectName}</p>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Select Teachers
-          </label>
-          <div className="mt-1 flex flex-wrap gap-2">
-            {teachers.map((teacher) => (
-              <button
-                key={teacher.id}
-                type="button"
-                onClick={() => handleTeacherSelection(teacher.id)}
-                className={`rounded-md px-3 py-1 text-sm ${
-                  selectedTeachers.includes(teacher.id)
-                    ? 'bg-black text-white'
-                    : 'bg-gray-200 text-gray-800'
-                }`}
-                disabled={loading}
-              >
-                {teacher.name}
-              </button>
-            ))}
-          </div>
-          {errors.teachers && (
-            <p className="mt-1 text-sm text-red-500">{errors.teachers}</p>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Upload Notes (PDF)
-          </label>
-          <input
-            type="file"
-            accept="application/pdf"
-            multiple
-            onChange={handleFileChange}
-            className="mt-1 w-full cursor-pointer rounded-md border border-gray-300 p-2 text-gray-700 focus:ring-1 focus:ring-gray-500"
-            disabled={loading}
-          />
-        </div>
-
-        {notesFiles.length > 0 && (
-          <div className="mb-4 text-sm text-gray-700">
-            <p className="font-semibold">Selected Notes:</p>
-            <ul className="list-disc pl-5">
-              {notesFiles.map((file, index) => (
-                <li key={index} className="text-gray-600">
-                  {file.name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <div className="flex justify-end space-x-3">
+    <div className="modal modal-open">
+      <div className="modal-box w-11/12 max-w-md bg-base-100 dark:bg-gray-800">
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white">
+            Add New Subject
+          </h3>
           <button
             onClick={onClose}
             disabled={loading}
-            className="rounded-md bg-gray-300 px-4 py-2 text-black transition hover:bg-gray-400"
+            className="btn btn-sm btn-circle btn-ghost text-gray-600 dark:text-gray-300"
           >
-            Cancel
+            ✕
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="rounded-md bg-black/90 px-4 py-2 text-white transition hover:bg-black"
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <ImSpinner2 className="animate-spin" /> Adding...
-              </span>
-            ) : (
-              'Add Subject'
-            )}
-          </button>
+        </div>
+        <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto">
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
+                Subject Name
+              </label>
+              <select
+                value={subjectName}
+                onChange={(e) => {
+                  setSubjectName(e.target.value);
+                  setErrors((prev) => ({ ...prev, subjectName: undefined }));
+                }}
+                className="select select-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                disabled={loading}
+              >
+                <option value="">Select a subject</option>
+                {SUBJECT_OPTIONS.map((subject) => (
+                  <option key={subject} value={subject}>
+                    {subject}
+                  </option>
+                ))}
+              </select>
+              {errors.subjectName && (
+                <p className="mt-1 text-xs text-error">{errors.subjectName}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
+                Select Teachers
+              </label>
+              <div className="mt-1 flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                {teachers.map((teacher) => (
+                  <button
+                    key={teacher.id}
+                    type="button"
+                    onClick={() => handleTeacherSelection(teacher.id)}
+                    className={`btn btn-sm ${
+                      selectedTeachers.includes(teacher.id)
+                        ? 'btn-primary'
+                        : 'btn-outline btn-neutral'
+                    } text-xs sm:text-sm`}
+                    disabled={loading}
+                  >
+                    {teacher.name}
+                  </button>
+                ))}
+              </div>
+              {errors.teachers && (
+                <p className="mt-1 text-xs text-error">{errors.teachers}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
+                Upload Notes (PDF)
+              </label>
+              <input
+                type="file"
+                accept="application/pdf"
+                multiple
+                onChange={handleFileChange}
+                className="file-input file-input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                disabled={loading}
+              />
+              {notesFiles.length > 0 && (
+                <ul className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                  {notesFiles.map((file, index) => (
+                    <li key={index} className="flex items-center justify-between">
+                      <span className="truncate">{file.name}</span>
+                      <button
+                        onClick={() => removeNote(file.name)}
+                        className="text-red-500 hover:text-red-700 text-xs"
+                        disabled={loading}
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={onClose}
+                disabled={loading}
+                className="btn btn-outline btn-sm sm:btn-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="btn btn-primary btn-sm sm:btn-md"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <ImSpinner2 className="animate-spin" /> Adding...
+                  </span>
+                ) : (
+                  'Add Subject'
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

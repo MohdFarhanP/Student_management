@@ -9,13 +9,11 @@ import MyLiveSessions from '../../components/MyLiveSessions';
 import { toast } from 'react-toastify';
 import { getTeacherClasses, getTodaySchedule, getLiveSessions } from '../../api/admin/teacherApi';
 
-
 interface ClassSubject {
   className: string;
   subject: string;
   classId: string;
 }
-
 
 interface Schedule {
   period: number;
@@ -38,7 +36,6 @@ const TeacherDashboard: React.FC = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
 
   const fetchData = useCallback(async () => {
     if (!user) return;
@@ -67,31 +64,84 @@ const TeacherDashboard: React.FC = () => {
     fetchData();
   }, [fetchData]);
 
-
   if (!user || user.role !== 'Teacher') {
-    return <div className="p-6 text-red-600">Unauthorized</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-base-100 dark:bg-gray-900">
+        <div className="alert alert-error shadow-lg max-w-md">
+          <div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="stroke-current flex-shrink-0 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <span>Unauthorized</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-base-100 dark:bg-gray-900">
+        <div className="loading loading-spinner loading-lg text-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-base-100 dark:bg-gray-900">
+        <div className="alert alert-error shadow-lg max-w-md">
+          <div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="stroke-current flex-shrink-0 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>{error}</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="flex bg-white min-h-screen">
+    <div className="flex min-h-screen bg-base-100 dark:bg-gray-900">
       <TeacherSidebar />
-      <div className="flex flex-1 flex-col px-6 py-4">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">Teacher Dashboard</h1>
+      <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-xl font-bold text-base-content ml-15 dark:text-white sm:text-2xl">
+            Teacher Dashboard
+          </h1>
           <NotificationBell />
         </div>
-        {error && <div className="p-4 mb-4 bg-red-100 text-red-700 rounded">{error}</div>}
-        {isLoading && (
-          <div className="flex justify-center p-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="space-y-6">
+          {/* Top Grid: MyClassesSubjects and TodaySchedule */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <MyClassesSubjects data={classes} />
+            <TodaySchedule data={schedule} />
           </div>
-        )}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-          <MyClassesSubjects data={classes} />
-          <TodaySchedule data={schedule} />
-        </div>
-        <div className="p-6">
-          <MyLiveSessions sessions={sessions} />
+          {/* Full-Width MyLiveSessions */}
+          <div className="w-full">
+            <MyLiveSessions sessions={sessions} />
+          </div>
         </div>
       </div>
     </div>

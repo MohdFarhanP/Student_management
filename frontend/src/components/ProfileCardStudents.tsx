@@ -10,22 +10,24 @@ const ProfileCardStudents: React.FC<ProfileCardProps> = ({
   selectedStudent,
 }) => {
   return (
-    <div className="w-80 rounded-lg border border-gray-200 bg-white p-4 shadow-md">
+    <div className="card bg-base-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md rounded-lg p-4 w-full">
       {/* Profile Image */}
       <div className="mb-3 flex flex-col items-center">
         <img
           src={selectedStudent.profileImage || profile}
-          className="h-20 w-20 rounded-full border border-gray-300 object-cover"
+          className="h-16 w-16 sm:h-20 sm:w-20 rounded-full border border-gray-300 dark:border-gray-600 object-cover"
+          alt="Profile"
         />
-        <p className='textarea-xs text-gray-600'>{selectedStudent.email}</p>
-        <h2 className="mt-1 text-lg font-semibold text-gray-800">
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">
+          {selectedStudent.email}
+        </p>
+        <h2 className="mt-1 text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
           {selectedStudent.name}
         </h2>
       </div>
 
       {/* Student Details */}
-      <div className="grid grid-cols-2 gap-3 text-xs text-gray-700">
-        {/* Row 1 */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
         <div>
           <p className="font-semibold">Age:</p>
           <p>{selectedStudent.age}</p>
@@ -34,8 +36,6 @@ const ProfileCardStudents: React.FC<ProfileCardProps> = ({
           <p className="font-semibold">Roll No:</p>
           <p>{selectedStudent.roleNumber || 'N/A'}</p>
         </div>
-
-        {/* Row 2 */}
         <div>
           <p className="font-semibold">Gender:</p>
           <p>{selectedStudent.gender}</p>
@@ -44,8 +44,6 @@ const ProfileCardStudents: React.FC<ProfileCardProps> = ({
           <p className="font-semibold">DOB:</p>
           <p>{selectedStudent.dob || 'N/A'}</p>
         </div>
-
-        {/* Row 3 */}
         <div>
           <p className="font-semibold">Class:</p>
           <p>{selectedStudent.class || 'N/A'}</p>
@@ -56,11 +54,11 @@ const ProfileCardStudents: React.FC<ProfileCardProps> = ({
         </div>
       </div>
 
-
-
       {/* Address Details */}
-      <h3 className="mt-3 text-sm font-semibold text-gray-800">Address</h3>
-      <div className="grid grid-cols-2 gap-3 text-xs text-gray-700">
+      <h3 className="mt-3 text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-100">
+        Address
+      </h3>
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
         <div>
           <p className="font-semibold">House:</p>
           <p>{selectedStudent.address?.houseName || 'N/A'}</p>
@@ -84,8 +82,10 @@ const ProfileCardStudents: React.FC<ProfileCardProps> = ({
       </div>
 
       {/* Guardian Details */}
-      <h3 className="mt-3 text-sm font-semibold text-gray-800">Guardian</h3>
-      <div className="grid grid-cols-2 gap-3 text-xs text-gray-700">
+      <h3 className="mt-3 text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-100">
+        Guardian
+      </h3>
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
         <div>
           <p className="font-semibold">Name:</p>
           <p>{selectedStudent.address?.guardianName || 'N/A'}</p>

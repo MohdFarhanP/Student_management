@@ -4,6 +4,7 @@ import { deleteTeacher } from '../api/admin/teacherApi';
 import { ITeacher } from '../pages/admin/Teacher';
 import PaginationButton from './PaginationButton';
 import ConfirmDialog from './ConfirmDialog';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 interface TeacherTableProps {
   teachers: ITeacher[];
@@ -12,22 +13,25 @@ interface TeacherTableProps {
   setIsOpen: (isOpen: boolean) => void;
   page: number;
   setPage: React.Dispatch<React.SetStateAction<number>>;
-  onDelete: (studentId: string) => void
+  onDelete: (teacherId: string) => void;
 }
 
-const TeacherTable = ({
+const TeacherTable: React.FC<TeacherTableProps> = ({
   teachers,
   totalPages,
   setSelectedTeacher,
   setIsOpen,
   page,
   setPage,
-  onDelete
-}: TeacherTableProps) => {
+  onDelete,
+}) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [teacherIdToDelete, setTeacherIdToDelete] = useState<string | null>(
-    null
-  );
+  const [teacherIdToDelete, setTeacherIdToDelete] = useState<string | null>(null);
+
+  const handleEdit = (teacher: ITeacher) => {
+    setSelectedTeacher(teacher);
+    setIsOpen(true);
+  };
 
   const handleDelete = (teacherId: string) => {
     setTeacherIdToDelete(teacherId);
@@ -38,7 +42,7 @@ const TeacherTable = ({
     if (!teacherIdToDelete) return;
     try {
       await deleteTeacher(teacherIdToDelete);
-      onDelete(teacherIdToDelete)
+      onDelete(teacherIdToDelete);
       toast.success('Teacher deleted successfully');
       setIsConfirmOpen(false);
       setTeacherIdToDelete(null);
@@ -57,59 +61,83 @@ const TeacherTable = ({
 
   return (
     <div className="flex-1">
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
-        <table className="w-full table-auto border-collapse">
-          <thead className="bg-gray-100 text-gray-700">
-            <tr className="text-sm font-semibold uppercase">
-              <th className="px-5 py-3 text-left">Name</th>
-              <th className="px-5 py-3 text-left">Age</th>
-              <th className="px-5 py-3 text-left">Gender</th>
-              <th className="px-5 py-3 text-left">Assigned Class</th>
-              <th className="px-5 py-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {teachers.map((teacher) => (
-              <tr
-                key={teacher.empId}
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => setSelectedTeacher(teacher)}
-              >
-                <td className="px-5 py-4 text-black">{teacher.name}</td>
-                <td className="px-5 py-4 text-gray-700">
-                  {new Date().getFullYear() -
-                    new Date(teacher.dateOfBirth).getFullYear() || 'N/A'}
-                </td>
-                <td className="px-5 py-4 text-gray-700">{teacher.gender}</td>
-                <td className="px-5 py-4 text-gray-700">
-                  {teacher.assignedClass || 'N/A'}
-                </td>
-                <td className="flex justify-around px-5 py-4 text-center">
-                  <button
-                    className="btn btn-sm w-1/2 bg-black text-white"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedTeacher(teacher);
-                      setIsOpen(true);
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(teacher.id)}
-                    className="btn btn-sm border-none bg-red-500 text-white"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Teacher Cards */}
+      <div className="space-y-3">
+        {teachers.map((teacher) => (
+          <div
+            key={teacher.empId}
+            className="card bg-base-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+            onClick={() => setSelectedTeacher(teacher)}
+          >
+            <div className="flex items-center p-4 gap-4">
+              {/* Avatar */}
+              <div className="avatar">
+                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                  {teacher.profileImage ? (
+                    <img
+                      src={teacher.profileImage}
+                      alt={teacher.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-lg font-medium text-gray-500 dark:text-gray-300">
+                      {teacher.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Teacher Info */}
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                  {teacher.name}
+                </h3>
+                <div className="flex flex-wrap gap-4 text-sm mt-1">
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500 dark:text-gray-400">Age:</span>
+                    <span className="text-gray-700 dark:text-gray-200">{teacher.age}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500 dark:text-gray-400">Gender:</span>
+                    <span className="text-gray-700 dark:text-gray-200">{teacher.gender}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500 dark:text-gray-400">Class:</span>
+                    <span className="text-gray-700 dark:text-gray-200">{teacher.assignedClass || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2">
+                <button
+                  className="btn btn-ghost btn-sm rounded-full tooltip"
+                  data-tip="Edit"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(teacher);
+                  }}
+                >
+                  <PencilIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </button>
+                <button
+                  className="btn btn-ghost btn-sm rounded-full tooltip"
+                  data-tip="Delete"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(teacher.id);
+                  }}
+                >
+                  <TrashIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Pagination below the table */}
-      <div className="mt-4">
+      {/* Pagination */}
+      <div className="mt-6 flex justify-center">
         <PaginationButton
           page={page}
           setPage={setPage}
@@ -117,7 +145,7 @@ const TeacherTable = ({
         />
       </div>
 
-      {/* Custom confirmation dialog */}
+      {/* Confirmation Dialog */}
       <ConfirmDialog
         isOpen={isConfirmOpen}
         message="Are you sure you want to delete this teacher?"

@@ -33,7 +33,7 @@ const Teacher = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [isOpen, setIsOpen] = useState(false); // For AdminSideBar
 
   useEffect(() => {
     const fetch = async () => {
@@ -52,30 +52,41 @@ const Teacher = () => {
   };
 
   const handleEditTeacher = (updatedTeacher: ITeacher) => {
-    setTeachers((prev) => [...prev, updatedTeacher]);
+    setTeachers((prevTeachers) =>
+      prevTeachers.map((t) => (t.id === updatedTeacher.id ? updatedTeacher : t))
+    );
   };
 
   const handleDeleteTeacher = (teacherId: string) => {
     setTeachers((prevTeachers) =>
-      prevTeachers.filter((s) => s.id !== teacherId)
+      prevTeachers.filter((t) => t.id !== teacherId)
     );
     setTotalCount((prevCount) => prevCount - 1);
     if (selectedTeacher?.id === teacherId) setSelectedTeacher(null);
   };
 
-  const filterTeachers = teachers.filter((teacher)=> teacher.name.toLowerCase().includes(searchTerm.toLocaleLowerCase()))
+  const filterTeachers = teachers.filter((teacher) =>
+    teacher.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="flex min-h-screen bg-white">
-      <AdminSideBar />
-      <div className="flex flex-1 flex-col px-6 py-4">
-        <div className="my-5 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-black">Teachers</h1>
-          <div className="flex space-x-4">
+    <div className="flex min-h-screen bg-base-100 dark:bg-gray-900 overflow-hidden">
+      <AdminSideBar isOpen={isOpen} setIsOpen={setIsOpen} />
+      <div
+        className={`flex-1 overflow-y-auto p-4 sm:p-6 max-h-screen ${
+          isOpen ? 'md:overflow-hidden overflow-hidden' : ''
+        }`}
+      >
+        {/* Header */}
+        <div className="my-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-base-content dark:text-white">
+            Teachers
+          </h1>
+          <div className="flex flex-col sm:flex-row gap-3">
             <BulkUploadButton role={'Teacher'} />
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+              className="btn btn-primary btn-sm sm:btn-md"
             >
               Add Teacher
             </button>
@@ -86,13 +97,13 @@ const Teacher = () => {
         <input
           type="search"
           value={searchTerm}
-          onChange={(e)=>setSearchTerm(e.target.value)}
-          className="mb-6 w-xl rounded-lg border border-gray-300 p-2 text-black focus:ring-2 focus:ring-gray-300 focus:outline-none"
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="input input-bordered w-full max-w-md mb-6 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600 focus:ring-primary"
           placeholder="Search teachers by name..."
         />
 
-        <div className="flex gap-6">
-          {/* Teacher Table */}
+        {/* Teacher List and Profile Card */}
+        <div className="flex flex-col lg:flex-row gap-6">
           <TeacherTable
             setSelectedTeacher={setSelectedTeacher}
             teachers={filterTeachers}
@@ -102,13 +113,14 @@ const Teacher = () => {
             setPage={setPage}
             onDelete={handleDeleteTeacher}
           />
-          {/* Profile Card */}
           {selectedTeacher && (
-            <ProfileCardTeacher selectedTeacher={selectedTeacher} />
+            <div className="lg:w-80">
+              <ProfileCardTeacher selectedTeacher={selectedTeacher} />
+            </div>
           )}
         </div>
 
-        {/* Edit Modal */}
+        {/* Modals */}
         {isEditModalOpen && selectedTeacher && (
           <EditTeacherModal
             teacherData={selectedTeacher}
@@ -116,8 +128,6 @@ const Teacher = () => {
             onEdit={handleEditTeacher}
           />
         )}
-
-        {/* Add Modal */}
         {isAddModalOpen && (
           <AddTeacherModal
             onClose={() => setIsAddModalOpen(false)}

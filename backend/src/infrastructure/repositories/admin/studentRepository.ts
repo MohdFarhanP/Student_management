@@ -6,6 +6,7 @@ import { ILiveSessionDto, IStudent } from '../../../domain/types/interfaces';
 import { Gender } from '../../../domain/types/enums';
 import { LiveSessionModel } from '../../database/models/liveSessionModel';
 import { format } from 'date-fns';
+import { UserInfo } from '../../../domain/types/interfaces';
 
 // Utility function to map MongoDB data to IStudent with Gender enum
 const mapToStudentData = (data: any): Partial<IStudent> => ({
@@ -102,6 +103,16 @@ export class StudentRepository implements IStudentRepository {
     const student = await studentModel.findOne({ _id: id, isDeleted: false }).lean();
     if (!student) return null;
     return new Student(mapToStudentData(student));
+  }
+
+  async findManyByIds(ids: string[]): Promise<UserInfo[]> {
+    const usersData = await studentModel.find({ _id: { $in: ids } });
+    return usersData.map((user)=>({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: 'Student'
+  }))
   }
 
   async create(data: Partial<IStudent>): Promise<Student> {

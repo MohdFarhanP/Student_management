@@ -6,5 +6,5 @@ export interface INotificationRepository {
   findScheduled(currentTime: Date): Promise<INotification[]>;
   findByUserId(userId: string, userRole:string): Promise<INotification[]>;
   markAsSent(notificationId: string): Promise<void>;
-  markAsRead(notificationId: string, userId: string): Promise<void>;
+  markAsRead(notificationId: string, userId: string, userRole: string): Promise<void>
 }

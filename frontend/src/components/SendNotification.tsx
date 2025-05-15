@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { socket } from '../socket';
+import { BellIcon, ClockIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
 const SendNotification: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -30,7 +31,7 @@ const SendNotification: React.FC = () => {
   const handleSend = () => {
     setError(null);
     setSuccess(null);
-  
+
     if (!title.trim()) {
       setError('Title is required');
       return;
@@ -39,7 +40,7 @@ const SendNotification: React.FC = () => {
       setError('Message is required');
       return;
     }
-  
+
     const notification: {
       title: string;
       message: string;
@@ -59,26 +60,22 @@ const SendNotification: React.FC = () => {
       senderId: user.id,
       senderRole: user.role as 'Admin' | 'Teacher',
     };
-  
+
     if (scheduledAt) {
-      // Interpret the input as IST (Asia/Kolkata) and convert to UTC
-      const scheduledDateIST = new Date(scheduledAt); // e.g., "2025-05-05T14:03" in IST
+      const scheduledDateIST = new Date(scheduledAt);
       const scheduledDateUTC = new Date(
         scheduledDateIST.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
-      ).toISOString(); // Convert to UTC
-      console.log('Scheduled time (IST):', scheduledDateIST.toLocaleString());
-      console.log('Scheduled time (UTC):', scheduledDateUTC);
-  
-      // Validate that the scheduled time is in the future (in UTC)
+      ).toISOString();
+
       const nowUTC = new Date().toISOString();
       if (scheduledDateUTC <= nowUTC) {
         setError('Scheduled time must be in the future');
         return;
       }
-  
-      notification.scheduledAt = scheduledDateUTC; // Store in UTC
+
+      notification.scheduledAt = scheduledDateUTC;
     }
-  
+
     socket.emit('sendNotification', notification);
     setTitle('');
     setMessage('');
@@ -87,54 +84,116 @@ const SendNotification: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-4 text-gray-800">Send Notificaion</h2>
-      {error && <div className="mb-4 text-red-500">{error}</div>}
-      {success && <div className="mb-4 text-green-500">{success}</div>}
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
-        className="mb-2 w-full rounded border p-2 text-black"
-      />
-      <textarea
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Message"
-        className="mb-2 w-full rounded border p-2 text-black"
-      />
-      <select
-        value={recipientType}
-        onChange={(e) => setRecipientType(e.target.value as 'global' | 'role' | 'Student')}
-        className="mb-2 w-full rounded border p-2 text-black"
-      >
-        <option value="global">Global</option>
-        {user.role === 'Admin' && <option value="role">Role</option>}
-        <option value="Student">Student</option>
-      </select>
-      {recipientType !== 'global' && (
-        <input
-          type="text"
-          value={recipientIds}
-          onChange={(e) => setRecipientIds(e.target.value)}
-          placeholder={
-            recipientType === 'role'
-              ? 'Enter roles (e.g., teacher,student)'
-              : 'Enter student IDs (comma-separated)'
-          }
-          className="mb-2 w-full rounded border p-2 text-black  "
-        />
+    <div className="card bg-base-100 dark:bg-gray-800 shadow-xl p-6">
+      <h2 className="text-xl font-semibold text-base-content dark:text-white mb-4 flex items-center gap-2">
+        <BellIcon className="h-6 w-6 text-primary dark:text-primary-content" />
+        Send Notification
+      </h2>
+      {error && (
+        <div className="mb-4">
+          <div className="alert alert-error shadow-lg">
+            <div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="stroke-current flex-shrink-0 h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{error}</span>
+            </div>
+          </div>
+        </div>
       )}
-      <input
-        type="datetime-local"
-        value={scheduledAt}
-        onChange={(e) => setScheduledAt(e.target.value)}
-        className="mb-2 w-full rounded border p-2 text-black"
-      />
-      <button onClick={handleSend} className="rounded bg-blue-500 p-2 text-white">
-        Send
-      </button>
+      {success && (
+        <div className="mb-4">
+          <div className="alert alert-success shadow-lg">
+            <div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="stroke-current flex-shrink-0 h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              <span>{success}</span>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="space-y-4">
+        <div className="relative">
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title"
+            className="input input-bordered w-full pl-10 bg-base-100 dark:bg-gray-700 text-base-content dark:text-white focus:ring-primary"
+          />
+          <BellIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+        </div>
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Message"
+          className="textarea textarea-bordered w-full bg-base-100 dark:bg-gray-700 text-base-content dark:text-white focus:ring-primary"
+        />
+        <div className="relative">
+          <select
+            value={recipientType}
+            onChange={(e) => setRecipientType(e.target.value as 'global' | 'role' | 'Student')}
+            className="select select-bordered w-full pl-10 bg-base-100 dark:bg-gray-700 text-base-content dark:text-white focus:ring-primary"
+          >
+            <option value="global">Global</option>
+            {user.role === 'Admin' && <option value="role">Role</option>}
+            <option value="Student">Student</option>
+          </select>
+          <UserGroupIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+        </div>
+        {recipientType !== 'global' && (
+          <div className="relative">
+            <input
+              type="text"
+              value={recipientIds}
+              onChange={(e) => setRecipientIds(e.target.value)}
+              placeholder={
+                recipientType === 'role'
+                  ? 'Enter roles (e.g., teacher,student)'
+                  : 'Enter student IDs (comma-separated)'
+              }
+              className="input input-bordered w-full pl-10 bg-base-100 dark:bg-gray-700 text-base-content dark:text-white focus:ring-primary"
+            />
+            <UserGroupIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+          </div>
+        )}
+        <div className="relative">
+          <input
+            type="datetime-local"
+            value={scheduledAt}
+            onChange={(e) => setScheduledAt(e.target.value)}
+            className="input input-bordered w-full pl-10 bg-base-100 dark:bg-gray-700 text-base-content dark:text-white focus:ring-primary"
+          />
+          <ClockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+        </div>
+        <button
+          onClick={handleSend}
+          className="btn btn-primary w-full"
+        >
+          Send Notification
+        </button>
+      </div>
     </div>
   );
 };

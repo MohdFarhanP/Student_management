@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { deleteStudent, IStudent } from '../api/admin/studentApi';
 import PaginationButton from './PaginationButton';
 import ConfirmDialog from './ConfirmDialog';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 interface StudentTableProps {
   students: IStudent[];
@@ -23,9 +24,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
   onDelete,
 }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [studentIdToDelete, setStudentIdToDelete] = useState<string | null>(
-    null
-  );
+  const [studentIdToDelete, setStudentIdToDelete] = useState<string | null>(null);
 
   const handleEdit = (student: IStudent) => {
     setSelectedStudent(student);
@@ -58,52 +57,83 @@ const StudentTable: React.FC<StudentTableProps> = ({
 
   return (
     <div className="flex-1">
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
-        <table className="w-full table-auto border-collapse">
-          <thead className="bg-gray-100 text-gray-700">
-            <tr className="text-sm font-semibold uppercase">
-              <th className="px-5 py-3 text-left">Name</th>
-              <th className="px-5 py-3 text-left">Age</th>
-              <th className="px-5 py-3 text-left">Gender</th>
-              <th className="px-5 py-3 text-left">Class</th>
-              <th className="px-5 py-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {students.map((student) => (
-              <tr
-                key={student.roleNumber}
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => setSelectedStudent(student)}
-              >
-                <td className="px-5 py-4 text-black">{student.name}</td>
-                <td className="px-5 py-4 text-gray-700">{student.age}</td>
-                <td className="px-5 py-4 text-gray-700">{student.gender}</td>
-                <td className="px-5 py-4 text-gray-700">
-                  {student.class || 'N/A'}
-                </td>
-                <td className="flex justify-around px-5 py-4 text-center">
-                  <button
-                    className="btn btn-sm w-1/2 bg-black text-white"
-                    onClick={() => handleEdit(student)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(student.id)}
-                    className="rounded bg-red-500 px-2 py-1 text-white hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Student Cards */}
+      <div className="space-y-3">
+        {students.map((student) => (
+          <div
+            key={student.roleNumber}
+            className="card bg-base-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+            onClick={() => setSelectedStudent(student)}
+          >
+            <div className="flex items-center p-4 gap-4">
+              {/* Avatar */}
+              <div className="avatar">
+                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                  {student.profileImage ? (
+                    <img
+                      src={student.profileImage}
+                      alt={student.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-lg font-medium text-gray-500 dark:text-gray-300">
+                      {student.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Student Info */}
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                  {student.name}
+                </h3>
+                <div className="flex flex-wrap gap-4 text-sm mt-1">
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500 dark:text-gray-400">Age:</span>
+                    <span className="text-gray-700 dark:text-gray-200">{student.age}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500 dark:text-gray-400">Gender:</span>
+                    <span className="text-gray-700 dark:text-gray-200">{student.gender}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500 dark:text-gray-400">Class:</span>
+                    <span className="text-gray-700 dark:text-gray-200">{student.class || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2">
+                <button
+                  className="btn btn-ghost btn-sm rounded-full tooltip"
+                  data-tip="Edit"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(student);
+                  }}
+                >
+                  <PencilIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </button>
+                <button
+                  className="btn btn-ghost btn-sm rounded-full tooltip"
+                  data-tip="Delete"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(student.id);
+                  }}
+                >
+                  <TrashIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Pagination below the table */}
-      <div className="mt-4">
+      {/* Pagination */}
+      <div className="mt-6 flex justify-center">
         <PaginationButton
           page={page}
           setPage={setPage}
@@ -111,7 +141,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
         />
       </div>
 
-      {/* Custom confirmation dialog */}
+      {/* Confirmation Dialog */}
       <ConfirmDialog
         isOpen={isConfirmOpen}
         message="Are you sure you want to delete this student?"

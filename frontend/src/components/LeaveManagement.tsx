@@ -3,30 +3,11 @@ import { socket } from '../socket';
 import { RootState } from '../redux/store';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-
-enum LeaveStatus {
-  Pending = 'Pending',
-  Approved = 'Approved',
-  Rejected = 'Rejected',
-}
-
-interface Leave {
-  id: string;
-  studentId: string;
-  date: string;
-  reason: string;
-  status: LeaveStatus;
-  createdAt: string;
-  updatedAt: string;
-}
+import useSocket from '../hooks/useSocket';
+import { Leave, LeaveStatus, ApplyForm  } from '../types/leave';
 
 interface LeaveManagementProps {
   mode: 'apply' | 'history' | 'teacher';
-}
-
-interface ApplyForm {
-  date: string;
-  reason: string;
 }
 
 const LeaveManagement: React.FC<LeaveManagementProps> = ({ mode }) => {
@@ -36,46 +17,12 @@ const LeaveManagement: React.FC<LeaveManagementProps> = ({ mode }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Use custom hook for Socket.IO logic
+  useSocket(user, mode, setLeaves, setForm, setIsSubmitting, setError);
+
   useEffect(() => {
     if (!user) return;
 
-    if (!socket.connected) {
-      socket.connect();
-    }
-
-    // Handle leave-applied event (student)
-    socket.on('leave-applied', ({ leave }: { leave: Leave }) => {
-      toast.success('Leave applied successfully!');
-      setLeaves((prev) => [...prev, leave]);
-      setForm({ date: '', reason: '' });
-      setIsSubmitting(false);
-    });
-
-    // Handle leave-updated event (student/teacher)
-    socket.on('leave-updated', ({ leave }: { leave: Leave }) => {
-      setLeaves((prev) =>
-        prev.map((l) => (l.id === leave.id ? leave : l))
-      );
-      toast.success(`Leave ${leave.status.toLowerCase()}!`);
-      setIsSubmitting(false);
-    });
-
-    // Handle new-leave-request (teacher)
-    socket.on('new-leave-request', ({ leave }: { leave: Leave }) => {
-      if (mode === 'teacher') {
-        setLeaves((prev) => [...prev, leave]);
-        toast.info('New leave request received');
-      }
-    });
-
-    // Handle errors
-    socket.on('error', ({ message }: { message: string }) => {
-      toast.error(message);
-      setError(message);
-      setIsSubmitting(false);
-    });
-
-    // Load leave history or pending leaves
     if (mode === 'history' || mode === 'teacher') {
       socket.emit(
         'view-leave-history',
@@ -93,13 +40,6 @@ const LeaveManagement: React.FC<LeaveManagementProps> = ({ mode }) => {
         }
       );
     }
-
-    return () => {
-      socket.off('leave-applied');
-      socket.off('leave-updated');
-      socket.off('new-leave-request');
-      socket.off('error');
-    };
   }, [mode, user]);
 
   const handleApplyLeave = (e: React.FormEvent) => {
@@ -154,94 +94,142 @@ const LeaveManagement: React.FC<LeaveManagementProps> = ({ mode }) => {
   };
 
   if (!user) {
-    return <div>Please log in to manage leaves</div>;
+    return <div className="text-center text-gray-600 dark:text-gray-300">Please log in to manage leaves</div>;
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-
-      {/* Apply Leave Form (Student) */}
-      {mode === 'apply' && (
-        <form onSubmit={handleApplyLeave} style={{ marginBottom: '20px' }}>
-          <h2>Apply for Leave</h2>
-          <div style={{ marginBottom: '10px' }}>
-            <label>Date:</label>
-            <input
-              type="date"
-              value={form.date}
-              onChange={(e) => setForm({ ...form, date: e.target.value })}
-              required
-              disabled={isSubmitting}
-              style={{ marginLeft: '10px', padding: '5px' }}
-            />
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
+      {error && (
+        <div className="alert alert-error shadow-lg mb-4">
+          <div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 flex-shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>{error}</span>
           </div>
-          <div style={{ marginBottom: '10px' }}>
-            <label>Reason:</label>
-            <textarea
-              value={form.reason}
-              onChange={(e) => setForm({ ...form, reason: e.target.value })}
-              required
-              disabled={isSubmitting}
-              style={{ marginLeft: '10px', padding: '5px', width: '100%', minHeight: '100px' }}
-            />
-          </div>
-          <button type="submit" disabled={isSubmitting} style={{ padding: '10px 20px' }}>
-            {isSubmitting ? 'Submitting...' : 'Submit'}
-          </button>
-        </form>
+        </div>
       )}
 
-      {/* Leave History (Student) or Pending Leaves (Teacher) */}
+      {mode === 'apply' && (
+        <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6 mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white mb-4">
+            Apply for Leave
+          </h2>
+          <form onSubmit={handleApplyLeave} className="space-y-4">
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-base-content dark:text-gray-300">Date</span>
+              </label>
+              <input
+                type="date"
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                required
+                disabled={isSubmitting}
+                className="input input-bordered w-full bg-base-100 dark:bg-gray-700 text-base-content dark:text-white"
+              />
+            </div>
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text text-base-content dark:text-gray-300">Reason</span>
+              </label>
+              <textarea
+                value={form.reason}
+                onChange={(e) => setForm({ ...form, reason: e.target.value })}
+                required
+                disabled={isSubmitting}
+                className="textarea textarea-bordered w-full bg-base-100 dark:bg-gray-700 text-base-content dark:text-white h-32"
+                placeholder="Enter your reason for leave"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`btn btn-primary w-full sm:w-auto ${isSubmitting ? 'loading' : ''}`}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit'}
+            </button>
+          </form>
+        </div>
+      )}
+
       {(mode === 'history' || mode === 'teacher') && (
-        <div>
-          <h2>{mode === 'history' ? 'Leave History' : 'Pending Leave Requests'}</h2>
+        <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white mb-4">
+            {mode === 'history' ? 'Leave History' : 'Pending Leave Requests'}
+          </h2>
           {leaves.length === 0 ? (
-            <p>No leaves found</p>
+            <p className="text-gray-600 dark:text-gray-300">No leaves found</p>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>Date</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>Reason</th>
-                  <th style={{ border: '1px solid #ddd', padding: '8px' }}>Status</th>
-                  {mode === 'teacher' && (
-                    <th style={{ border: '1px solid #ddd', padding: '8px' }}>Actions</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {leaves.map((leave) => (
-                  <tr key={leave.id}>
-                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                      {new Date(leave.date).toLocaleDateString('en-IN', {
-                        timeZone: 'Asia/Kolkata',
-                      })}
-                    </td>
-                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>{leave.reason}</td>
-                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>{leave.status}</td>
-                    {mode === 'teacher' && leave.status === 'Pending' && (
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                        <button
-                          onClick={() => handleApproveReject(leave.id, 'Approved')}
-                          disabled={isSubmitting}
-                          style={{ marginRight: '10px', padding: '5px 10px' }}
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleApproveReject(leave.id, 'Rejected')}
-                          disabled={isSubmitting}
-                          style={{ padding: '5px 10px' }}
-                        >
-                          Reject
-                        </button>
-                      </td>
-                    )}
+            <div className="overflow-x-auto">
+              <table className="table w-full">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    {mode === 'teacher' && <th>Actions</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {leaves
+                    .filter((leave): leave is Leave => !!leave)
+                    .map((leave) => (
+                      <tr key={leave.id}>
+                        <td>
+                          {new Date(leave.date).toLocaleDateString('en-IN', {
+                            timeZone: 'Asia/Kolkata',
+                          })}
+                        </td>
+                        <td>{leave.reason}</td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              leave.status === LeaveStatus.Approved
+                                ? 'badge-success'
+                                : leave.status === LeaveStatus.Rejected
+                                  ? 'badge-error'
+                                  : 'badge-warning'
+                            }`}
+                          >
+                            {leave.status}
+                          </span>
+                        </td>
+                        {mode === 'teacher' && leave.status === LeaveStatus.Pending && (
+                          <td>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleApproveReject(leave.id, 'Approved')}
+                                disabled={isSubmitting}
+                                className="btn btn-success btn-sm"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => handleApproveReject(leave.id, 'Rejected')}
+                                disabled={isSubmitting}
+                                className="btn btn-error btn-sm"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}

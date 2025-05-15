@@ -113,22 +113,24 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4">
-      <div className="relative w-full max-w-3xl rounded-lg bg-white shadow-lg">
-        <div className="flex items-center justify-between border-b p-6">
-          <h3 className="text-xl font-semibold text-black">Add Student</h3>
+    <div className="modal modal-open">
+      <div className="modal-box w-11/12 max-w-4xl bg-base-100 dark:bg-gray-800">
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white">
+            Add Student
+          </h3>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="text-lg text-gray-600 hover:text-black"
+            className="btn btn-sm btn-circle btn-ghost text-gray-600 dark:text-gray-300"
           >
             ✕
           </button>
         </div>
-        <div className="max-h-[80vh] overflow-y-auto p-6">
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+        <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Name
               </label>
               <input
@@ -137,15 +139,15 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.name || ''}
                 onChange={handleChange}
                 placeholder="Name"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
               {errors.name && (
-                <p className="mt-1 text-xs text-red-500">{errors.name}</p>
+                <p className="mt-1 text-xs text-error">{errors.name}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Email
               </label>
               <input
@@ -154,15 +156,15 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.email || ''}
                 onChange={handleChange}
                 placeholder="Email"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
               {errors.email && (
-                <p className="mt-1 text-xs text-red-500">{errors.email}</p>
+                <p className="mt-1 text-xs text-error">{errors.email}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Role Number
               </label>
               <input
@@ -171,15 +173,15 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.roleNumber || ''}
                 onChange={handleChange}
                 placeholder="Role Number"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
               {errors.roleNumber && (
-                <p className="mt-1 text-xs text-red-500">{errors.roleNumber}</p>
+                <p className="mt-1 text-xs text-error">{errors.roleNumber}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Date of Birth
               </label>
               <input
@@ -187,22 +189,22 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 name="dob"
                 value={formData.dob || ''}
                 onChange={handleChange}
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
               {errors.dob && (
-                <p className="mt-1 text-xs text-red-500">{errors.dob}</p>
+                <p className="mt-1 text-xs text-error">{errors.dob}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Gender
               </label>
               <select
                 name="gender"
                 value={formData.gender || ''}
                 onChange={handleChange}
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="select select-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               >
                 <option value="">Select Gender</option>
@@ -210,11 +212,11 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 <option value="Female">Female</option>
               </select>
               {errors.gender && (
-                <p className="mt-1 text-xs text-red-500">{errors.gender}</p>
+                <p className="mt-1 text-xs text-error">{errors.gender}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Age
               </label>
               <input
@@ -223,15 +225,15 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.age || ''}
                 onChange={handleChange}
                 placeholder="Age"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
               {errors.age && (
-                <p className="mt-1 text-xs text-red-500">{errors.age}</p>
+                <p className="mt-1 text-xs text-error">{errors.age}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Class
               </label>
               <input
@@ -240,12 +242,12 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.class || ''}
                 onChange={handleChange}
                 placeholder="Class (e.g., 10B)"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 House Name
               </label>
               <input
@@ -254,15 +256,15 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.address?.houseName || ''}
                 onChange={handleChange}
                 placeholder="House Name"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
               {errors.houseName && (
-                <p className="mt-1 text-xs text-red-500">{errors.houseName}</p>
+                <p className="mt-1 text-xs text-error">{errors.houseName}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Place
               </label>
               <input
@@ -271,15 +273,15 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.address?.place || ''}
                 onChange={handleChange}
                 placeholder="Place"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
               {errors.place && (
-                <p className="mt-1 text-xs text-red-500">{errors.place}</p>
+                <p className="mt-1 text-xs text-error">{errors.place}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 District
               </label>
               <input
@@ -288,15 +290,15 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.address?.district || ''}
                 onChange={handleChange}
                 placeholder="District"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
               {errors.district && (
-                <p className="mt-1 text-xs text-red-500">{errors.district}</p>
+                <p className="mt-1 text-xs text-error">{errors.district}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Pincode
               </label>
               <input
@@ -305,15 +307,15 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.address?.pincode || ''}
                 onChange={handleChange}
                 placeholder="Pincode"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
               {errors.pincode && (
-                <p className="mt-1 text-xs text-red-500">{errors.pincode}</p>
+                <p className="mt-1 text-xs text-error">{errors.pincode}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Phone Number
               </label>
               <input
@@ -322,15 +324,15 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.address?.phoneNo || ''}
                 onChange={handleChange}
                 placeholder="Phone Number"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
               {errors.phoneNo && (
-                <p className="mt-1 text-xs text-red-500">{errors.phoneNo}</p>
+                <p className="mt-1 text-xs text-error">{errors.phoneNo}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Guardian Name
               </label>
               <input
@@ -339,17 +341,15 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.address?.guardianName || ''}
                 onChange={handleChange}
                 placeholder="Guardian Name"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
               {errors.guardianName && (
-                <p className="mt-1 text-xs text-red-500">
-                  {errors.guardianName}
-                </p>
+                <p className="mt-1 text-xs text-error">{errors.guardianName}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Guardian Contact
               </label>
               <input
@@ -358,22 +358,22 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
                 value={formData.address?.guardianContact || ''}
                 onChange={handleChange}
                 placeholder="Guardian Contact"
-                className="mt-1 w-full rounded-md border p-2 text-black"
+                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
               />
             </div>
-            <div className="col-span-2 mt-6 flex justify-end space-x-3">
+            <div className="col-span-1 sm:col-span-2 mt-6 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md bg-gray-300 px-4 py-2 text-sm font-medium text-black hover:bg-gray-400"
+                className="btn btn-outline btn-sm sm:btn-md"
                 disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+                className="btn btn-primary btn-sm sm:btn-md"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Adding...' : 'Add Student'}

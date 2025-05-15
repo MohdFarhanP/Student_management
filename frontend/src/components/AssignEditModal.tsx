@@ -7,10 +7,12 @@ type FormData = {
   teacherId: string;
   subject: string;
 };
+
 type Subject = {
   id: string;
   subjectName: string;
 };
+
 type AssignEditModalProps = {
   mode: 'assign' | 'edit';
   teachers: { id: string; name: string }[];
@@ -56,87 +58,83 @@ const AssignEditModal: React.FC<AssignEditModalProps> = ({
   };
 
   return (
-    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black/75">
-      <div className="w-full max-w-md rounded-lg bg-white p-6">
-        <h2 className="mb-4 text-xl font-bold text-gray-800">
-          {mode === 'assign' ? 'Assign Teacher' : 'Edit Slot'}
-        </h2>
-        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
-          {/* Teacher Selection */}
-          <div>
-            <label
-              htmlFor="teacherId"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Teacher
-            </label>
-            <select
-              id="teacherId"
-              {...register('teacherId', { required: 'Teacher is required' })}
-              className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-black focus:ring-black"
-            >
-              <option value="">Select a teacher</option>
-              {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.name}
-                </option>
-              ))}
-            </select>
-            {errors.teacherId && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.teacherId.message}
-              </p>
-            )}
-          </div>
+    <div className="modal modal-open">
+      <div className="modal-box w-11/12 max-w-md bg-base-100 dark:bg-gray-800">
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white">
+            {mode === 'assign' ? 'Assign Teacher' : 'Edit Slot'}
+          </h3>
+          <button
+            onClick={onClose}
+            className="btn btn-sm btn-circle btn-ghost text-gray-600 dark:text-gray-300"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto">
+          <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+            {/* Teacher Selection */}
+            <div>
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
+                Teacher
+              </label>
+              <select
+                id="teacherId"
+                {...register('teacherId', { required: 'Teacher is required' })}
+                className="select select-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
+              >
+                <option value="">Select a teacher</option>
+                {teachers.map((teacher) => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {teacher.name}
+                  </option>
+                ))}
+              </select>
+              {errors.teacherId && (
+                <p className="mt-1 text-xs text-error">{errors.teacherId.message}</p>
+              )}
+            </div>
 
-          {/* Subject Input */}
-          <div>
-            <label
-              htmlFor="subject"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Subject
-            </label>
-            <select
-              id="subject"
-              {...register('subject', { required: 'Subject is required' })}
-              className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-black focus:border-black focus:ring-black"
-            >
-              <option value="">Select a subject</option>
-              {subjects.map((subject) => (
-                <option
-                  className="text-black"
-                  key={subject.id}
-                  value={subject.subjectName}
-                >
-                  {subject.subjectName}
-                </option>
-              ))}
-            </select>
-            {errors.subject && (
-              <p className="mt-1 text-sm text-red-500">
-                {errors.subject.message}
-              </p>
-            )}
-          </div>
+            {/* Subject Selection */}
+            <div>
+              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
+                Subject
+              </label>
+              <select
+                id="subject"
+                {...register('subject', { required: 'Subject is required' })}
+                className="select select-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
+              >
+                <option value="">Select a subject</option>
+                {subjects.map((subject) => (
+                  <option key={subject.id} value={subject.subjectName}>
+                    {subject.subjectName}
+                  </option>
+                ))}
+              </select>
+              {errors.subject && (
+                <p className="mt-1 text-xs text-error">{errors.subject.message}</p>
+              )}
+            </div>
 
-          {/* Buttons */}
-          <div className="flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-md bg-gray-300 px-4 py-2 text-gray-800 transition-colors hover:bg-gray-400"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="rounded-md bg-black/95 px-4 py-2 text-white transition-colors hover:bg-black"
-            >
-              {mode === 'assign' ? 'Assign' : 'Update'}
-            </button>
-          </div>
-        </form>
+            {/* Buttons */}
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="btn btn-outline btn-sm sm:btn-md"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm sm:btn-md"
+              >
+                {mode === 'assign' ? 'Assign' : 'Update'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

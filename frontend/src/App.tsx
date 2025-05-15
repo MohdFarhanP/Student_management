@@ -90,9 +90,9 @@ const AppContent: React.FC = () => {
           user.role === 'Admin'
             ? '/admin/dashboard'
             : user.role === 'Student'
-              ? '/student/profile'
+              ? '/student/dashboard'
               : user.role === 'Teacher'
-                ? '/teacher/profile'
+                ? '/teacher/dashboard'
                 : '/login';
         const shouldRedirectToLogin =
           user.role !== 'Admin' && user.isInitialLogin;
@@ -113,8 +113,9 @@ const AppContent: React.FC = () => {
 
   return (
     <Routes>
-      <Route path="/unauthorized" element={<Unauthorized />} />
+      
       <Route path="/login" element={<Login />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
       <Route element={<PrivateRoute allowedRoles={['Admin']} />}>
         <Route path="/admin/*" element={<AdminRoutes />} />
       </Route>

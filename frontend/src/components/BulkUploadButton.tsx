@@ -11,11 +11,9 @@ const BulkUploadButton = ({ role }: { role: string }) => {
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    console.log('event.target.files', event.target.files);
     const file = event.target.files?.[0];
-    console.log('file before ', file);
     if (!file) return;
-    console.log('file after ', file);
+
     // Validate file type
     const validTypes = [
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -25,12 +23,12 @@ const BulkUploadButton = ({ role }: { role: string }) => {
       toast.error('Only Excel files (.xlsx, .xls) are allowed!');
       return;
     }
-    if (role == 'Student') {
+    if (role === 'Student') {
       await studentsBulkUpload(file);
-    } else if (role == 'Teacher') {
+    } else if (role === 'Teacher') {
       await teachersBulkUpload(file);
     } else {
-      toast.error('please make sure your sheetName Students or Teachers');
+      toast.error('Please make sure your sheetName is Students or Teachers');
       console.log(role);
     }
   };
@@ -44,9 +42,8 @@ const BulkUploadButton = ({ role }: { role: string }) => {
         className="hidden"
         onChange={handleFileUpload}
       />
-
       <button
-        className="rounded-lg bg-black px-4 py-2 text-white hover:opacity-80"
+        className="btn btn-primary btn-sm sm:btn-md"
         onClick={() => fileInputRef.current?.click()}
       >
         Bulk Upload

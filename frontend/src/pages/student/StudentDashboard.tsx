@@ -51,35 +51,59 @@ export const StudentDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-gray-600">Loading dashboard...</p>
+      <div className="flex items-center justify-center min-h-screen bg-base-100 dark:bg-gray-900">
+        <div className="loading loading-spinner loading-lg text-primary"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-500 text-lg">{error}</p>
+      <div className="flex items-center justify-center min-h-screen bg-base-100 dark:bg-gray-900">
+        <div className="alert alert-error shadow-lg max-w-md">
+          <div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="stroke-current flex-shrink-0 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>{error}</span>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex bg-white min-h-screen">
+    <div className="flex min-h-screen bg-base-100 dark:bg-gray-900">
       <StudentSidebar />
-      <div className="flex flex-1 flex-col px-6 py-4">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">Student Dashboard</h1>
+      <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-base-content ml-15 dark:text-white sm:text-3xl">
+            Student Dashboard
+          </h1>
           <NotificationBell />
         </div>
 
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
-          {classInfo && <MyClassInfo {...classInfo} />}
-          <LiveSessions sessions={liveSessions} />
+        <div className="space-y-6">
+          {/* Top Grid: MyClassInfo and LiveSessions */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {classInfo && <MyClassInfo {...classInfo} />}
+            <LiveSessions sessions={liveSessions} />
+          </div>
+          {/* Full-Width Timetable */}
+          <div className="w-full">
+            <TodaysTimetable periods={timetable || []} />
+          </div>
         </div>
-
-        <TodaysTimetable periods={timetable || []} />
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface DashboardStatsCardProps {
   title: string;
@@ -11,15 +11,17 @@ const DashboardStatsCard: React.FC<DashboardStatsCardProps> = ({
   title,
   count,
   icon,
-  bgColor = "bg-blue-100",
+  bgColor = 'bg-base-200',
 }) => {
   return (
-    <div className={`rounded-2xl shadow-md p-4 flex items-center justify-between ${bgColor}`}>
+    <div
+      className={`card ${bgColor} dark:bg-opacity-30 shadow-xl p-6 flex items-center justify-between transition-shadow hover:shadow-2xl`}
+    >
       <div>
-        <h2 className="text-sm text-gray-600 font-medium">{title}</h2>
-        <p className="text-2xl font-bold text-gray-800">{count}</p>
+        <h2 className="text-sm font-medium text-gray-600 dark:text-gray-300">{title}</h2>
+        <p className="text-2xl font-bold text-base-content dark:text-white">{count}</p>
       </div>
-      <div className="text-gray-700 text-3xl">{icon}</div>
+      <div className="text-4xl">{icon}</div>
     </div>
   );
 };

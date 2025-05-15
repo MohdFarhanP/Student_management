@@ -1,5 +1,5 @@
 import { Student } from '../../entities/student';
-import { ILiveSessionDto, IStudent } from '../../types/interfaces';
+import { ILiveSessionDto, IStudent, UserInfo } from '../../types/interfaces';
 
 export interface IStudentRepository {
   insertMany(data: Student[]): Promise<void>;
@@ -17,5 +17,6 @@ export interface IStudentRepository {
   addStudentToClass(classId: string, studentId: string): Promise<void>;
   removeStudentFromClass(classId: string, studentId: string): Promise<void>;
   getSessions(userId: string): Promise< ILiveSessionDto[] | null>;
+  findManyByIds(ids: string[]): Promise<UserInfo[]>
 }
   

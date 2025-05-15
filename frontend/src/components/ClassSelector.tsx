@@ -17,27 +17,28 @@ const ClassSelector: React.FC<ClassSelectorProps> = ({
   onSelectClass,
 }) => {
   return (
-    <div className="mb-6">
-      <label
-        htmlFor="classSelector"
-        className="mb-2 block text-sm font-medium text-gray-700"
-      >
-        Select Class
-      </label>
+    <div className="relative w-48 sm:w-64">
       <select
         id="classSelector"
         value={selectedClassId}
         onChange={(e) => onSelectClass(e.target.value)}
-        className="mx-auto block w-full max-w-xs rounded-md border border-gray-300 p-2 text-black focus:border-blue-500 focus:ring-blue-500"
+        className="select select-bordered w-full text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600 focus:ring-primary"
       >
         {classes.length === 0 ? (
-          <option value="">No classes available</option>
+          <option value="" disabled>
+            No classes available
+          </option>
         ) : (
-          classes.map((cls) => (
-            <option key={cls._id} value={cls._id}>
-              {cls.name}
+          <>
+            <option value="" disabled>
+              Select a class
             </option>
-          ))
+            {classes.map((cls) => (
+              <option key={cls._id} value={cls._id}>
+                {cls.name}
+              </option>
+            ))}
+          </>
         )}
       </select>
     </div>

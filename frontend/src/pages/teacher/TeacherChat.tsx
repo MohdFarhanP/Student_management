@@ -7,6 +7,7 @@ import { addMessage, setMessages, setError } from '../../redux/slices/chatSlice'
 import { Message } from '../../types/message';
 import { socket } from '../../socket';
 import { fetchClasses } from '../../api/admin/classApi';
+import { UserGroupIcon } from '@heroicons/react/24/outline';
 import SendNotificationModal from '../../components/SendNotificationModal';
 import { MdOutlineNotificationsNone } from 'react-icons/md';
 
@@ -48,7 +49,7 @@ const TeacherChat: React.FC = () => {
           dispatch(setError('No class data found.'));
         }
       } catch (err) {
-        console.log('error in teacher chat .tsx getclasses fun in useEffect: ', err);
+        console.error('Error in TeacherChat getClasses:', err);
         dispatch(setError('Failed to fetch classes'));
       }
     };
@@ -140,89 +141,129 @@ const TeacherChat: React.FC = () => {
     setIsSidebarOpen(false);
   };
 
-  if (!user) return <div className="p-4 text-center text-gray-500">Please log in to access the chat.</div>;
-
-  return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <TeacherSidebar />
-
-      {/* Mobile Sidebar Toggle Button */}
-      <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-blue-500 text-white rounded-full"
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-      >
-        {isSidebarOpen ? '✕' : '☰'}
-      </button>
-
-      {/* Unified Chat Container (Class List + Chat Window) with Size Constraints */}
-      <div className="flex flex-1 max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 md:ml-45">
-        {/* Class List Sidebar */}
-        <div
-          className={`fixed md:static inset-0 md:w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform ${
-            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } md:translate-x-0 transition-transform duration-300 ease-in-out z-40 md:border-r-0 md:rounded-l-lg md:shadow-none`}
-        >
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Classes</h2>
-          </div>
-          <div className="overflow-y-auto h-[calc(100vh-10rem)]">
-            {classes
-              .filter(cls => cls.chatRoomId)
-              .map((cls) => (
-                <div
-                  key={cls.chatRoomId}
-                  onClick={() => handleClassSelect(cls.chatRoomId as string, cls.name)}
-                  className={`p-4 flex items-center space-x-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                    selectedClassId === cls.chatRoomId ? 'bg-gray-200 dark:bg-gray-700' : ''
-                  }`}
-                >
-                  <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
-                    {cls.name.charAt(1)}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-medium text-gray-800 dark:text-gray-100">{cls.name}</h3>
-                  </div>
-                </div>
-              ))}
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-base-100 dark:bg-gray-900">
+        <div className="alert alert-error shadow-lg max-w-md">
+          <div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="stroke-current flex-shrink-0 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <span>Please log in to access the chat.</span>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {/* Main Chat Area */}
-        <div className="flex-1 bg-white dark:bg-gray-800 md:rounded-r-lg md:shadow-lg">
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100 sm:text-2xl">
-              {selectedClassName ? `${selectedClassName} Chat` : 'Teacher Chat'}
-            </h1>
-            <div className="flex items-center space-x-3">
-              <SendNotificationModal
-                trigger={
-                  <button
-                    title="Send Notification"
-                    className="p-2 text-gray-800 dark:text-gray-100 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-                  >
-                    <MdOutlineNotificationsNone size={25} />
-                  </button>
-                }
-              />
+  return (
+    <div className="flex min-h-screen bg-base-100 dark:bg-gray-900">
+      <TeacherSidebar />
+      <div className="flex flex-1 p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-1 max-w-6xl mx-auto bg-base-100 dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden">
+          {/* Class List Sidebar */}
+          <div
+            className={`fixed md:static inset-0 md:w-64 bg-base-100 dark:bg-gray-800 border-r border-base-200 dark:border-gray-700 transform ${
+              isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            } md:translate-x-0 transition-transform duration-300 ease-in-out z-40 md:rounded-l-lg md:shadow-none`}
+          >
+            <div className="p-4 border-b border-base-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-base-content dark:text-white">
+                Classes
+              </h2>
+            </div>
+            <div className="overflow-y-auto h-[calc(100vh-8rem)]">
+              {classes.length === 0 ? (
+                <p className="p-4 text-gray-500 dark:text-gray-400">
+                  No classes available.
+                </p>
+              ) : (
+                classes
+                  .filter(cls => cls.chatRoomId)
+                  .map((cls) => (
+                    <div
+                      key={cls.chatRoomId}
+                      onClick={() => handleClassSelect(cls.chatRoomId as string, cls.name)}
+                      className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                        selectedClassId === cls.chatRoomId ? 'bg-gray-200 dark:bg-gray-700' : ''
+                      }`}
+                    >
+                      <UserGroupIcon className="h-6 w-6 text-primary dark:text-primary-content" />
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-base-content dark:text-white">
+                          {cls.name}
+                        </h3>
+                      </div>
+                    </div>
+                  ))
+              )}
             </div>
           </div>
-          {error && (
-            <div className="p-4 text-red-500 dark:text-red-400 sm:p-6">
-              Error: {error}
+
+          {/* Main Chat Area */}
+          <div className="flex-1 flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-base-200 dark:border-gray-700">
+              <h1 className="text-xl font-semibold text-base-content dark:text-white sm:text-2xl">
+                {selectedClassName ? `${selectedClassName} Chat` : 'Teacher Chat'}
+              </h1>
+              <div className="flex items-center gap-2">
+                <SendNotificationModal
+                  trigger={
+                    <button
+                      title="Send Notification"
+                      className="p-2 text-primary dark:text-primary-content hover:text-primary-focus dark:hover:text-primary-content transition-colors"
+                    >
+                      <MdOutlineNotificationsNone size={24} />
+                    </button>
+                  }
+                />
+              </div>
             </div>
-          )}
-          {selectedClassId ? (
-            <ChatWindow
-              messages={messages}
-              sendMessage={sendMessage}
-              chatRoomId={selectedClassId}
-              isTeacher={true}
-            />
-          ) : (
-            <div className="p-4 text-gray-500 dark:text-gray-400 sm:p-6">
-              Please select a class to start chatting.
-            </div>
-          )}
+            {error && (
+              <div className="p-4">
+                <div className="alert alert-error shadow-lg">
+                  <div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="stroke-current flex-shrink-0 h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>Error: {error}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {selectedClassId ? (
+              <ChatWindow
+                messages={messages}
+                sendMessage={sendMessage}
+                chatRoomId={selectedClassId}
+                isTeacher={true}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                Please select a class to start chatting.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

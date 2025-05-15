@@ -4,8 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
 import { logoutUser } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
-import { MdLogout, MdEventAvailable, MdChat, MdSettings, MdClose, MdDashboard } from 'react-icons/md';
+import { MdLogout, MdEventAvailable, MdChat, MdClose, MdDashboard } from 'react-icons/md';
 import defaultImage from '../assets/profile.jpg';
+import { FaRegNoteSticky } from "react-icons/fa6";
+import { RiLiveFill } from "react-icons/ri";
+import { FaRegCalendarAlt } from "react-icons/fa";
 
 const TeacherSidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -47,8 +50,18 @@ const TeacherSidebar: React.FC = () => {
     },
     {
       name: 'Notes',
-      icon: <MdSettings size={22} />,
+      icon: <FaRegNoteSticky size={22} />,
       path: '/teacher/notes',
+    },
+    {
+      name: 'Leave Management',
+      icon: <FaRegCalendarAlt size={22} />,
+      path: '/teacher/leave/teacher',
+    },
+    {
+      name: 'LiveSessions',
+      icon: <RiLiveFill  size={22} />,
+      path: '/teacher/live-session',
     },
   ];
 

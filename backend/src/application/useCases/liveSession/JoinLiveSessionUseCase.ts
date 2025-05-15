@@ -4,6 +4,8 @@ import { IJoinLiveSessionUseCase } from '../../../domain/interface/IJoinLiveSess
 import { ValidationError } from '../../../domain/errors';
 import { JoinLiveSessionDTO, UserInfo} from '../../../domain/types/interfaces';
 import { SessionStatus } from '../../../domain/types/enums';
+import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository';
+import { ITeacherRepository } from '../../../domain/interface/admin/ITeacherRepository';
 
 
 export interface JoinLiveSessionResponse {
@@ -15,7 +17,9 @@ export interface JoinLiveSessionResponse {
 export class JoinLiveSession implements IJoinLiveSessionUseCase {
   constructor(
     private liveSessionRepository: ILiveSessionRepository,
-    private videoService: IVideoService
+    private videoService: IVideoService,
+    private studentRepository: IStudentRepository,
+    private teacherRepository: ITeacherRepository,
   ) {}
 
   async execute(dto: JoinLiveSessionDTO): Promise<JoinLiveSessionResponse> {
@@ -42,11 +46,20 @@ export class JoinLiveSession implements IJoinLiveSessionUseCase {
 
     // Join the video call (logs the action on the backend)
     await this.videoService.joinSession(session.roomId, dto.participantId);
+    
+    let userData;
+    
+    if(!isTeacher){
+      userData = await this.studentRepository.findById(dto.participantId)
+    }else{
+      userData = await this.teacherRepository.getById(dto.participantId);
+    }
 
     // Add the user to the participants list
     const newParticipant: UserInfo = {
       id: dto.participantId,
-      email: `user-${dto.participantId}@example.com`, // Ideally, fetch from a user service
+      email: userData.email,
+      name: userData.name, 
       role: isTeacher ? 'Teacher' : 'Student',
     };
 
@@ -61,6 +74,7 @@ export class JoinLiveSession implements IJoinLiveSessionUseCase {
     const participants: UserInfo[] = updatedSession?.participants?.map((participant: any) => ({
       id: participant.id,
       email: participant.email || `user-${participant.id}@example.com`,
+      name: participant.name || 'Unknown',
       role: participant.role || 'Unknown',
     })) || [];
 

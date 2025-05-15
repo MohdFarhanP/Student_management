@@ -14,7 +14,6 @@ interface FormFields {
   tutor?: string;
 }
 
-
 const Modal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState<IClassData>({
@@ -38,7 +37,7 @@ const Modal = () => {
 
   useEffect(() => {
     if (teacherStatus === 'idle') {
-      dispatch(fetchTeachers()); 
+      dispatch(fetchTeachers());
     }
   }, [dispatch, teacherStatus]);
 
@@ -60,17 +59,16 @@ const Modal = () => {
     setIsOpen(!isOpen);
   };
 
-  const ValidateForm = () => {
+  const validateForm = () => {
     const newErrors: FormFields = {};
     if (!formData.grade) newErrors.grade = 'Grade is required';
     if (!formData.section) newErrors.section = 'Section is required';
     if (!formData.roomNo) newErrors.roomNo = 'Room Number is required';
     else if (Number(formData.roomNo) < 0)
-      newErrors.roomNo = 'RoomNo cannot negative';
+      newErrors.roomNo = 'Room Number cannot be negative';
     if (!formData.tutor) newErrors.tutor = 'Tutor is required';
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
@@ -90,7 +88,7 @@ const Modal = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (ValidateForm()) {
+    if (validateForm()) {
       await dispatch(createClass(formData));
       setFormData({
         name: '',
@@ -107,80 +105,60 @@ const Modal = () => {
     <>
       {/* Modal toggle button */}
       <button
-        className="btn btn-black btn-sm mr-21 text-white"
+        className="btn btn-primary btn-sm sm:btn-md flex items-center gap-2"
         onClick={toggleModal}
       >
-        Add Classes <CiCirclePlus />
+        Add Class <CiCirclePlus className="w-5 h-5" />
       </button>
 
       {/* Modal */}
       {isOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
-          onClick={toggleModal}
-        >
-          <div
-            className="relative max-h-screen w-full max-w-md overflow-y-auto rounded-lg bg-white p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="modal modal-open">
+          <div className="modal-box w-11/12 max-w-md bg-base-100 dark:bg-gray-800">
             {/* Modal header */}
-            <div className="mb-4 flex items-center justify-between border-b pb-2">
-              <h3 className="text-lg font-semibold text-gray-900">
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white">
                 Create New Class
               </h3>
               <button
                 onClick={toggleModal}
-                className="text-gray-400 hover:text-gray-900"
+                className="btn btn-sm btn-circle btn-ghost text-gray-600 dark:text-gray-300"
               >
-                <svg
-                  className="h-3 w-3"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 14 14"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                  />
-                </svg>
+                ✕
               </button>
             </div>
 
             {/* Modal body */}
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4 grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Name
+            <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto">
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-base-content dark:text-gray-300">
+                    Class Name
                   </label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
-                    placeholder="Class Name"
+                    className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                    placeholder="Class Name (e.g., 1A)"
                     readOnly
                     disabled
                   />
                   {errors.name && (
-                    <p className="text-sm text-red-500">{errors.name}</p>
+                    <p className="mt-1 text-xs text-error">{errors.name}</p>
                   )}
                 </div>
 
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700">
+                <div>
+                  <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                     Grade
                   </label>
                   <select
                     name="grade"
                     value={formData.grade}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                    className="select select-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                   >
                     <option value="">Select Grade</option>
                     {[...Array(10)].map((_, i) => (
@@ -190,19 +168,19 @@ const Modal = () => {
                     ))}
                   </select>
                   {errors.grade && (
-                    <p className="text-sm text-red-500">{errors.grade}</p>
+                    <p className="mt-1 text-xs text-error">{errors.grade}</p>
                   )}
                 </div>
 
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700">
+                <div>
+                  <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                     Section
                   </label>
                   <select
                     name="section"
                     value={formData.section}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                    className="select select-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                   >
                     <option value="">Select Section</option>
                     {['A', 'B', 'C', 'D', 'E'].map((section) => (
@@ -212,12 +190,12 @@ const Modal = () => {
                     ))}
                   </select>
                   {errors.section && (
-                    <p className="text-sm text-red-500">{errors.section}</p>
+                    <p className="mt-1 text-xs text-error">{errors.section}</p>
                   )}
                 </div>
 
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                <div>
+                  <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                     Room No
                   </label>
                   <input
@@ -225,24 +203,24 @@ const Modal = () => {
                     name="roomNo"
                     value={formData.roomNo}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                    className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                     placeholder="Room Number"
                     min={0}
                   />
                   {errors.roomNo && (
-                    <p className="text-sm text-red-500">{errors.roomNo}</p>
+                    <p className="mt-1 text-xs text-error">{errors.roomNo}</p>
                   )}
                 </div>
 
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
+                <div>
+                  <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                     Tutor
                   </label>
                   <select
                     name="tutor"
                     value={formData.tutor}
                     onChange={handleChange}
-                    className="mt-1 w-full rounded-md border border-gray-300 p-2 text-black focus:ring-1 focus:ring-gray-500 focus:outline-none"
+                    className="select select-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                   >
                     <option value="">Select Tutor</option>
                     {teachers.map((teacher) => (
@@ -252,28 +230,28 @@ const Modal = () => {
                     ))}
                   </select>
                   {errors.tutor && (
-                    <p className="text-sm text-red-500">{errors.tutor}</p>
+                    <p className="mt-1 text-xs text-error">{errors.tutor}</p>
                   )}
                 </div>
-              </div>
 
-              {/* Buttons */}
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={toggleModal}
-                  className="rounded-md bg-gray-300 px-4 py-2 text-black transition hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-md bg-black/90 px-4 py-2 text-white transition hover:bg-black"
-                >
-                  Add New Class
-                </button>
-              </div>
-            </form>
+                {/* Buttons */}
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={toggleModal}
+                    className="btn btn-outline btn-sm sm:btn-md"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-sm sm:btn-md"
+                  >
+                    Add New Class
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

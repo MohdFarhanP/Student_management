@@ -1,8 +1,11 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import AgoraRTC, { IAgoraRTCClient, IAgoraRTCRemoteUser, ICameraVideoTrack, IMicrophoneAudioTrack, IRemoteVideoTrack, ILocalVideoTrack } from 'agora-rtc-sdk-ng';
-import { socket } from '../socket';
-import { Class } from '../pages/admin/TimetableManagement';
-import { fetchClasses, getStudentsIdByClass } from '../api/admin/classApi';
+import { socket } from '../../socket';
+import { Class } from '../admin/TimetableManagement';
+import { fetchClasses, getStudentsIdByClass } from '../../api/admin/classApi';
+import ErrorMessage from '../../components/ErrorMessage';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import TeacherSidebar from '../../components/TeacherSidebar';
 
 interface SessionInfo {
   sessionId: string;
@@ -12,6 +15,7 @@ interface SessionInfo {
 
 interface UserInfo {
   id: string;
+  name: string; // Added name field
   email: string;
   role: string;
 }
@@ -24,7 +28,7 @@ interface RemoteUserInfo {
 
 const appId = import.meta.env.VITE_AGORA_APP_ID;
 
-const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; userId: string }) => {
+const TeacherLiveSession = ({ userRole, userId }: { userRole: 'Teacher'; userId: string }) => {
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
   const [localTracks, setLocalTracks] = useState<{ audioTrack: IMicrophoneAudioTrack; videoTrack: ICameraVideoTrack | null } | null>(null);
   const [remoteUsers, setRemoteUsers] = useState<RemoteUserInfo[]>([]);
@@ -65,24 +69,22 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
   }, []);
 
   useEffect(() => {
-    if (userRole === 'Teacher') {
-      const getClasses = async () => {
-        try {
-          const fetchedClasses = await fetchClasses();
-          setClasses(fetchedClasses || []);
-          if (fetchedClasses!.length > 0 && fetchedClasses![0]._id) {
-            setSelectedClassId(fetchedClasses![0]._id ?? '');
-          }
-        } catch (err) {
-          setError('Failed to load classes: ' + (err instanceof Error ? err.message : String(err)));
+    const getClasses = async () => {
+      try {
+        const fetchedClasses = await fetchClasses();
+        setClasses(fetchedClasses);
+        if (fetchedClasses?.length > 0 && fetchedClasses[0]._id) {
+          setSelectedClassId(fetchedClasses[0]._id ?? '');
         }
-      };
-      getClasses();
-    }
-  }, [userRole]);
+      } catch (err) {
+        setError('Failed to load classes: ' + (err instanceof Error ? err.message : String(err)));
+      }
+    };
+    getClasses();
+  }, []);
 
   useEffect(() => {
-    if (userRole === 'Teacher' && selectedClassId) {
+    if (selectedClassId) {
       const fetchStudentIds = async () => {
         try {
           const studentIdsData = await getStudentsIdByClass(selectedClassId);
@@ -95,7 +97,7 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       };
       fetchStudentIds();
     }
-  }, [userRole, selectedClassId]);
+  }, [selectedClassId]);
 
   const joinSession = useCallback((sessionId: string) => {
     if (isJoiningRef.current || hasJoined) {
@@ -109,12 +111,6 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       sessionId,
       participantId: userId,
     });
-
-    // Set a timeout to reset loading state if joining takes too long
-    loadingTimeoutRef.current = setTimeout(() => {
-      setLoading(false);
-      setError('Failed to join session: Timeout waiting for server response.');
-    }, 10000); // 10 seconds timeout
   }, [userId]);
 
   const playVideoWithRetry = async (track: ILocalVideoTrack | IRemoteVideoTrack, elementId: string, retries: number = 5, delay: number = 1500) => {
@@ -309,6 +305,8 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
     const onLiveSessionJoined = async ({ roomId, token, participants }: { roomId: string; token: string; participants?: UserInfo[] }) => {
       if (!sessionInfo) return;
 
+      if(participants) console.log('this is the participates getting from backend ', participants);
+      
       setLoading(true);
       isJoiningRef.current = true;
       isSessionActiveRef.current = true;
@@ -493,7 +491,7 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       }
       cleanup();
     };
-  }, [userRole, userId, sessionInfo, joinSession ]);
+  }, [userId, sessionInfo, joinSession]);
 
   useEffect(() => {
     const publishTracks = async () => {
@@ -547,11 +545,10 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
       scheduledAt: new Date().toISOString(),
     });
 
-    // Set a timeout to reset loading state if the session doesn't start
     loadingTimeoutRef.current = setTimeout(() => {
       setLoading(false);
       setError('Failed to start session: Timeout waiting for server response.');
-    }, 10000); // 10 seconds timeout
+    }, 10000);
   };
 
   const scheduleSession = () => {
@@ -602,12 +599,11 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
     remoteUsers.some((remoteUser) => remoteUser.user.uid.toString() === user.id)
   );
 
-  // Combine local and remote users for the grid
   const allParticipants = [];
   if (localTracks) {
     allParticipants.push({
       id: userId,
-      email: userList.find((u) => u.id === userId)?.email || 'You',
+      name: userList.find((u) => u.id === userId)?.name || 'You',
       role: userRole,
       isLocal: true,
       hasVideo: videoOn && localTracks.videoTrack != null,
@@ -617,60 +613,65 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
     const userInfo = userList.find((u) => u.id === remoteUser.user.uid.toString());
     allParticipants.push({
       id: remoteUser.user.uid.toString(),
-      email: userInfo?.email || `User ${remoteUser.user.uid}`,
+      name: userInfo?.name || 'Unknown User',
       role: userInfo?.role || 'Unknown',
       isLocal: false,
       hasVideo: remoteUser.hasVideo,
     });
   });
 
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          {userRole === 'Teacher' ? 'Teacher Dashboard - Live Session' : 'Student Dashboard - Join Live Session'}
-        </h1>
-
-        {error && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
-            <p>{error}</p>
-          </div>
-        )}
-
-        {loading && (
-          <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded">
-            <p>Loading...</p>
-          </div>
-        )}
+    <div className="flex min-h-screen bg-base-100 dark:bg-gray-900 overflow-hidden">
+      <TeacherSidebar />
+      <div
+        className={`flex-1 overflow-y-auto p-4 sm:p-6 max-h-screen`}
+      >
+        <div className="my-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-base-content dark:text-white">
+            Teacher Dashboard - Live Session
+          </h1>
+        </div>
 
         {userRole === 'Teacher' && !sessionInfo && (
-          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Start or Schedule a Live Session</h2>
+          <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6 mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white mb-4">
+              Start or Schedule a Live Session
+            </h2>
             <div className="space-y-4">
               <div>
-                <label htmlFor="classSelect" className="block text-sm font-medium text-gray-600">
+                <label htmlFor="classSelect" className="block text-sm font-medium text-gray-600 dark:text-gray-300">
                   Select Class
                 </label>
                 <select
                   id="classSelect"
                   value={selectedClassId}
                   onChange={(e) => setSelectedClassId(e.target.value)}
-                  className="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="select select-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 >
                   {classes.length === 0 ? (
-                    <option value="">No classes available</option>
+                    <option value="" disabled>
+                      No classes available
+                    </option>
                   ) : (
-                    classes.map((cls) => (
-                      <option key={cls._id} value={cls._id}>
-                        {cls.name}
+                    <>
+                      <option value="" disabled>
+                        Select a class
                       </option>
-                    ))
+                      {classes.map((cls) => (
+                        <option key={cls._id} value={cls._id}>
+                          {cls.name}
+                        </option>
+                      ))}
+                    </>
                   )}
                 </select>
               </div>
 
               <div>
-                <label htmlFor="sessionTitle" className="block text-sm font-medium text-gray-600">
+                <label htmlFor="sessionTitle" className="block text-sm font-medium text-gray-600 dark:text-gray-300">
                   Session Title
                 </label>
                 <input
@@ -679,12 +680,12 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
                   placeholder="e.g., Math Class - Algebra Basics"
                   value={sessionTitle}
                   onChange={(e) => setSessionTitle(e.target.value)}
-                  className="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 />
               </div>
 
               <div>
-                <label htmlFor="scheduledAt" className="block text-sm font-medium text-gray-600">
+                <label htmlFor="scheduledAt" className="block text-sm font-medium text-gray-600 dark:text-gray-300">
                   Schedule Date & Time (Optional)
                 </label>
                 <input
@@ -692,22 +693,22 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
-                  className="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 />
               </div>
 
-              <div className="flex space-x-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={startSession}
                   disabled={loading || !selectedClassId || !studentIds || studentIds.length === 0}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                  className="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto"
                 >
                   Start Session Now
                 </button>
                 <button
                   onClick={scheduleSession}
                   disabled={loading || !scheduledAt || !selectedClassId || !studentIds || studentIds.length === 0}
-                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:bg-green-300"
+                  className="btn btn-success btn-sm sm:btn-md w-full sm:w-auto"
                 >
                   Schedule for Later
                 </button>
@@ -716,56 +717,46 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
           </div>
         )}
 
-        {userRole === 'Student' && !sessionInfo && !localTracks && (
-          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Waiting for a Live Session</h2>
-            <p className="text-gray-600">Your teacher will start a live session soon. Please wait...</p>
-          </div>
-        )}
-
         {sessionInfo && (
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold text-gray-700 mb-4">Active Session: {sessionInfo.title}</h2>
-              <div className="flex justify-between items-center">
-                <p className="text-gray-600">Session ID: {sessionInfo.sessionId}</p>
-                {userRole === 'Student' && !localTracks && (
-                  <button
-                    onClick={() => joinSession(sessionInfo.sessionId)}
-                    disabled={loading}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-300"
-                  >
-                    Join Session
-                  </button>
-                )}
-                {userRole === 'Teacher' && !localTracks && (
-                  <button
-                    onClick={() => joinSession(sessionInfo.sessionId)}
-                    disabled={loading}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-300"
-                  >
-                    Join Session
-                  </button>
-                )}
-                {userRole === 'Teacher' && (
+            <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white mb-4">
+                Active Session: {sessionInfo.title}
+              </h2>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <p className="text-gray-600 dark:text-gray-300">
+                  Session ID: {sessionInfo.sessionId}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {!localTracks && (
+                    <button
+                      onClick={() => joinSession(sessionInfo.sessionId)}
+                      disabled={loading}
+                      className="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto"
+                    >
+                      Join Session
+                    </button>
+                  )}
                   <button
                     onClick={endSession}
                     disabled={loading}
-                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 disabled:bg-blue-300"
+                    className="btn btn-error btn-sm sm:btn-md w-full sm:w-auto"
                   >
                     End Session
                   </button>
-                )}
+                </div>
               </div>
             </div>
 
             {Array.isArray(activeParticipants) && activeParticipants.length > 0 && (
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">Participants ({activeParticipants.length})</h3>
+              <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-base-content dark:text-white mb-4">
+                  Participants ({activeParticipants.length})
+                </h3>
                 <ul className="space-y-2">
                   {activeParticipants.map((user) => (
-                    <li key={user.id} className="text-gray-600">
-                      {user.email} ({user.role})
+                    <li key={user.id} className="text-gray-600 dark:text-gray-300">
+                      {user.name} ({user.role})
                     </li>
                   ))}
                 </ul>
@@ -773,54 +764,58 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
             )}
 
             {allParticipants.length > 0 ? (
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">Video Feeds</h3>
+              <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-base-content dark:text-white mb-4">
+                  Video Feeds
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {allParticipants.map((participant) => (
                     <div
                       key={participant.id}
-                      className="relative bg-gray-200 rounded-lg shadow overflow-hidden aspect-video"
+                      className="relative bg-gray-200 dark:bg-gray-700 rounded-lg shadow overflow-hidden aspect-video"
                     >
                       <div
                         id={participant.isLocal ? `local-video-${participant.id}` : `remote-video-${participant.id}`}
                         className="w-full h-full"
                       >
                         {!participant.hasVideo && (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-300">
-                            <p className="text-gray-600 text-sm">
+                          <div className="w-full h-full flex items-center justify-center bg-gray-300 dark:bg-gray-600">
+                            <p className="text-gray-600 dark:text-gray-300 text-sm">
                               {participant.isLocal ? 'Your camera is off' : 'No video'}
                             </p>
                           </div>
                         )}
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-sm p-2">
-                        {participant.email} ({participant.role})
+                        {participant.name} ({participant.role})
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">Video Feeds</h3>
-                <div className="w-full h-64 bg-gray-200 rounded-md flex items-center justify-center">
-                  <p className="text-gray-500">No participants with video yet...</p>
+              <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
+                <h3 className="text-lg font-semibold text-base-content dark:text-white mb-4">
+                  Video Feeds
+                </h3>
+                <div className="w-full h-64 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center">
+                  <p className="text-gray-500 dark:text-gray-400">No participants with video yet...</p>
                 </div>
               </div>
             )}
 
             {localTracks && (
-              <div className="fixed bottom-4 right-4 flex space-x-4">
+              <div className="fixed bottom-4 right-4 sm:right-6 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 z-50">
                 <button
                   onClick={toggleMic}
-                  className={`px-4 py-2 rounded-md text-white ${micOn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
+                  className={`btn btn-sm sm:btn-md ${micOn ? 'btn-error' : 'btn-success'}`}
                 >
                   {micOn ? 'Disable Mic' : 'Enable Mic'}
                 </button>
                 {hasCamera && (
                   <button
                     onClick={toggleVideo}
-                    className={`px-4 py-2 rounded-md text-white ${videoOn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
+                    className={`btn btn-sm sm:btn-md ${videoOn ? 'btn-error' : 'btn-success'}`}
                     disabled={!localTracks.videoTrack}
                   >
                     {videoOn ? 'Disable Camera' : 'Enable Camera'}
@@ -828,7 +823,7 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
                 )}
                 <button
                   onClick={leaveSession}
-                  className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
+                  className="btn btn-neutral btn-sm sm:btn-md"
                 >
                   Leave Session
                 </button>
@@ -841,4 +836,4 @@ const LiveSession = ({ userRole, userId }: { userRole: 'Teacher' | 'Student'; us
   );
 };
 
-export default LiveSession;
+export default TeacherLiveSession;
