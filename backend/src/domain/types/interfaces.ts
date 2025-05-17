@@ -37,6 +37,7 @@ export interface IStudent {
   refreshToken?: string;
   isInitialLogin?: boolean;
   isDeleted?: boolean;
+  fileHash?: string;
   createdAt?: Date; 
   updatedAt?: Date; 
 }

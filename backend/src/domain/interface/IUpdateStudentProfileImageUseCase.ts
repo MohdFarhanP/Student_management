@@ -1,4 +1,4 @@
 
 export interface IUpdateStudentProfileImageUseCase {
-  execute(studentId: string, file: File): Promise<string>;
+  execute(studentId: string, fileUrl: string, fileHash: string): Promise<string>;
 }

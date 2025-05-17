@@ -42,11 +42,11 @@ export const fetchStudentProfile = createAsyncThunk(
 export const updateStudentProfileImage = createAsyncThunk(
   'student/updateStudentProfileImage',
   async (
-    { email, profileImage }: { email: string; profileImage: string },
+    { email, profileImage,fileHash}: { email: string; profileImage: string, fileHash: string },
     { rejectWithValue }
   ) => {
     try {
-      const data = await updateProfileImg(profileImage, email);
+      const data = await updateProfileImg(fileHash, profileImage, email);
       return data;
     } catch (error: unknown) {
       let errorMessage = 'Failed to fetch teacher profile';

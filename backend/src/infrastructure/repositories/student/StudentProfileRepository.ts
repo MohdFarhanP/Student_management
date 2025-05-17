@@ -38,36 +38,22 @@ export class StudentProfileRepository implements IStudentProfileRepository {
 
   async updateProfileImage(
     email: string,
-    profileImage: string
-  ): Promise<void> {
-  await studentModel
+    profileImage: string,
+    fileHash: string,
+  ): Promise<Student | null> {
+ const rawStudent = await studentModel
       .findOneAndUpdate(
         { email },
-        { profileImage },
+        { profileImage, fileHash },
+        {new: true}
       )
+      .select('-password')
+      .populate('class', 'name')
+      .lean();
+      
 
-  //   if (!rawStudent) return null;
+  if (!rawStudent) return null;
 
-  //   const classData = rawStudent.class as unknown as { name: string } | null;
-  //   return new Student({
-  //     id: rawStudent._id.toString(),
-  //     name: rawStudent.name,
-  //     email: rawStudent.email,
-  //     roleNumber: rawStudent.roleNumber,
-  //     dob: rawStudent.dob,
-  //     gender: rawStudent.gender === 'Male' ? Gender.Male : Gender.Female,
-  //     age: rawStudent.age,
-  //     class: classData ? classData.name : null,
-  //     profileImage: rawStudent.profileImage,
-  //     address: {
-  //       houseName: rawStudent.address.houseName,
-  //       place: rawStudent.address.place,
-  //       district: rawStudent.address.district,
-  //       pincode: rawStudent.address.pincode,
-  //       phoneNo: rawStudent.address.phoneNo,
-  //       guardianName: rawStudent.address.guardianName,
-  //       guardianContact: rawStudent.address.guardianContact ?? null,
-  //     },
-  //   });
-   }
+   return new Student(rawStudent);
+  }
 }

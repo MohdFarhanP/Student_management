@@ -4,6 +4,7 @@ export interface IStudentProfileRepository {
   getProfile(email: string): Promise<Student | null>;
   updateProfileImage(
     email: string,
-    profileImage: string
-  ): Promise<void>;
+    profileImage: string,
+    fileHash: string,
+  ): Promise<Student | null>;
 }

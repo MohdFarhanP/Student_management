@@ -35,19 +35,18 @@ export class StudentProfileController implements IStudentProfileController {
   async updateProfileImage(req: Request, res: Response): Promise<void> {
     try {
       const user = req.user as IUser | undefined;
-      const { profileImage } = req.body;
-      console.log('this is profile image url form frontend in student profile controller ', profileImage);
+      const { profileImage, fileHash } = req.body;
       if (!user?.email) {
         throw new BadRequestError('User email is required');
       }
       if (!profileImage) {
         throw new BadRequestError('Profile image URL is required');
       }
-      const student = await this.updateStudentProfileImageUseCase.execute(user.email, profileImage);
+      const studentImgUrl = await this.updateStudentProfileImageUseCase.execute(user.email, profileImage, fileHash);
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Profile image updated successfully',
-        data: student,
+        data: studentImgUrl,
       } as IApiResponse<string>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update profile image';

@@ -23,6 +23,7 @@ const StudentSchema = new Schema<IStudent>(
     },
     refreshToken: { type: String },
     isInitialLogin: { type: Boolean, default: true },
+    fileHash: {type: String, default: ''},
     isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }

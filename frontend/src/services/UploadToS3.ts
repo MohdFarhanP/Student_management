@@ -1,4 +1,5 @@
 import axios from 'axios';
+const presignedUrl = import.meta.env.VITE_PRESIGNED_URL;
 
 export enum FileType {
   PDF = 'application/pdf',
@@ -50,7 +51,7 @@ export const uploadToS3 = async (file: File): Promise<{ fileUrl: string; fileHas
 
     // Request pre-signed URL from backend
     const response = await axios.post<ApiResponse<PresignedUrlResponse>>(
-      'http://localhost:5000/api/generate-presigned-url/',
+      presignedUrl,
       {
         fileName, // Use the computed fileName instead of file.name
         fileType: file.type,

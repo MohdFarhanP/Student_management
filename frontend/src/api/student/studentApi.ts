@@ -42,6 +42,7 @@ interface Attendance {
 interface UpdateProfileImgParams {
   profileImage: string;
   email: string;
+  fileHash: string;
 }
 interface ApiResponse<T> {
   success: boolean;
@@ -57,12 +58,14 @@ export const fetchAttendance = (id: string) =>
   apiRequest<ApiResponse<Attendance[]>>('get', `${STUDENT_API_URL}/attendance/${id}`)
     .then((res)=> res.data);
 
-export const updateProfileImg = (imgUrl: string, email: string) =>
+export const updateProfileImg = (fileHash: string, imgUrl: string, email: string) =>{
+  console.log('student profile details', imgUrl,email)
   apiRequest<ApiResponse<StudentProfile>, UpdateProfileImgParams>(
     'patch',
     `${STUDENT_API_URL}/profile/image`,
-    { email, profileImage: imgUrl }
+    { email, profileImage: imgUrl, fileHash }
   ).then((res) => {
     toast.success('Profile image updated successfully');
     return res.data;
   });
+}

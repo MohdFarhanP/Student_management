@@ -61,6 +61,7 @@ const StudentProfile: React.FC = () => {
         updateStudentProfileImage({
           email: user?.email || '',
           profileImage: fileUrl,
+          fileHash: fileHash,
         })
       ).unwrap();
 

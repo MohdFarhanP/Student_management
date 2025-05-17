@@ -27,7 +27,7 @@ router.get('/profile', authenticateUser, (req, res, next) => {
   teacherProfileController.getProfile.bind(teacherProfileController)(req, res, next);
 });
 
-router.patch('/profile', authenticateUser, (req, res, next) => {
+router.put('/profile', authenticateUser, (req, res, next) => {
   if (!teacherProfileController) {
     throw new Error('TeacherProfileController not initialized. Dependency injection failed.');
   }

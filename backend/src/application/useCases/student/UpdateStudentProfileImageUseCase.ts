@@ -8,16 +8,9 @@ export class UpdateStudentProfileImageUseCase implements IUpdateStudentProfileIm
     private readonly storageService: IStorageService
   ) {}
 
-  async execute(studentId: string, file: File): Promise<string> {
-    const { signedUrl, fileUrl } = await this.storageService.generatePresignedUrl(file.name, file.type);
-    console.log('this is the genarated presigned url , ', signedUrl,' fileturl ',fileUrl)
-    await fetch(signedUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': file.type },
-      body: file,
-    });
-    
-    await this.studentProfileRepository.updateProfileImage(studentId, fileUrl);
-    return fileUrl;
+  async execute(studentId: string, fileUrl: string, fileHash: string): Promise<string> {
+
+    const student = await this.studentProfileRepository.updateProfileImage(studentId, fileUrl, fileHash);
+    return student.profileImage;
   }
 }

@@ -113,7 +113,7 @@ const TeacherProfile: React.FC = () => {
       } catch (err) {
         console.error('Failed to update profile:', err);
         toast.error('Failed to update profile. Please try again.');
-      }
+      }t
     }
   };
 

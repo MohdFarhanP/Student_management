@@ -39,10 +39,12 @@ export const teachersProfileFetch = (email: string) =>
   })
     .then((res)=> res.data);
 
-export const updateTeacherProfileApi = (profile: Partial<Teacher>) =>
+export const updateTeacherProfileApi = (profile: Partial<Teacher>) =>{
+  console.log('teacher edit details',profile)
   apiRequest<ApiResponse<Teacher>, Partial<Teacher>>(
-    'patch',
+    'put',
     `${TEACHER_API_URL}/profile`,
     profile
   )
     .then((res)=> res.data);
+}
