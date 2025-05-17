@@ -4,7 +4,7 @@ import { ITeacher } from '../../pages/admin/Teacher';
 const ADMIN_TEACHER_API_URL = '/admin/teacher';
 
 interface TeachersResponse {
-    teachers: ITeacher[] | Partial<ITeacher>[];
+    teachers: ITeacher[];
     totalCount?: number;
 }
 

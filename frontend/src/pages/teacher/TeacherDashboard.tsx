@@ -1,13 +1,15 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
-import TeacherSidebar from '../../components/TeacherSidebar';
-import NotificationBell from '../../components/NotificationBell';
-import MyClassesSubjects from '../../components/MyClassesSubjects';
-import TodaySchedule from '../../components/TodaySchedule';
-import MyLiveSessions from '../../components/MyLiveSessions';
 import { toast } from 'react-toastify';
 import { getTeacherClasses, getTodaySchedule, getLiveSessions } from '../../api/admin/teacherApi';
+import ErrorBoundary from '../../components/ErrorBoundary';
+
+const TeacherSidebar = lazy(() => import('../../components/TeacherSidebar'));
+const NotificationBell = lazy(() => import('../../components/NotificationBell'));
+const MyClassesSubjects = lazy(() => import('../../components/MyClassesSubjects'));
+const TodaySchedule = lazy(() => import('../../components/TodaySchedule'));
+const MyLiveSessions = lazy(() => import('../../components/MyLiveSessions'));
 
 interface ClassSubject {
   className: string;
@@ -123,28 +125,38 @@ const TeacherDashboard: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-base-100 dark:bg-gray-900">
-      <TeacherSidebar />
-      <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-base-content ml-15 dark:text-white sm:text-2xl">
-            Teacher Dashboard
-          </h1>
-          <NotificationBell />
-        </div>
-        <div className="space-y-6">
-          {/* Top Grid: MyClassesSubjects and TodaySchedule */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <MyClassesSubjects data={classes} />
-            <TodaySchedule data={schedule} />
+    <ErrorBoundary>
+      <div className="flex min-h-screen bg-base-100 dark:bg-gray-900">
+        <Suspense fallback={<div>Loading Sidebar...</div>}>
+          <TeacherSidebar />
+        </Suspense>
+        <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
+          <div className="mb-6 flex items-center justify-between">
+            <h1 className="text-xl font-bold text-base-content ml-15 dark:text-white sm:text-2xl">
+              Teacher Dashboard
+            </h1>
+            <Suspense fallback={<div>Loading Notifications...</div>}>
+              <NotificationBell />
+            </Suspense>
           </div>
-          {/* Full-Width MyLiveSessions */}
-          <div className="w-full">
-            <MyLiveSessions sessions={sessions} />
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <Suspense fallback={<div>Loading Classes...</div>}>
+                <MyClassesSubjects data={classes} />
+              </Suspense>
+              <Suspense fallback={<div>Loading Schedule...</div>}>
+                <TodaySchedule data={schedule} />
+              </Suspense>
+            </div>
+            <div className="w-full">
+              <Suspense fallback={<div>Loading Sessions...</div>}>
+                <MyLiveSessions sessions={sessions} />
+              </Suspense>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 

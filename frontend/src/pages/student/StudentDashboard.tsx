@@ -1,16 +1,19 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import StudentSidebar from '../../components/StudentSidebar';
-import LiveSessions from '../../components/LiveSessions';
-import TodaysTimetable from '../../components/TodaysTimetable';
-import MyClassInfo from '../../components/MyClassInfo';
-import NotificationBell from '../../components/NotificationBell';
-import { getClassesById, IClassData } from '../../api/admin/classApi';
+import React, { useCallback, useEffect, useState, Suspense } from 'react';
+import { lazy } from 'react';
 import { RootState } from '../../redux/store';
 import { useSelector } from 'react-redux';
 import { fetchTimetableForToday } from '../../api/admin/timeTableApi';
 import { TimetableSlot } from '../../types/timetable';
 import { getStdLiveSessions, ILiveSessions } from '../../api/admin/studentApi';
+import { getClassesById, IClassData } from '../../api/admin/classApi';
 import { toast } from 'react-toastify';
+
+// Lazy load components
+const StudentSidebar = lazy(() => import('../../components/StudentSidebar'));
+const MyClassInfo = lazy(() => import('../../components/MyClassInfo'));
+const LiveSessions = lazy(() => import('../../components/LiveSessions'));
+const TodaysTimetable = lazy(() => import('../../components/TodaysTimetable'));
+const NotificationBell = lazy(() => import('../../components/NotificationBell'));
 
 export const StudentDashboard: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -84,24 +87,36 @@ export const StudentDashboard: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-base-100 dark:bg-gray-900">
-      <StudentSidebar />
+      <Suspense fallback={<div className="p-4">Loading Sidebar...</div>}>
+        <StudentSidebar />
+      </Suspense>
       <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-base-content ml-15 dark:text-white sm:text-3xl">
             Student Dashboard
           </h1>
-          <NotificationBell />
+          <Suspense fallback={<div className="p-2">Loading...</div>}>
+            <NotificationBell />
+          </Suspense>
         </div>
 
         <div className="space-y-6">
           {/* Top Grid: MyClassInfo and LiveSessions */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {classInfo && <MyClassInfo {...classInfo} />}
-            <LiveSessions sessions={liveSessions} />
+            {classInfo && (
+              <Suspense fallback={<div className="p-4">Loading Class Info...</div>}>
+                <MyClassInfo {...classInfo} />
+              </Suspense>
+            )}
+            <Suspense fallback={<div className="p-4">Loading Live Sessions...</div>}>
+              <LiveSessions sessions={liveSessions} />
+            </Suspense>
           </div>
           {/* Full-Width Timetable */}
           <div className="w-full">
-            <TodaysTimetable periods={timetable || []} />
+            <Suspense fallback={<div className="p-4">Loading Timetable...</div>}>
+              <TodaysTimetable periods={timetable || []} />
+            </Suspense>
           </div>
         </div>
       </div>

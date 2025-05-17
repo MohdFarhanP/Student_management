@@ -26,4 +26,4 @@ const DashboardStatsCard: React.FC<DashboardStatsCardProps> = ({
   );
 };
 
-export default DashboardStatsCard;
+export default React.memo(DashboardStatsCard);

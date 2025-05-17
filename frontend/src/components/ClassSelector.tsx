@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 type Class = {
   _id?: string;
@@ -45,4 +45,4 @@ const ClassSelector: React.FC<ClassSelectorProps> = ({
   );
 };
 
-export default ClassSelector;
+export default memo(ClassSelector);

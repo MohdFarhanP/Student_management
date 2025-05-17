@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, Suspense, lazy } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import ChatWindow from '../../components/ChatWindow';
-import NotificationBell from '../../components/NotificationBell';
-import StudentSidebar from '../../components/StudentSidebar';
 import { RootState, AppDispatch } from '../../redux/store';
 import { addMessage, setMessages, setError } from '../../redux/slices/chatSlice';
 import { Message } from '../../types/message';
 import { socket } from '../../socket';
 import { fetchStudentClass } from '../../api/admin/classApi';
+import ErrorBoundary from '../../components/ErrorBoundary';
+
+// Lazy load components
+const StudentSidebar = lazy(() => import('../../components/StudentSidebar'));
+const ChatWindow = lazy(() => import('../../components/ChatWindow'));
+const NotificationBell = lazy(() => import('../../components/NotificationBell'));
 
 interface Class {
   _id: string;
@@ -22,14 +25,12 @@ const StudentChat: React.FC = () => {
   const { messages, error } = useSelector((state: RootState) => state.chat);
   const user = useSelector(
     (state: RootState) => state.auth.user,
-    (prev, next) => prev?.id === next?.id // Stabilize user dependency
+    (prev, next) => prev?.id === next?.id
   );
   const [classData, setClassData] = useState<Class | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isReady, setIsReady] = useState(false);
 
-
-  // Fetch class data
   useEffect(() => {
     if (!user) {
       console.log('User is null, cannot fetch class');
@@ -58,23 +59,21 @@ const StudentChat: React.FC = () => {
     fetchClass();
   }, [user, dispatch]);
 
-  // Set isReady once both user and classData are available
   useEffect(() => {
     if (user && classData?.chatRoomId) {
       setIsReady(true);
     } else {
-      setIsReady(false); // Reset isReady if either user or classData becomes unavailable
+      setIsReady(false);
     }
   }, [user, classData]);
 
-  // Join chat room and set up socket listeners when isReady
   useEffect(() => {
     if (!isReady) {
       console.log('Missing user or classData.chatRoomId, skipping socket setup');
       return;
     }
   
-    const chatRoomId = classData!.chatRoomId; // Store in a variable to avoid dependency
+    const chatRoomId = classData!.chatRoomId;
     console.log('StudentChat: Socket connected state before joinRoom:', socket.connected);
   
     socket.emit('joinRoom', chatRoomId, (res: { [key: string]: boolean }) => {
@@ -120,35 +119,35 @@ const StudentChat: React.FC = () => {
     socket.on('message', handleMessage);
     socket.on('error', handleError);
   
-    // return () => {
-    //   console.log('Cleaning up socket listeners for chat room id', chatRoomId || 'unknown');
-    //   socket.off('connect', handleConnect);
-    //   socket.off('connect_error', handleConnectError);
-    //   socket.off('initialMessages', handleInitialMessages);
-    //   socket.off('message', handleMessage);
-    //   socket.off('error', handleError);
-    // };
-  }, [isReady, dispatch]); // Remove classData from dependencies
-  const sendMessage = (
-    content: string,
-    mediaUrl?: string,
-    mediaType?: string
-  ) => {
-    if (!user || !classData || !classData.chatRoomId) {
-      console.error('Cannot send message: user or classData missing');
-      dispatch(setError('Cannot send message: Class data not loaded'));
-      return;
-    }
-    console.log('Emitting sendMessage event:', { chatRoomId: classData.chatRoomId, content, mediaUrl, mediaType });
-    socket.emit('sendMessage', {
-      chatRoomId: classData.chatRoomId,
-      senderId: user.id,
-      senderRole: user.role,
-      content,
-      mediaUrl,
-      mediaType,
-    });
-  };
+    return () => {
+      console.log('Cleaning up socket listeners for chat room id', chatRoomId || 'unknown');
+      socket.off('connect', handleConnect);
+      socket.off('connect_error', handleConnectError);
+      socket.off('initialMessages', handleInitialMessages);
+      socket.off('message', handleMessage);
+      socket.off('error', handleError);
+    };
+  }, [isReady, dispatch]);
+
+  const sendMessage = useCallback(
+    (content: string, mediaUrl?: string, mediaType?: string) => {
+      if (!user || !classData || !classData.chatRoomId) {
+        console.error('Cannot send message: user or classData missing');
+        dispatch(setError('Cannot send message: Class data not loaded'));
+        return;
+      }
+      console.log('Emitting sendMessage event:', { chatRoomId: classData.chatRoomId, content, mediaUrl, mediaType });
+      socket.emit('sendMessage', {
+        chatRoomId: classData.chatRoomId,
+        senderId: user.id,
+        senderRole: user.role,
+        content,
+        mediaUrl,
+        mediaType,
+      });
+    },
+    [user, classData, dispatch]
+  );
 
   if (!user) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">Please log in to access the chat.</div>;
   if (isLoading) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">Loading class data...</div>;
@@ -156,27 +155,35 @@ const StudentChat: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <StudentSidebar />
+      <Suspense fallback={<div className="p-4">Loading Sidebar...</div>}>
+        <StudentSidebar />
+      </Suspense>
       <div className="flex-1 max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 md:ml-45">
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 ml-15 dark:text-gray-100">
             {classData.name} Chat
           </h1>
-          <NotificationBell />
+          <Suspense fallback={<div className="p-2">Loading...</div>}>
+            <NotificationBell />
+          </Suspense>
         </div>
         {error && (
           <div className="mb-4 sm:mb-6 text-red-500 dark:text-red-400 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             Error: {error}
           </div>
         )}
-        <div className="rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
-          <ChatWindow
-            messages={messages}
-            sendMessage={sendMessage}
-            chatRoomId={classData.chatRoomId}
-            isTeacher={false}
-          />
-        </div>
+        <ErrorBoundary>
+          <div className="rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
+            <Suspense fallback={<div className="p-4">Loading Chat...</div>}>
+              <ChatWindow
+                messages={messages}
+                sendMessage={sendMessage}
+                chatRoomId={classData.chatRoomId}
+                isTeacher={false}
+              />
+            </Suspense>
+          </div>
+        </ErrorBoundary>
       </div>
     </div>
   );

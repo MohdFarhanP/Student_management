@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo, Suspense, lazy } from 'react';
 import {
   fetchTimetable,
   updateTimetableSlot,
@@ -7,12 +7,15 @@ import {
 } from '../api/admin/timeTableApi';
 import { getTeachersNames } from '../api/admin/teacherApi';
 import { TimetableData, TimetableSlot } from '../types/timetable/index';
-import AssignEditModal from './AssignEditModal';
-import DeleteConfirmationModal from './DeleteConfirmationModal';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
+import ErrorBoundary from './ErrorBoundary';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { AxiosError } from 'axios';
+
+// Lazy-load modals
+const AssignEditModal = lazy(() => import('./AssignEditModal'));
+const DeleteConfirmationModal = lazy(() => import('./DeleteConfirmationModal'));
 
 type TimetableTableProps = {
   classId: string;
@@ -34,6 +37,177 @@ const PERIOD_DURATIONS = [
 ];
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+// Memoized Slot component for desktop view
+const DesktopSlot = memo(
+  ({
+    day,
+    period,
+    timetable,
+    teachers,
+    handleEditClick,
+    handleAssignClick,
+    handleDeleteClick,
+  }: {
+    day: string;
+    period: number;
+    timetable: TimetableData;
+    teachers: Teacher[];
+    handleEditClick: (day: string, period: number) => void;
+    handleAssignClick: (day: string, period: number) => void;
+    handleDeleteClick: (day: string, period: number) => void;
+  }) => {
+    const slot = timetable.schedule[day]?.find(
+      (s: TimetableSlot) => s.period === period
+    );
+    const teacher = teachers.find((t) => t.id === slot?.teacherId);
+
+    return (
+      <div
+        className="relative p-3 text-center border-b border-r border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-all duration-200 group"
+        onClick={() =>
+          slot?.teacherId
+            ? handleEditClick(day, period)
+            : handleAssignClick(day, period)
+        }
+      >
+        {slot?.teacherId ? (
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              {slot.subject}
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              {teacher?.name || 'Unknown Teacher'}
+            </p>
+            <div className="flex justify-center gap-2 mt-1">
+              <button
+                className="btn btn-ghost btn-xs rounded-full tooltip"
+                data-tip="Edit"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditClick(day, period);
+                }}
+              >
+                <PencilIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </button>
+              <button
+                className="btn btn-ghost btn-xs rounded-full tooltip"
+                data-tip="Delete"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClick(day, period);
+                }}
+              >
+                <TrashIcon className="w-4 h-4 text-red-600 dark:text-red-400" />
+              </button>
+            </div>
+            <div className="absolute z-10 top-0 left-1/2 hidden -translate-x-1/2 -translate-y-full transform rounded bg-gray-800 p-2 text-xs text-white group-hover:block">
+              Teacher: {teacher?.name || 'Unknown Teacher'}<br />
+              Subject: {slot.subject}
+            </div>
+          </div>
+        ) : (
+          <span className="text-gray-400 dark:text-gray-500 italic text-sm">
+            Free
+          </span>
+        )}
+      </div>
+    );
+  }
+);
+
+// Memoized Mobile Slot component
+const MobileSlot = memo(
+  ({
+    day,
+    period,
+    time,
+    timetable,
+    teachers,
+    handleEditClick,
+    handleAssignClick,
+    handleDeleteClick,
+  }: {
+    day: string;
+    period: number;
+    time: string;
+    timetable: TimetableData;
+    teachers: Teacher[];
+    handleEditClick: (day: string, period: number) => void;
+    handleAssignClick: (day: string, period: number) => void;
+    handleDeleteClick: (day: string, period: number) => void;
+  }) => {
+    const slot = timetable.schedule[day]?.find(
+      (s: TimetableSlot) => s.period === period
+    );
+    const teacher = teachers.find((t) => t.id === slot?.teacherId);
+
+    return (
+      <div
+        className="card bg-base-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
+        onClick={() =>
+          slot?.teacherId
+            ? handleEditClick(day, period)
+            : handleAssignClick(day, period)
+        }
+      >
+        <div className="flex items-center p-4 gap-4">
+          {/* Period Info */}
+          <div className="w-24 text-center">
+            <p className="font-medium text-gray-800 dark:text-gray-100">
+              Period {period}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{time}</p>
+          </div>
+
+          {/* Slot Info */}
+          <div className="flex-1">
+            {slot?.teacherId ? (
+              <div className="space-y-1">
+                <p className="font-semibold text-gray-800 dark:text-gray-100">
+                  {slot.subject}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {teacher?.name || 'Unknown Teacher'}
+                </p>
+              </div>
+            ) : (
+              <span className="text-gray-400 dark:text-gray-500 italic">
+                Free
+              </span>
+            )}
+          </div>
+
+          {/* Actions */}
+          {slot?.teacherId && (
+            <div className="flex items-center gap-2">
+              <button
+                className="btn btn-ghost btn-sm rounded-full tooltip"
+                data-tip="Edit"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditClick(day, period);
+                }}
+              >
+                <PencilIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </button>
+              <button
+                className="btn btn-ghost btn-sm rounded-full tooltip"
+                data-tip="Delete"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClick(day, period);
+                }}
+              >
+                <TrashIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+);
 
 const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
   const [timetable, setTimetable] = useState<TimetableData>();
@@ -60,7 +234,6 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
           fetchTimetable(classId),
           getTeachersNames(),
         ]);
-        console.log('Timetable data:', timetableData);
         setTimetable(timetableData);
         setTeachers(teachersData ?? []);
       } catch (err: unknown) {
@@ -103,7 +276,7 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
       setTimetable(updatedTimetable);
       setIsAssignModalOpen(false);
     } catch (err) {
-      console.log(err);
+      console.error('Assign failed:', err);
     }
   };
 
@@ -120,7 +293,7 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
       setTimetable(updatedTimetable);
       setIsEditModalOpen(false);
     } catch (err) {
-      console.log(err);
+      console.error('Edit failed:', err);
     }
   };
 
@@ -135,7 +308,7 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
       setTimetable(updatedTimetable);
       setIsDeleteModalOpen(false);
     } catch (err) {
-      console.log(err);
+      console.error('Delete failed:', err);
     }
   };
 
@@ -187,65 +360,18 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
                   Lunch Break (12:00 PM - 1:00 PM)
                 </div>
               ) : (
-                DAYS.map((day) => {
-                  const slot = timetable.schedule[day]?.find(
-                    (s: TimetableSlot) => s.period === period
-                  );
-                  const teacher = teachers.find((t) => t.id === slot?.teacherId);
-
-                  return (
-                    <div
-                      key={`${day}-${period}`}
-                      className="relative p-3 text-center border-b border-r border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-all duration-200"
-                      onClick={() =>
-                        slot?.teacherId
-                          ? handleEditClick(day, period as number)
-                          : handleAssignClick(day, period as number)
-                      }
-                    >
-                      {slot?.teacherId ? (
-                        <div className="space-y-1">
-                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                            {slot.subject}
-                          </p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400">
-                            {teacher?.name || 'Unknown Teacher'}
-                          </p>
-                          <div className="flex justify-center gap-2 mt-1">
-                            <button
-                              className="btn btn-ghost btn-xs rounded-full tooltip"
-                              data-tip="Edit"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditClick(day, period as number);
-                              }}
-                            >
-                              <PencilIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                            </button>
-                            <button
-                              className="btn btn-ghost btn-xs rounded-full tooltip"
-                              data-tip="Delete"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteClick(day, period as number);
-                              }}
-                            >
-                              <TrashIcon className="w-4 h-4 text-red-600 dark:text-red-400" />
-                            </button>
-                          </div>
-                          <div className="absolute z-10 top-0 left-1/2 hidden -translate-x-1/2 -translate-y-full transform rounded bg-gray-800 p-2 text-xs text-white group-hover:block">
-                            Teacher: {teacher?.name || 'Unknown Teacher'}<br />
-                            Subject: {slot.subject}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400 dark:text-gray-500 italic text-sm">
-                          Free
-                        </span>
-                      )}
-                    </div>
-                  );
-                })
+                DAYS.map((day) => (
+                  <DesktopSlot
+                    key={`${day}-${period}`}
+                    day={day}
+                    period={period as number}
+                    timetable={timetable}
+                    teachers={teachers}
+                    handleEditClick={handleEditClick}
+                    handleAssignClick={handleAssignClick}
+                    handleDeleteClick={handleDeleteClick}
+                  />
+                ))
               )}
             </React.Fragment>
           ))}
@@ -272,77 +398,18 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
                   );
                 }
 
-                const slot = timetable.schedule[day]?.find(
-                  (s: TimetableSlot) => s.period === period
-                );
-                const teacher = teachers.find((t) => t.id === slot?.teacherId);
-
                 return (
-                  <div
+                  <MobileSlot
                     key={`${day}-${period}`}
-                    className="card bg-base-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
-                    onClick={() =>
-                      slot?.teacherId
-                        ? handleEditClick(day, period as number)
-                        : handleAssignClick(day, period as number)
-                    }
-                  >
-                    <div className="flex items-center p-4 gap-4">
-                      {/* Period Info */}
-                      <div className="w-24 text-center">
-                        <p className="font-medium text-gray-800 dark:text-gray-100">
-                          Period {period}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {time}
-                        </p>
-                      </div>
-
-                      {/* Slot Info */}
-                      <div className="flex-1">
-                        {slot?.teacherId ? (
-                          <div className="space-y-1">
-                            <p className="font-semibold text-gray-800 dark:text-gray-100">
-                              {slot.subject}
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {teacher?.name || 'Unknown Teacher'}
-                            </p>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400 dark:text-gray-500 italic">
-                            Free
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Actions */}
-                      {slot?.teacherId && (
-                        <div className="flex items-center gap-2">
-                          <button
-                            className="btn btn-ghost btn-sm rounded-full tooltip"
-                            data-tip="Edit"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditClick(day, period as number);
-                            }}
-                          >
-                            <PencilIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                          </button>
-                          <button
-                            className="btn btn-ghost btn-sm rounded-full tooltip"
-                            data-tip="Delete"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteClick(day, period as number);
-                            }}
-                          >
-                            <TrashIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                    day={day}
+                    period={period as number}
+                    time={time}
+                    timetable={timetable}
+                    teachers={teachers}
+                    handleEditClick={handleEditClick}
+                    handleAssignClick={handleAssignClick}
+                    handleDeleteClick={handleDeleteClick}
+                  />
                 );
               })}
             </div>
@@ -352,41 +419,53 @@ const TimetableTable: React.FC<TimetableTableProps> = ({ classId }) => {
 
       {/* Modals */}
       {isAssignModalOpen && selectedSlot && (
-        <AssignEditModal
-          mode="assign"
-          teachers={teachers}
-          classId={classId}
-          onSubmit={handleAssign}
-          onClose={() => setIsAssignModalOpen(false)}
-        />
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingSpinner />}>
+            <AssignEditModal
+              mode="assign"
+              teachers={teachers}
+              classId={classId}
+              onSubmit={handleAssign}
+              onClose={() => setIsAssignModalOpen(false)}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
       {isEditModalOpen && selectedSlot && (
-        <AssignEditModal
-          mode="edit"
-          teachers={teachers}
-          classId={classId}
-          initialData={{
-            teacherId:
-              timetable.schedule[selectedSlot.day]?.find(
-                (s: TimetableSlot) => s.period === selectedSlot.period
-              )?.teacherId || '',
-            subject:
-              timetable.schedule[selectedSlot.day]?.find(
-                (s: TimetableSlot) => s.period === selectedSlot.period
-              )?.subject || '',
-          }}
-          onSubmit={handleEdit}
-          onClose={() => setIsEditModalOpen(false)}
-        />
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingSpinner />}>
+            <AssignEditModal
+              mode="edit"
+              teachers={teachers}
+              classId={classId}
+              initialData={{
+                teacherId:
+                  timetable.schedule[selectedSlot.day]?.find(
+                    (s: TimetableSlot) => s.period === selectedSlot.period
+                  )?.teacherId || '',
+                subject:
+                  timetable.schedule[selectedSlot.day]?.find(
+                    (s: TimetableSlot) => s.period === selectedSlot.period
+                  )?.subject || '',
+              }}
+              onSubmit={handleEdit}
+              onClose={() => setIsEditModalOpen(false)}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
       {isDeleteModalOpen && slotToDelete && (
-        <DeleteConfirmationModal
-          onConfirm={handleDelete}
-          onCancel={() => setIsDeleteModalOpen(false)}
-        />
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingSpinner />}>
+            <DeleteConfirmationModal
+              onConfirm={handleDelete}
+              onCancel={() => setIsDeleteModalOpen(false)}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
     </div>
   );
 };
 
-export default TimetableTable;
+export default memo(TimetableTable);

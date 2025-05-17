@@ -11,8 +11,9 @@ export interface IClassData {
   roomNo: string;
   tutor: string;
   totalStudents?: string;
-  id: string;
+  id?: string;
 }
+
 export interface StudentId{
   studentIds: string[] 
 }
@@ -114,7 +115,7 @@ export const updateClass = (data: IClassData) =>
   });
 
 export const fetchClasses = () =>
-  apiRequest<ApiResponse<Partial<Class>[]>>('get', `${ADMIN_CLASS_API_URL}/classlist`)
+  apiRequest<ApiResponse<Class[]>>('get', `${ADMIN_CLASS_API_URL}/classlist`)
     .then((res)=> res.data);
 
 export const fetchStudentClass = () =>

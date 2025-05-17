@@ -43,4 +43,4 @@ const TopClassesCard: React.FC<TopClassesCardProps> = ({ data }) => {
   );
 };
 
-export default TopClassesCard;
+export default React.memo(TopClassesCard);

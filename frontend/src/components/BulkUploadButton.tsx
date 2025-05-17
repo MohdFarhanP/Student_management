@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import React, { useRef } from 'react';
 import { toast } from 'react-toastify';
 import {
   studentsBulkUpload,
@@ -52,4 +52,4 @@ const BulkUploadButton = ({ role }: { role: string }) => {
   );
 };
 
-export default BulkUploadButton;
+export default React.memo(BulkUploadButton);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getClassNames } from '../api/admin/classApi';
 
 interface ClassDropdownProps {
@@ -10,7 +10,7 @@ interface ClassType {
   grade: string;
 }
 
-const ClassDropdown = ({ onSelectClass }: ClassDropdownProps) => {
+const ClassDropdown: React.FC<ClassDropdownProps> = ({ onSelectClass }) => {
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [classes, setClasses] = useState<ClassType[]>([]);
 
@@ -48,4 +48,4 @@ const ClassDropdown = ({ onSelectClass }: ClassDropdownProps) => {
   );
 };
 
-export default ClassDropdown;
+export default React.memo(ClassDropdown);

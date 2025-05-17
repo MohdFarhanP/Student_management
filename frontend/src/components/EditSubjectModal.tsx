@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ImSpinner2 } from 'react-icons/im';
 import { getTeachersNames } from '../api/admin/teacherApi';
@@ -308,4 +308,4 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
   );
 };
 
-export default EditSubjectModal;
+export default React.memo(EditSubjectModal);

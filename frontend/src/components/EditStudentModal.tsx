@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { IStudent, editStudent } from '../api/admin/studentApi';
 
 interface EditStudentModalProps {
@@ -384,4 +384,4 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
   );
 };
 
-export default EditStudentModal;
+export default React.memo(EditStudentModal);

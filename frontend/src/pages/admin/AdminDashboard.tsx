@@ -1,17 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
-import SendNotification from '../../components/SendNotification';
-import NotificationBell from '../../components/NotificationBell';
-import AdminSideBar from '../../components/AdminSideBar';
 import { socket } from '../../socket';
-import DashboardStatsCard from '../../components/DashboardStatsCard';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import ErrorBoundary from '../../components/ErrorBoundary';
+
+// Lazy-load components
+const AdminSideBar = lazy(() => import('../../components/AdminSideBar'));
+const NotificationBell = lazy(() => import('../../components/NotificationBell'));
+const DashboardStatsCard = lazy(() => import('../../components/DashboardStatsCard'));
+const TopClassesCard = lazy(() => import('../../components/TopClassesCard'));
+const AttendanceOverviewChart = lazy(() => import('../../components/AttendanceOverviewChart'));
+const SendNotification = lazy(() => import('../../components/SendNotification'));
+
 import { UserGroupIcon, AcademicCapIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
-import TopClassesCard from '../../components/TopClassesCard';
-import AttendanceOverviewChart from '../../components/AttendanceOverviewChart';
 import { getAdminDashboardStats } from '../../api/admin/dashboardApi';
 import { fetchClasses, getTopClasses, getWeeklyAttendance } from '../../api/admin/classApi';
-import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface Class {
   _id: string;
@@ -38,8 +42,6 @@ const AdminDashboard: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const isAuthLoading = useSelector((state: RootState) => state.auth.loading);
   const [isOpen, setIsOpen] = useState(false);
-
-  // State
   const [stats, setStats] = useState<Stats>({ totalStudents: 0, totalTeachers: 0, totalClasses: 0 });
   const [topClasses, setTopClasses] = useState<TopClass[]>([]);
   const [weeklyData, setWeeklyData] = useState<AttendanceData[]>([]);
@@ -142,7 +144,11 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-base-100 dark:bg-gray-900 overflow-hidden">
-      <AdminSideBar isOpen={isOpen} setIsOpen={setIsOpen} />
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <AdminSideBar isOpen={isOpen} setIsOpen={setIsOpen} />
+        </Suspense>
+      </ErrorBoundary>
       <div
         className={`flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-h-screen ${
           isOpen ? 'md:overflow-hidden overflow-hidden' : ''
@@ -152,7 +158,11 @@ const AdminDashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-base-content dark:text-white sm:text-3xl">
             Admin Dashboard
           </h1>
-          <NotificationBell />
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <NotificationBell />
+            </Suspense>
+          </ErrorBoundary>
         </div>
         {error && (
           <div className="mb-6">
@@ -177,24 +187,36 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <DashboardStatsCard
-            title="Students"
-            count={stats.totalStudents}
-            icon={<UserGroupIcon className="h-8 w-8 text-blue-600" />}
-            bgColor="bg-blue-100 dark:bg-blue-900/30"
-          />
-          <DashboardStatsCard
-            title="Teachers"
-            count={stats.totalTeachers}
-            icon={<AcademicCapIcon className="h-8 w-8 text-green-600" />}
-            bgColor="bg-green-100 dark:bg-green-900/30"
-          />
-          <DashboardStatsCard
-            title="Classes"
-            count={stats.totalClasses}
-            icon={<BuildingOfficeIcon className="h-8 w-8 text-yellow-600" />}
-            bgColor="bg-yellow-100 dark:bg-yellow-900/30"
-          />
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <DashboardStatsCard
+                title="Students"
+                count={stats.totalStudents}
+                icon={<UserGroupIcon className="h-8 w-8 text-blue-600" />}
+                bgColor="bg-blue-100 dark:bg-blue-900/30"
+              />
+            </Suspense>
+          </ErrorBoundary>
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <DashboardStatsCard
+                title="Teachers"
+                count={stats.totalTeachers}
+                icon={<AcademicCapIcon className="h-8 w-8 text-green-600" />}
+                bgColor="bg-green-100 dark:bg-green-900/30"
+              />
+            </Suspense>
+          </ErrorBoundary>
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <DashboardStatsCard
+                title="Classes"
+                count={stats.totalClasses}
+                icon={<BuildingOfficeIcon className="h-8 w-8 text-yellow-600" />}
+                bgColor="bg-yellow-100 dark:bg-yellow-900/30"
+              />
+            </Suspense>
+          </ErrorBoundary>
         </div>
         <div className="mt-6">
           {classes.length > 0 && (
@@ -217,19 +239,23 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
           )}
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : (
-            <AttendanceOverviewChart data={weeklyData} />
-          )}
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              {isLoading ? <LoadingSpinner /> : <AttendanceOverviewChart data={weeklyData} />}
+            </Suspense>
+          </ErrorBoundary>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <div>
-            {isLoading ? <LoadingSpinner /> : <TopClassesCard data={topClasses} />}
-          </div>
-          <div>
-            <SendNotification />
-          </div>
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              {isLoading ? <LoadingSpinner /> : <TopClassesCard data={topClasses} />}
+            </Suspense>
+          </ErrorBoundary>
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <SendNotification />
+            </Suspense>
+          </ErrorBoundary>
         </div>
       </div>
     </div>

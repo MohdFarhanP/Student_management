@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { deleteStudent, IStudent } from '../api/admin/studentApi';
-import PaginationButton from './PaginationButton';
-import ConfirmDialog from './ConfirmDialog';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import ErrorBoundary from './ErrorBoundary';
+import LoadingSpinner from './LoadingSpinner';
+
+// Lazy-load components
+const PaginationButton = lazy(() => import('./PaginationButton'));
+const ConfirmDialog = lazy(() => import('./ConfirmDialog'));
 
 interface StudentTableProps {
   students: IStudent[];
@@ -134,22 +138,30 @@ const StudentTable: React.FC<StudentTableProps> = ({
 
       {/* Pagination */}
       <div className="mt-6 flex justify-center">
-        <PaginationButton
-          page={page}
-          setPage={setPage}
-          totalPages={totalPages}
-        />
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingSpinner />}>
+            <PaginationButton
+              page={page}
+              setPage={setPage}
+              totalPages={totalPages}
+            />
+          </Suspense>
+        </ErrorBoundary>
       </div>
 
       {/* Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={isConfirmOpen}
-        message="Are you sure you want to delete this student?"
-        onConfirm={confirmDelete}
-        onCancel={cancelDelete}
-      />
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <ConfirmDialog
+            isOpen={isConfirmOpen}
+            message="Are you sure you want to delete this student?"
+            onConfirm={confirmDelete}
+            onCancel={cancelDelete}
+          />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 };
 
-export default StudentTable;
+export default React.memo(StudentTable);

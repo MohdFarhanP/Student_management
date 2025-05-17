@@ -1,12 +1,8 @@
-import { useEffect, useState } from 'react';
-import AdminSideBar from '../../components/AdminSideBar';
-import BulkUploadButton from '../../components/BulkUploadButton';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { getTeachers } from '../../api/admin/teacherApi';
-import ProfileCardTeacher from '../../components/ProfileCardTeacher';
-import EditTeacherModal from '../../components/EditTeacherModal';
-import TeacherTable from '../../components/TeacherTable';
-import AddTeacherModal from '../../components/AddTeacherModal';
-
+import LoadingSpinner from '../../components/LoadingSpinner';
+import ErrorBoundary from '../../components/ErrorBoundary';
+// import { ITeacher } from './Teacher';
 export interface ITeacher {
   id: string;
   name: string;
@@ -24,6 +20,14 @@ export interface ITeacher {
   qualification?: string;
 }
 
+// Lazy-load components
+const AdminSideBar = lazy(() => import('../../components/AdminSideBar'));
+const BulkUploadButton = lazy(() => import('../../components/BulkUploadButton'));
+const ProfileCardTeacher = lazy(() => import('../../components/ProfileCardTeacher'));
+const EditTeacherModal = lazy(() => import('../../components/EditTeacherModal'));
+const AddTeacherModal = lazy(() => import('../../components/AddTeacherModal'));
+const TeacherTable = lazy(() => import('../../components/TeacherTable'));
+
 const Teacher = () => {
   const [page, setPage] = useState<number>(1);
   const limit = 5;
@@ -37,12 +41,18 @@ const Teacher = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      const { teachers, totalCount } = await getTeachers(page, limit);
-      setTeachers(teachers);
-      setTotalCount(totalCount ?? 0);
+      const data = await getTeachers(page, limit);
+      if (data) {
+        setTeachers(data.teachers ?? []);
+        setTotalCount(data.totalCount ?? 0);
+      } else {
+        setTeachers([]);
+        setTotalCount(0);
+      }
     };
     fetch();
   }, [page]);
+
 
   const totalPages = Math.max(Math.ceil(totalCount / limit), 1);
 
@@ -71,7 +81,11 @@ const Teacher = () => {
 
   return (
     <div className="flex min-h-screen bg-base-100 dark:bg-gray-900 overflow-hidden">
-      <AdminSideBar isOpen={isOpen} setIsOpen={setIsOpen} />
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <AdminSideBar isOpen={isOpen} setIsOpen={setIsOpen} />
+        </Suspense>
+      </ErrorBoundary>
       <div
         className={`flex-1 overflow-y-auto p-4 sm:p-6 max-h-screen ${
           isOpen ? 'md:overflow-hidden overflow-hidden' : ''
@@ -83,7 +97,11 @@ const Teacher = () => {
             Teachers
           </h1>
           <div className="flex flex-col sm:flex-row gap-3">
-            <BulkUploadButton role={'Teacher'} />
+            <ErrorBoundary>
+              <Suspense fallback={<LoadingSpinner />}>
+                <BulkUploadButton role={'Teacher'} />
+              </Suspense>
+            </ErrorBoundary>
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="btn btn-primary btn-sm sm:btn-md"
@@ -104,35 +122,51 @@ const Teacher = () => {
 
         {/* Teacher List and Profile Card */}
         <div className="flex flex-col lg:flex-row gap-6">
-          <TeacherTable
-            setSelectedTeacher={setSelectedTeacher}
-            teachers={filterTeachers}
-            totalPages={totalPages}
-            setIsOpen={setIsEditModalOpen}
-            page={page}
-            setPage={setPage}
-            onDelete={handleDeleteTeacher}
-          />
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <TeacherTable
+                setSelectedTeacher={setSelectedTeacher}
+                teachers={filterTeachers}
+                totalPages={totalPages}
+                setIsOpen={setIsEditModalOpen}
+                page={page}
+                setPage={setPage}
+                onDelete={handleDeleteTeacher}
+              />
+            </Suspense>
+          </ErrorBoundary>
           {selectedTeacher && (
             <div className="lg:w-80">
-              <ProfileCardTeacher selectedTeacher={selectedTeacher} />
+              <ErrorBoundary>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <ProfileCardTeacher selectedTeacher={selectedTeacher} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           )}
         </div>
 
         {/* Modals */}
         {isEditModalOpen && selectedTeacher && (
-          <EditTeacherModal
-            teacherData={selectedTeacher}
-            onClose={() => setIsEditModalOpen(false)}
-            onEdit={handleEditTeacher}
-          />
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <EditTeacherModal
+                teacherData={selectedTeacher}
+                onClose={() => setIsEditModalOpen(false)}
+                onEdit={handleEditTeacher}
+              />
+            </Suspense>
+          </ErrorBoundary>
         )}
         {isAddModalOpen && (
-          <AddTeacherModal
-            onClose={() => setIsAddModalOpen(false)}
-            onAdd={handleAddTeacher}
-          />
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <AddTeacherModal
+                onClose={() => setIsAddModalOpen(false)}
+                onAdd={handleAddTeacher}
+              />
+            </Suspense>
+          </ErrorBoundary>
         )}
       </div>
     </div>

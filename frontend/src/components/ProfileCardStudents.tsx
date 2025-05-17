@@ -99,4 +99,4 @@ const ProfileCardStudents: React.FC<ProfileCardProps> = ({
   );
 };
 
-export default ProfileCardStudents;
+export default React.memo(ProfileCardStudents);

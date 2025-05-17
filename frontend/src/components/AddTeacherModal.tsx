@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { ITeacher } from '../pages/admin/Teacher';
 import { addTeacher } from '../api/admin/teacherApi';
 import { TbFidgetSpinner } from 'react-icons/tb';
@@ -318,4 +318,4 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
   );
 };
 
-export default AddTeacherModal;
+export default memo(AddTeacherModal);

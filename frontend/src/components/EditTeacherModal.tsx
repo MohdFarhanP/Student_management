@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { ITeacher } from '../pages/admin/Teacher';
 import { editTeacher } from '../api/admin/teacherApi';
 
@@ -338,4 +338,4 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
   );
 };
 
-export default EditTeacherModal;
+export default memo(EditTeacherModal);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
@@ -10,13 +10,13 @@ import { FaRegNoteSticky } from "react-icons/fa6";
 import { RiLiveFill } from "react-icons/ri";
 import { FaRegCalendarAlt } from "react-icons/fa";
 
-const StudentSidebar: React.FC = () => {
+const StudentSidebar: React.FC = memo(() => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const profile = useSelector((state: RootState) => state.student.profile) ?? null;
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       await dispatch(logoutUser()).unwrap();
       navigate('/login');
@@ -25,7 +25,7 @@ const StudentSidebar: React.FC = () => {
       console.log(err);
       toast.error('Logout failed');
     }
-  };
+  }, [dispatch, navigate]);
 
   const menuItems = [
     {
@@ -55,12 +55,12 @@ const StudentSidebar: React.FC = () => {
     },
     {
       name: 'Leave Management',
-      icon: <FaRegCalendarAlt  size={22} />,
+      icon: <FaRegCalendarAlt size={22} />,
       path: '/student/leave/student',
     },
     {
       name: 'LiveSessions',
-      icon: <RiLiveFill  size={22} />,
+      icon: <RiLiveFill size={22} />,
       path: '/student/live-session',
     },
   ];
@@ -145,6 +145,6 @@ const StudentSidebar: React.FC = () => {
       )}
     </>
   );
-};
+});
 
 export default StudentSidebar;

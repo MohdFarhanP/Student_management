@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import profile from '../assets/profile.jpg';
 import { ITeacher } from '../pages/admin/Teacher';
 
@@ -69,4 +69,4 @@ const ProfileCardTeacher: React.FC<ProfileCardProps> = ({
   );
 };
 
-export default ProfileCardTeacher;
+export default memo(ProfileCardTeacher);

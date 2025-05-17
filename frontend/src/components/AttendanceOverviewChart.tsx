@@ -35,6 +35,7 @@ const AttendanceOverviewChart: React.FC<AttendanceOverviewChartProps> = ({ data 
             stroke="#3b82f6"
             strokeWidth={2}
             activeDot={{ r: 8 }}
+            animationDuration={0} // Disable animations for performance
           />
         </LineChart>
       </ResponsiveContainer>
@@ -42,4 +43,4 @@ const AttendanceOverviewChart: React.FC<AttendanceOverviewChartProps> = ({ data 
   );
 };
 
-export default AttendanceOverviewChart;
+export default React.memo(AttendanceOverviewChart);

@@ -41,11 +41,21 @@ interface ApiResponse<T> {
   message: string;
   data?: T;
 }
-export const getStudents = (page: number, limit: number) =>
-  apiRequest<ApiResponse<StudentsResponse>>('get',`${ADMIN_STUDENT_API_URL}/students`,undefined,
-    { params: { page, limit },})
-    .then((res)=> res.data );
-    
+export const getStudents = async (page: number, limit: number): Promise<StudentsResponse> => {
+  const res = await apiRequest<ApiResponse<StudentsResponse>>(
+    'get',
+    `${ADMIN_STUDENT_API_URL}/students`,
+    undefined,
+    { params: { page, limit } }
+  );
+
+  if (!res.data) {
+    return { students: [], totalCount: 0 };
+  }
+
+  return res.data;
+};
+
 export const getStdLiveSessions = (id: string) =>
   apiRequest<ApiResponse<ILiveSessions[]>>('get', `${ADMIN_STUDENT_API_URL}/sessions/${id}`)
     .then((res)=> res.data);

@@ -1,9 +1,12 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import AgoraRTC, { IAgoraRTCClient, IAgoraRTCRemoteUser, ICameraVideoTrack, IMicrophoneAudioTrack, IRemoteVideoTrack, ILocalVideoTrack } from 'agora-rtc-sdk-ng';
 import { socket } from '../../socket';
-import StudentSidebar from '../../components/StudentSidebar';
-import ErrorMessage from '../../components/ErrorMessage';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import ErrorBoundary from '../../components/ErrorBoundary';
+
+// Lazy load components
+const StudentSidebar = lazy(() => import('../../components/StudentSidebar'));
+const ErrorMessage = lazy(() => import('../../components/ErrorMessage'));
+const LoadingSpinner = lazy(() => import('../../components/LoadingSpinner'));
 
 interface SessionInfo {
   sessionId: string;
@@ -13,7 +16,7 @@ interface SessionInfo {
 
 interface UserInfo {
   id: string;
-  name: string; // Added name field
+  name: string;
   email: string;
   role: string;
 }
@@ -509,137 +512,139 @@ const StudentLiveSession = ({ userRole, userId }: { userRole: 'Student'; userId:
     });
   });
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} />;
+  if (loading) return <Suspense fallback={<div>Loading...</div>}><LoadingSpinner /></Suspense>;
+  if (error) return <Suspense fallback={<div>Loading...</div>}><ErrorMessage message={error} /></Suspense>;
 
   return (
     <div className="flex min-h-screen bg-base-100 dark:bg-gray-900 overflow-hidden">
-      <StudentSidebar />
-      <div
-        className={`flex-1 overflow-y-auto p-4 sm:p-6 max-h-screen`}
-      >
-        <div className="my-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-base-content dark:text-white">
-            Student Dashboard - Join Live Session
-          </h1>
-        </div>
-
-        {!sessionInfo && !localTracks && (
-          <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6 mb-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white mb-4">
-              Waiting for a Live Session
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              Your teacher will start a live session soon. Please wait...
-            </p>
+      <Suspense fallback={<div className="p-4">Loading Sidebar...</div>}>
+        <StudentSidebar />
+      </Suspense>
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 max-h-screen">
+        <ErrorBoundary>
+          <div className="my-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h1 className="text-xl sm:text-2xl font-bold text-base-content dark:text-white">
+              Student Dashboard - Join Live Session
+            </h1>
           </div>
-        )}
 
-        {sessionInfo && (
-          <div className="space-y-6">
-            <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
+          {!sessionInfo && !localTracks && (
+            <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6 mb-6">
               <h2 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white mb-4">
-                Active Session: {sessionInfo.title}
+                Waiting for a Live Session
               </h2>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <p className="text-gray-600 dark:text-gray-300">
-                  Session ID: {sessionInfo.sessionId}
-                </p>
-                {!localTracks && (
-                  <button
-                    onClick={() => joinSession(sessionInfo.sessionId)}
-                    disabled={loading}
-                    className="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto"
-                  >
-                    Join Session
-                  </button>
-                )}
-              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                Your teacher will start a live session soon. Please wait...
+              </p>
             </div>
+          )}
 
-            {Array.isArray(activeParticipants) && activeParticipants.length > 0 && (
+          {sessionInfo && (
+            <div className="space-y-6">
               <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-base-content dark:text-white mb-4">
-                  Participants ({activeParticipants.length})
-                </h3>
-                <ul className="space-y-2">
-                  {activeParticipants.map((user) => (
-                    <li key={user.id} className="text-gray-600 dark:text-gray-300">
-                      {user.name} ({user.role})
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {allParticipants.length > 0 ? (
-              <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-base-content dark:text-white mb-4">
-                  Video Feeds
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {allParticipants.map((participant) => (
-                    <div
-                      key={participant.id}
-                      className="relative bg-gray-200 dark:bg-gray-700 rounded-lg shadow overflow-hidden aspect-video"
+                <h2 className="text-lg sm:text-xl font-semibold text-base-content dark:text-white mb-4">
+                  Active Session: {sessionInfo.title}
+                </h2>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Session ID: {sessionInfo.sessionId}
+                  </p>
+                  {!localTracks && (
+                    <button
+                      onClick={() => joinSession(sessionInfo.sessionId)}
+                      disabled={loading}
+                      className="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto"
                     >
-                      <div
-                        id={participant.isLocal ? `local-video-${participant.id}` : `remote-video-${participant.id}`}
-                        className="w-full h-full"
-                      >
-                        {!participant.hasVideo && (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-300 dark:bg-gray-600">
-                            <p className="text-gray-600 dark:text-gray-300 text-sm">
-                              {participant.isLocal ? 'Your camera is off' : 'No video'}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-sm p-2">
-                        {participant.name} ({participant.role})
-                      </div>
-                    </div>
-                  ))}
+                      Join Session
+                    </button>
+                  )}
                 </div>
               </div>
-            ) : (
-              <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-base-content dark:text-white mb-4">
-                  Video Feeds
-                </h3>
-                <div className="w-full h-64 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center">
-                  <p className="text-gray-500 dark:text-gray-400">No participants with video yet...</p>
-                </div>
-              </div>
-            )}
 
-            {localTracks && (
-              <div className="fixed bottom-4 right-4 sm:right-6 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 z-50">
-                <button
-                  onClick={toggleMic}
-                  className={`btn btn-sm sm:btn-md ${micOn ? 'btn-error' : 'btn-success'}`}
-                >
-                  {micOn ? 'Disable Mic' : 'Enable Mic'}
-                </button>
-                {hasCamera && (
+              {Array.isArray(activeParticipants) && activeParticipants.length > 0 && (
+                <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-base-content dark:text-white mb-4">
+                    Participants ({activeParticipants.length})
+                  </h3>
+                  <ul className="space-y-2">
+                    {activeParticipants.map((user) => (
+                      <li key={user.id} className="text-gray-600 dark:text-gray-300">
+                        {user.name} ({user.role})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {allParticipants.length > 0 ? (
+                <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-base-content dark:text-white mb-4">
+                    Video Feeds
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {allParticipants.map((participant) => (
+                      <div
+                        key={participant.id}
+                        className="relative bg-gray-200 dark:bg-gray-700 rounded-lg shadow overflow-hidden aspect-video"
+                      >
+                        <div
+                          id={participant.isLocal ? `local-video-${participant.id}` : `remote-video-${participant.id}`}
+                          className="w-full h-full"
+                        >
+                          {!participant.hasVideo && (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-300 dark:bg-gray-600">
+                              <p className="text-gray-600 dark:text-gray-300 text-sm">
+                                {participant.isLocal ? 'Your camera is off' : 'No video'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-sm p-2">
+                          {participant.name} ({participant.role})
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="card bg-base-100 dark:bg-gray-800 shadow-xl rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-base-content dark:text-white mb-4">
+                    Video Feeds
+                  </h3>
+                  <div className="w-full h-64 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center">
+                    <p className="text-gray-500 dark:text-gray-400">No participants with video yet...</p>
+                  </div>
+                </div>
+              )}
+
+              {localTracks && (
+                <div className="fixed bottom-4 right-4 sm:right-6 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 z-50">
                   <button
-                    onClick={toggleVideo}
-                    className={`btn btn-sm sm:btn-md ${videoOn ? 'btn-error' : 'btn-success'}`}
-                    disabled={!localTracks.videoTrack}
+                    onClick={toggleMic}
+                    className={`btn btn-sm sm:btn-md ${micOn ? 'btn-error' : 'btn-success'}`}
                   >
-                    {videoOn ? 'Disable Camera' : 'Enable Camera'}
+                    {micOn ? 'Disable Mic' : 'Enable Mic'}
                   </button>
-                )}
-                <button
-                  onClick={leaveSession}
-                  className="btn btn-neutral btn-sm sm:btn-md"
-                >
-                  Leave Session
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+                  {hasCamera && (
+                    <button
+                      onClick={toggleVideo}
+                      className={`btn btn-sm sm:btn-md ${videoOn ? 'btn-error' : 'btn-success'}`}
+                      disabled={!localTracks.videoTrack}
+                    >
+                      {videoOn ? 'Disable Camera' : 'Enable Camera'}
+                    </button>
+                  )}
+                  <button
+                    onClick={leaveSession}
+                    className="btn btn-neutral btn-sm sm:btn-md"
+                  >
+                    Leave Session
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </ErrorBoundary>
       </div>
     </div>
   );

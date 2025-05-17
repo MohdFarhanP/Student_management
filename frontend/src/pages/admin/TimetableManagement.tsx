@@ -1,16 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { fetchClasses } from '../../api/admin/classApi';
-import ClassSelector from '../../components/ClassSelector';
-import TimetableTable from '../../components/TimetableTable';
-import ErrorMessage from '../../components/ErrorMessage';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import AdminSideBar from '../../components/AdminSideBar';
+import ErrorBoundary from '../../components/ErrorBoundary';
+import ErrorMessage from '../../components/ErrorMessage';
 import { AxiosError } from 'axios';
 
-export type Class = {
-  _id?: string;
+interface Class {
+  _id: string;
   name: string;
-};
+  chatRoomId?:string;
+  section?: string;
+  grade?: string;
+}
+
+// Lazy-load components
+const AdminSideBar = lazy(() => import('../../components/AdminSideBar'));
+const ClassSelector = lazy(() => import('../../components/ClassSelector'));
+const TimetableTable = lazy(() => import('../../components/TimetableTable'));
 
 const TimetableManagement: React.FC = () => {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -25,8 +31,8 @@ const TimetableManagement: React.FC = () => {
       try {
         const classesData = await fetchClasses();
         setClasses(classesData || []);
-        if (classesData?.length > 0 && classesData[0]._id) {
-          setSelectedClassId(classesData[0]._id);
+        if (classesData!.length > 0 && classesData![0]._id) {
+          setSelectedClassId(classesData![0]._id);
         }
       } catch (err: unknown) {
         if (err instanceof AxiosError) {
@@ -45,7 +51,11 @@ const TimetableManagement: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-base-100 dark:bg-gray-900 overflow-hidden">
-      <AdminSideBar isOpen={isOpen} setIsOpen={setIsOpen} />
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <AdminSideBar isOpen={isOpen} setIsOpen={setIsOpen} />
+        </Suspense>
+      </ErrorBoundary>
       <div
         className={`flex-1 overflow-y-auto p-4 sm:p-6 max-h-screen ${
           isOpen ? 'md:overflow-hidden overflow-hidden' : ''
@@ -55,14 +65,22 @@ const TimetableManagement: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-bold text-base-content dark:text-white">
             Timetable Management
           </h1>
-          <ClassSelector
-            classes={classes}
-            selectedClassId={selectedClassId}
-            onSelectClass={setSelectedClassId}
-          />
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <ClassSelector
+                classes={classes}
+                selectedClassId={selectedClassId}
+                onSelectClass={setSelectedClassId}
+              />
+            </Suspense>
+          </ErrorBoundary>
         </div>
         {selectedClassId ? (
-          <TimetableTable classId={selectedClassId} />
+          <ErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <TimetableTable classId={selectedClassId} />
+            </Suspense>
+          </ErrorBoundary>
         ) : (
           <p className="text-center text-lg font-semibold text-gray-500 dark:text-gray-400">
             Please select a class to view the timetable.

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CiCirclePlus } from 'react-icons/ci';
 import { createClass } from '../redux/slices/classSlice';
 import { fetchTeachers } from '../redux/slices/classSlice';
@@ -14,7 +14,7 @@ interface FormFields {
   tutor?: string;
 }
 
-const Modal = () => {
+const Modal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState<IClassData>({
     name: '',
@@ -63,7 +63,7 @@ const Modal = () => {
     const newErrors: FormFields = {};
     if (!formData.grade) newErrors.grade = 'Grade is required';
     if (!formData.section) newErrors.section = 'Section is required';
-    if (!formData.roomNo) newErrors.roomNo = 'Room Number is required';
+    if (!formData.roomNo) newErrors.roomNo = 'Room Number Emilio required';
     else if (Number(formData.roomNo) < 0)
       newErrors.roomNo = 'Room Number cannot be negative';
     if (!formData.tutor) newErrors.tutor = 'Tutor is required';
@@ -259,4 +259,4 @@ const Modal = () => {
   );
 };
 
-export default Modal;
+export default React.memo(Modal);
