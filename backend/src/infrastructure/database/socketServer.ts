@@ -5,7 +5,7 @@ import { ISendMessageUseCase } from '../../domain/interface/ISendMessageUseCase'
 import { INotificationRepository } from '../../domain/interface/INotificationRepository';
 import { ISendNotificationUseCase } from '../../domain/interface/ISendNotificationUseCase';
 import { IClassRepository } from '../../domain/interface/admin/IClassRepository';
-import { JoinLiveSessionDTO, ScheduleLiveSessionDTO, SendMessageDTO, SendNotificationDTO, UserInfo } from '../../domain/types/interfaces';
+import { JoinLiveSessionDTO, ScheduleLiveSessionDTO, SendMessageDTO, SendNotificationDTO, TrackSessionDurationDTO, UserInfo } from '../../domain/types/interfaces';
 import { ValidationError, UnauthorizedError, ForbiddenError } from '../../domain/errors';
 import { Role, RecipientType, SessionStatus, LeaveStatus } from '../../domain/types/enums';
 import { IScheduleLiveSessionUseCase } from '../../domain/interface/IScheduleLiveSessionUseCase';
@@ -19,6 +19,7 @@ import { ApproveRejectLeaveDTO, ViewLeaveHistoryDTO, ApplyForLeaveDTO } from '..
 import { IGetAdminDashboardStatsUseCase } from '../../domain/interface/IGetAdminDashboardStatsUseCase';
 import { ITeacherRepository } from '../../domain/interface/admin/ITeacherRepository';
 import { IStudentRepository } from '../../domain/interface/admin/IStudentRepository';
+import { ITrackSessionDurationUseCase } from '../../domain/interface/ITrackSessionDurationUseCase';
 
 interface AdminDashboardResponse {
   success: boolean;
@@ -44,6 +45,7 @@ export class SocketServer implements ISocketServer {
     private getAdminDashboardStatsUseCase: IGetAdminDashboardStatsUseCase,
     private teacherRepository: ITeacherRepository,
     private studentRepository: IStudentRepository,
+    private trackSessionDurationUseCase: ITrackSessionDurationUseCase,
   ) {
     console.log('SocketServer constructor called');
     console.log('SocketServer initialized with sendNotificationUseCase:', !!sendNotificationUseCase);
@@ -408,6 +410,23 @@ export class SocketServer implements ISocketServer {
         } catch (error) {
           console.error('Error leaving live session:', error);
           socket.emit('error', error instanceof Error ? error.message : 'Failed to leave live session');
+        }
+      });
+
+      socket.on('student-session-duration', async (data: TrackSessionDurationDTO) => {
+        console.log('[SessionDurationController] Received student-session-duration at', new Date().toISOString(), data);
+        try {
+          await this.trackSessionDurationUseCase.execute({
+            userId: data.userId,
+            sessionId: data.sessionId,
+            durationSeconds: data.durationSeconds,
+            joinTime: new Date(data.joinTime),
+            leaveTime: new Date(data.leaveTime),
+          });
+          console.log('[SessionDurationController] Session duration tracked successfully at', new Date().toISOString());
+        } catch (error) {
+          console.error('[SessionDurationController] Error at', new Date().toISOString(), error);
+          socket.emit('error', { message: `Failed to track session duration: ${(error as Error).message}` });
         }
       });
 

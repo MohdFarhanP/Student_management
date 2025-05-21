@@ -54,6 +54,12 @@ const apiRequest = async <T, D = undefined>(
       const status = error.response?.status;
       const isRefresh = error.config?.url === '/auth/refresh-token';
 
+      if (status === 500) {
+        console.error('[apiRequest] 500 Internal Server Error at', new Date().toISOString(), { method, url });
+        window.location.href = '/500';
+        toast.error('Internal Server Error');
+      }
+
       if (status === 401 && !isRefresh && showToast) {
         toast.error('Unauthorized');
       }

@@ -7,6 +7,7 @@ import { TimetableSlot } from '../../types/timetable';
 import { getStdLiveSessions, ILiveSessions } from '../../api/admin/studentApi';
 import { getClassesById, IClassData } from '../../api/admin/classApi';
 import { toast } from 'react-toastify';
+import { Unauthorized } from '../Unauthorized';
 
 // Lazy load components
 const StudentSidebar = lazy(() => import('../../components/StudentSidebar'));
@@ -33,7 +34,7 @@ export const StudentDashboard: React.FC = () => {
       setClassInfo(classData!);
 
       const [timetableData, sessionsData] = await Promise.all([
-        fetchTimetableForToday(classData!.id),
+        fetchTimetableForToday(classData.id),
         getStdLiveSessions(user.id),
       ]);
 
@@ -62,26 +63,7 @@ export const StudentDashboard: React.FC = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-base-100 dark:bg-gray-900">
-        <div className="alert alert-error shadow-lg max-w-md">
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="stroke-current flex-shrink-0 h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span>{error}</span>
-          </div>
-        </div>
-      </div>
+      <Unauthorized/>
     );
   }
 

@@ -5,7 +5,7 @@ import ErrorBoundary from '../../components/ErrorBoundary';
 import ErrorMessage from '../../components/ErrorMessage';
 import { AxiosError } from 'axios';
 
-interface Class {
+export interface Class {
   _id: string;
   name: string;
   chatRoomId?:string;

@@ -55,4 +55,11 @@ router.get('/classes', authenticateUser, (req, res, next) => {
   classController.getClassesForTeacher.bind(classController)(req, res, next);
 });
 
+router.get('/sessions/attendance', authenticateUser, (req, res, next) => {
+  if (!attendanceController) {
+    throw new Error('ClassController not initialized. Dependency injection failed.');
+  }
+  attendanceController.GetRecentSessionAttendance.bind(attendanceController)(req, res, next);
+});
+
 export default router;

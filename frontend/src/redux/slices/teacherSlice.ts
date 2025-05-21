@@ -27,7 +27,7 @@ export interface TeacherProfile {
   specialization?: string;
   experienceYears?: number;
   qualification?: string;
-  availability: Availability;
+  availability?: Availability;
 }
 
 interface TeacherState {
@@ -66,7 +66,11 @@ export const fetchTeacherProfile = createAsyncThunk(
   }
 );
 
-export const updateTeacherProfile = createAsyncThunk(
+export const updateTeacherProfile = createAsyncThunk<
+TeacherProfile,
+Partial<TeacherProfile>,
+{ rejectValue: string }
+>(
   'teacher/updateTeacherProfile',
   async (profile: Partial<TeacherProfile>, { rejectWithValue }) => {
     try {

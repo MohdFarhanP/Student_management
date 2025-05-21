@@ -5,7 +5,8 @@ export interface ILiveSessionRepository {
   findById(id: string): Promise<ILiveSession | null>;
   updateStatus(id: string, status: string): Promise<void>;
   update(id: string, updates: Partial<ILiveSession>): Promise<void>;
-  
-  //   findByStudentId(studentId: string): Promise<ILiveSession[]>;
-  // findByTeacherId(teacherId: string): Promise<ILiveSession[]>;
+  findByTeacherId(teacherId: string): Promise<ILiveSession[]>;
+  findByStudentId(studentId: string): Promise<ILiveSession[]>;
+  findSessionByTeacherId(teacherId: string, limit: number): Promise<ILiveSession[]>
+
 }

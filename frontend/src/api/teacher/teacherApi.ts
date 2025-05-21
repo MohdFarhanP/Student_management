@@ -26,7 +26,20 @@ export interface Teacher {
   qualification: string;
   availability?: Availability;
 }
+export interface StudentAttendance {
+  studentId: string;
+  studentName: string;
+  durationSeconds: number;
+  joinTime: Date;
+  leaveTime: Date;
+}
 
+export interface SessionAttendanceDTO {
+  sessionId: string;
+  title: string;
+  scheduledAt?: Date;
+  students: StudentAttendance[];
+}
 interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -39,12 +52,14 @@ export const teachersProfileFetch = (email: string) =>
   })
     .then((res)=> res.data);
 
-export const updateTeacherProfileApi = (profile: Partial<Teacher>) =>{
-  console.log('teacher edit details',profile)
+export const fetchSessionAttendance = () =>
+  apiRequest<ApiResponse<SessionAttendanceDTO[]>>('get', `${TEACHER_API_URL}/sessions/attendance`)
+    .then((res) => res.data);
+
+export const updateTeacherProfileApi = (profile: Partial<Teacher>) =>
   apiRequest<ApiResponse<Teacher>, Partial<Teacher>>(
     'put',
     `${TEACHER_API_URL}/profile`,
     profile
   )
     .then((res)=> res.data);
-}

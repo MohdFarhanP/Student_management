@@ -1,17 +1,19 @@
 import { Request, Response } from 'express';
 import HttpStatus from '../../../utils/httpStatus';
-import { MarkAttendanceUseCase } from '../../../application/useCases/teacher/markAttendanceUseCase';
-import { ViewAttendanceUseCase } from '../../../application/useCases/student/ViewAttendanceUseCase';
 import { IAttendanceController } from '../../../domain/interface/teacher/IAttendanceController';
-import { IApiResponse } from '../../../domain/types/interfaces';
+import { IApiResponse, SessionAttendanceDTO } from '../../../domain/types/interfaces';
 import { Attendance } from '../../../domain/entities/attendance';
 import { IUser } from '../../../domain/types/interfaces';
 import mongoose from 'mongoose';
+import { IGetRecentSessionAttendanceUseCase } from '../../../domain/interface/IGetRecentSessionAttendanceUseCase';
+import { IViewAttendanceUseCase } from '../../../domain/interface/IViewAttendanceUseCase';
+import { IMarkAttendanceUseCase } from '../../../domain/interface/IMarkAttendanceUseCase';
 
 export class AttendanceController implements IAttendanceController {
   constructor(
-    private markAttendanceUseCase: MarkAttendanceUseCase,
-    private viewAttendanceUseCase: ViewAttendanceUseCase
+    private markAttendanceUseCase: IMarkAttendanceUseCase,
+    private viewAttendanceUseCase: IViewAttendanceUseCase,
+    private getRecentSessionAttendanceUseCase: IGetRecentSessionAttendanceUseCase
   ) {}
 
   async markAttendance(req: Request, res: Response): Promise<void> {
@@ -143,6 +145,36 @@ export class AttendanceController implements IAttendanceController {
         message: 'Attendance records fetched successfully',
         data: attendanceRecords,
       } as IApiResponse<Attendance[]>);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      const status = message.includes('Unauthorized') || message.includes('Invalid')
+        ? HttpStatus.BAD_REQUEST
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+      res.status(status).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
+    }
+  }
+
+  async GetRecentSessionAttendance(req: Request, res: Response): Promise<void> {
+    try {
+      const user = req.user as IUser | undefined;
+
+      if (!user?.id || !mongoose.Types.ObjectId.isValid(user.id)) {
+        throw new Error('Unauthorized: Valid teacher ID required');
+      }
+      if (!mongoose.Types.ObjectId.isValid(user.id)) {
+        throw new Error('Invalid student ID format');
+      }
+
+      const sessionAttendance = await this.getRecentSessionAttendanceUseCase.execute(user.id);
+      console.log('this is the session attendance',sessionAttendance)
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Attendance records fetched successfully',
+        data: sessionAttendance,
+      } as IApiResponse<SessionAttendanceDTO[]>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       const status = message.includes('Unauthorized') || message.includes('Invalid')

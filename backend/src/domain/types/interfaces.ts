@@ -222,6 +222,8 @@ export interface ILiveSession {
   roomId?: string; 
   token?: string;
   participants?: UserInfo[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface UserInfo {
@@ -323,3 +325,25 @@ export interface ILiveSessionDto {
   isOngoing: boolean;
   joinLink?: string; // not implemented yet
 }
+export interface TrackSessionDurationDTO {
+  userId: string;
+  sessionId: string;
+  durationSeconds: number;
+  joinTime: Date;
+  leaveTime: Date;
+}
+export interface StudentAttendance {
+  studentId: string;
+  studentName: string;
+  durationSeconds: number;
+  joinTime: Date;
+  leaveTime: Date;
+}
+
+export interface SessionAttendanceDTO {
+  sessionId: string;
+  title: string;
+  scheduledAt?: Date;
+  students: StudentAttendance[];
+}
+

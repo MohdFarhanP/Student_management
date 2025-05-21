@@ -1,7 +1,5 @@
 import { Server as SocketIOServer } from 'socket.io';
 import { Queue, Worker } from 'bullmq';
-import { ILiveSessionRepository } from '../../domain/interface/ILiveSessionRepository';
-import { IVideoService } from '../../domain/interface/IVideoService';
 import { LiveSessionRepository } from '../repositories/LiveSessionRepository';
 import { ScheduleLiveSession } from '../../application/useCases/liveSession/ScheduleLiveSessionUseCase';
 import { JoinLiveSession } from '../../application/useCases/liveSession/JoinLiveSessionUseCase';
@@ -65,7 +63,6 @@ import { IDeleteStudentUseCase } from '../../domain/interface/IDeleteStudentUseC
 import { IEditStudentUseCase } from '../../domain/interface/IEditStudentUseCase';
 import { IGetAllStudentsUseCase } from '../../domain/interface/IGetAllStudentsUseCase';
 import { IGetStudentProfileUseCase as IAdminGetStudentProfileUseCase } from '../../domain/interface/IGetStudentProfileUseCase';
-import { IAuthService } from '../../domain/interface/IAuthService';
 import { TeacherController } from '../../interfaces/controllers/admin/teachersController';
 import { AddTeacherUseCase } from '../../application/useCases/admin/teacher/addTeacherUseCase';
 import { DeleteTeacherUseCase } from '../../application/useCases/admin/teacher/deleteTeacherUseCase';
@@ -110,7 +107,6 @@ import { IViewAttendanceUseCase } from '../../domain/interface/IViewAttendanceUs
 import { AttendanceRepository } from '../repositories/teacher/attendanceRepository';
 import { IAttendanceRepository } from '../../domain/interface/IAttendanceRepository';
 import { TimetableService } from '../services/TimetableService';
-import { ITimetableService } from '../../domain/interface/ITimetableService';
 import { NoteController } from '../../interfaces/controllers/noteController';
 import { INoteController } from '../../domain/interface/INoteController';
 import { UploadNoteUseCase } from '../../application/useCases/teacher/UploadNoteUseCase';
@@ -156,11 +152,9 @@ import { GeneratePresignedUrlUseCase } from '../../application/useCases/Generate
 import { IPresignedUrlController } from '../../domain/interface/IPresignedUrlController';
 import { PresignedUrlController } from '../../interfaces/controllers/PresignedUrlController';
 import { GetClassesForTeacherUseCase } from '../../application/useCases/message/getClassesForTeacher';
-import { IGetClassesForTeacherUseCase } from '../../domain/interface/IGetClassesForTeacherUseCase';
 import { GetClassForStudentUseCase } from '../../application/useCases/message/getClassForStudent';
 import { setupNotificationQueue } from '../../application/workers/notificationWorker';
 import { getStudentsIdByClassUseCase } from '../../application/useCases/admin/class/getStudentsIdByClassUseCase';
-import { IGetStudentsIdByClassUseCase } from '../../domain/interface/IGetStudentsIdByClassUseCase';
 import { ILeaveRepository } from '../../domain/interface/ILeaveRepository';
 import { LeaveRepository } from '../repositories/LeaveRepository';
 import { IApplyForLeaveUseCase } from '../../domain/interface/IApplyForLeaveUseCase';
@@ -170,18 +164,17 @@ import { ApplyForLeaveUseCase } from '../../application/useCases/leave/ApplyForL
 import { ViewLeaveHistoryUseCase } from '../../application/useCases/leave/ViewLeaveHistoryUseCase';
 import { ApproveRejectLeaveUseCase } from '../../application/useCases/leave/ApproveRejectLeaveUseCase';
 import { FetchTopClassUseCase } from '../../application/useCases/admin/class/fetchTopClassUseCase';
-import { IFetchTopClassUseCase } from '../../domain/interface/IFetchTopClassUseCase';
-import { IFetchWeeklyAttendanceUseCase } from '../../domain/interface/IFetchWeeklyAttendanceUseCase';
 import { FetchWeeklyAttendanceUseCase } from '../../application/useCases/admin/FetchWeeklyAttendanceUseCase';
-import { IGetAdminDashboardStatsUseCase } from '../../domain/interface/IGetAdminDashboardStatsUseCase';
 import { GetAdminDashboardStatsUseCase } from '../../application/useCases/dashboard/GetAdminDashboardStatsUseCase';
 import { DashboardRepositoryMongo } from '../repositories/DashboardRepositoryMongo';
-import { IDashboardRepository } from '../../domain/interface/IDashboardRepository';
 import { FetchTeacherClassesUseCase } from '../../application/useCases/admin/teacher/FetchTeacherClassesUseCase';
 import { FetchTodayScheduleUseCase } from '../../application/useCases/admin/teacher/FetchTodayScheduleUseCase';
 import { FetchLiveSessionsUseCase } from '../../application/useCases/admin/teacher/FetchLiveSessionsUseCase';
 import { GetClassesByIdUseCase } from '../../application/useCases/admin/class/GetClassesByIdUseCase';
 import { GetStdSessionsUsecase } from '../../application/useCases/student/getStdSessionsUsecase';
+import { TrackSessionDurationUseCase } from '../../application/useCases/liveSession/TrackSessionDurationUseCase';
+import { MongoSessionDurationRepository } from '../repositories/sessionDurationRepository';
+import { GetRecentSessionAttendanceUseCase } from '../../application/useCases/liveSession/GetRecentSessionAttendanceUseCase';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -204,6 +197,7 @@ export class DependencyContainer {
     this.dependencies.set('ILiveSessionRepository', new LiveSessionRepository());
     this.dependencies.set('ILeaveRepository', new LeaveRepository());
     this.dependencies.set('IDashboardRepository', new DashboardRepositoryMongo())
+    this.dependencies.set('ISessionDurationRepository', new MongoSessionDurationRepository())
 
     // Services
     this.dependencies.set('IAuthService', new AuthService());
@@ -253,6 +247,20 @@ export class DependencyContainer {
         this.dependencies.get('IVideoService'),
         this.dependencies.get('IStudentRepository'),
         this.dependencies.get('ITeacherRepository')
+      )
+    );
+    this.dependencies.set(
+      'ITrackSessionDurationUseCase',
+      new TrackSessionDurationUseCase(
+        this.dependencies.get('ISessionDurationRepository'),
+      )
+    );
+    this.dependencies.set(
+      'IGetRecentSessionAttendanceUseCase',
+      new GetRecentSessionAttendanceUseCase(
+        this.dependencies.get('ILiveSessionRepository'),
+        this.dependencies.get('ISessionDurationRepository'),
+        this.dependencies.get('IStudentRepository'),
       )
     );
 
@@ -324,7 +332,8 @@ export class DependencyContainer {
         this.dependencies.get('IApproveRejectLeaveUseCase'),
         this.dependencies.get('IGetAdminDashboardStatsUseCase'),
         this.dependencies.get('ITeacherRepository'),
-        this.dependencies.get('IStudentRepository')
+        this.dependencies.get('IStudentRepository'),
+        this.dependencies.get('ITrackSessionDurationUseCase'),
       )
     );
 
@@ -712,7 +721,8 @@ export class DependencyContainer {
       'IAttendanceController',
       new AttendanceController(
         this.dependencies.get('IMarkAttendanceUseCase'),
-        this.dependencies.get('IViewAttendanceUseCase')
+        this.dependencies.get('IViewAttendanceUseCase'),
+        this.dependencies.get('IGetRecentSessionAttendanceUseCase'),
       )
     );
     this.dependencies.set(

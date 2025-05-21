@@ -18,6 +18,8 @@ import PrivateRoute from './routes/PrivateRoute';
 import { useEffect, useState } from 'react';
 import { checkAuthOnLoad } from './redux/slices/authSlice';
 import { socket } from './socket';
+import InternalServerError from './components/InternalServerError';
+import NotFound from './components/NotFound';
 
 const AppContent: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -116,6 +118,7 @@ const AppContent: React.FC = () => {
       
       <Route path="/login" element={<Login />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
+      <Route path="/500" element={<InternalServerError />} />
       <Route element={<PrivateRoute allowedRoles={['Admin']} />}>
         <Route path="/admin/*" element={<AdminRoutes />} />
       </Route>
@@ -125,6 +128,7 @@ const AppContent: React.FC = () => {
       <Route element={<PrivateRoute allowedRoles={['Teacher']} />}>
         <Route path="/teacher/*" element={<TeacherRoutes />} />
       </Route>
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

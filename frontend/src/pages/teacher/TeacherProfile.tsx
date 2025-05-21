@@ -104,16 +104,14 @@ const TeacherProfile: React.FC = () => {
     if (!validateForm()) return;
     if (editedProfile) {
       try {
-        const result = await dispatch(
+        await dispatch(
           updateTeacherProfile(editedProfile)
         ).unwrap();
-        if (result) {
-          setIsEditing(false);
-        }
+        setIsEditing(false);
       } catch (err) {
         console.error('Failed to update profile:', err);
         toast.error('Failed to update profile. Please try again.');
-      }t
+      }
     }
   };
 

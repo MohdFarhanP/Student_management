@@ -104,7 +104,7 @@ export class StudentRepository implements IStudentRepository {
     if (!student) return null;
     return new Student(mapToStudentData(student));
   }
-
+  
   async findManyByIds(ids: string[]): Promise<UserInfo[]> {
     const usersData = await studentModel.find({ _id: { $in: ids } });
     return usersData.map((user)=>({
@@ -112,7 +112,7 @@ export class StudentRepository implements IStudentRepository {
         name: user.name,
         email: user.email,
         role: 'Student'
-  }))
+  }));
   }
 
   async create(data: Partial<IStudent>): Promise<Student> {
