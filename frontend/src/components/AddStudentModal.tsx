@@ -103,7 +103,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({
     setIsSubmitting(true);
     try {
       const newStudent = await addStudent(formData);
-      onAdd?.(newStudent);
+      onAdd?.(newStudent!);
       onClose();
     } catch (error) {
       console.error('Failed to add student:', error);

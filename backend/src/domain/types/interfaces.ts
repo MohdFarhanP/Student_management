@@ -346,4 +346,18 @@ export interface SessionAttendanceDTO {
   scheduledAt?: Date;
   students: StudentAttendance[];
 }
-
+export interface IRecurringFeeDto {
+  id: string;
+  title: string;
+  amount: number;
+  startMonth: string;
+  endMonth: string;
+  classId: string;
+  className: string;
+  recurring: boolean;
+}
+export interface studentInfoDto {
+  id:string,
+  name:string,
+  email: string;
+}

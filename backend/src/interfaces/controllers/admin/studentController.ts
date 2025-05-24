@@ -119,7 +119,7 @@ export class StudentController implements IStudentController {
     try {
       const { studentId } = req.params;
       const studentData: Partial<IStudent> = req.body;
-      const updatedStudent = await this.editStudentUseCase.execute(studentId, studentData);
+      const updatedStudent = await this.editStudentUseCase.execute(studentData.id, studentData);
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Student updated successfully',

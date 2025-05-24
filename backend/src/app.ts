@@ -60,6 +60,8 @@ app.use(
       studentController: dependencyContainer.getStudentController(),
       teacherController: dependencyContainer.getTeacherController(),
       timetableController: dependencyContainer.getTimetableController(),
+      recurringFeeController: dependencyContainer.getRecurringFeeController(),
+      paymentController: dependencyContainer.getPaymentController(),
     });
     setUserController(dependencyContainer.getUserController());
     setStudentControllers({

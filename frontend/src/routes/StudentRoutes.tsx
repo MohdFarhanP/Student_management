@@ -9,6 +9,7 @@ import { StudentDashboard } from '../pages/student/StudentDashboard';
 import NotFound from '../components/NotFound';
 import StudentLiveSession from '../pages/student/StudentLiveSession';
 import StudentLeavePage from '../pages/student/StudentLeavePage';
+import StudentPayment from '../pages/student/StudentPayment';
 
 const StudentRoutes = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -26,6 +27,7 @@ const StudentRoutes = () => {
           element={<StudentLiveSession userRole="Student" userId={user?.id || ''} />}
         />
         <Route path="/leave/student" element={<StudentLeavePage />} />
+        <Route path="/payment" element={<StudentPayment />} />
         <Route path="*" element={<NotFound />} />
 
       </Routes>

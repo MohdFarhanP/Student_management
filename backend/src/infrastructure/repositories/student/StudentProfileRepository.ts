@@ -35,6 +35,19 @@ export class StudentProfileRepository implements IStudentProfileRepository {
       },
     });
   }
+  async getStudentInfo(userId: string): Promise<Student | null> {
+    try {
+      const rawStudent = await studentModel
+      .findOne({ _id: userId })
+      .select('-password')
+      .lean();
+
+      if (!rawStudent) return null;
+      return new Student(rawStudent);
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
 
   async updateProfileImage(
     email: string,

@@ -18,6 +18,11 @@ export class EditStudentUseCase implements IEditStudentUseCase {
       throw new Error('Student not found');
     }
 
+    const existingPhonNo = await this.studentRepository.findByPhoneNo(studentId, studentData.address.phoneNo);
+    if (existingPhonNo) {
+      throw new Error('Student already exist whith the same phonNo');
+    }
+
     const updatedStudent = await this.studentRepository.update(studentId, studentData);
     if (!updatedStudent) {
       throw new Error('Student not found');

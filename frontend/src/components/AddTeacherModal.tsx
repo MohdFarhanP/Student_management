@@ -71,7 +71,7 @@ const AddTeacherModal: React.FC<AddTeacherModalProps> = ({
     setIsSubmitting(true);
     try {
       const newTeacher = await addTeacher(formData);
-      onAdd?.(newTeacher);
+      onAdd?.(newTeacher!);
       onClose();
     } catch (error) {
       console.error('Failed to add teacher:', error);

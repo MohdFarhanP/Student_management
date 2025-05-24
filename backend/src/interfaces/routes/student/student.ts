@@ -27,6 +27,13 @@ router.get('/profile/:email', authenticateUser, (req, res, next) => {
   studentProfileController.getProfile.bind(studentProfileController)(req, res, next);
 });
 
+router.get('/info', authenticateUser, (req, res, next) => {
+  if (!studentProfileController) {
+    throw new Error('StudentProfileController not initialized. Dependency injection failed.');
+  }
+  studentProfileController.getBasicInfo.bind(studentProfileController)(req, res, next);
+});
+
 router.patch('/profile/image', authenticateUser, (req, res, next) => {
   if (!studentProfileController) {
     throw new Error('StudentProfileController not initialized. Dependency injection failed.');
@@ -46,6 +53,18 @@ router.get('/my-class', authenticateUser, (req, res, next) => {
     throw new Error('ClassController not initialized. Dependency injection failed.');
   }
   classController.getClassForStudent.bind(classController)(req, res, next);
+});
+router.get('/fees/due', authenticateUser, (req, res, next) => {
+  if (!studentProfileController) {
+    throw new Error('ClassController not initialized. Dependency injection failed.');
+  }
+  studentProfileController.getUnpaidDues.bind(studentProfileController)(req, res, next);
+});
+router.post('/fees/pay', authenticateUser, (req, res, next) => {
+  if (!studentProfileController) {
+    throw new Error('ClassController not initialized. Dependency injection failed.');
+  }
+  studentProfileController.processPayment.bind(studentProfileController)(req, res, next);
 });
 
 export default router;

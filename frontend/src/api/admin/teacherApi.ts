@@ -64,11 +64,12 @@ export const editTeacher = (teacherId: string, data: ITeacher) =>
     .then((res)=> res.data);
 
 export const addTeacher = (data: Partial<ITeacher>) =>
-  apiRequest<ApiResponse<TeachersResponse>, Partial<ITeacher>>(
+  apiRequest<ApiResponse<ITeacher>, Partial<ITeacher>>(
     'post',
     `${ADMIN_TEACHER_API_URL}/teacher`,
     data
-  );
+  )
+    .then((res)=> res.data);
 
 export const deleteTeacher = (teacherId: string) =>
   apiRequest<ApiResponse<void>>(

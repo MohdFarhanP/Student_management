@@ -9,6 +9,7 @@ import defaultImage from '../assets/profile.jpg';
 import { FaRegNoteSticky } from "react-icons/fa6";
 import { RiLiveFill } from "react-icons/ri";
 import { FaRegCalendarAlt } from "react-icons/fa";
+import { HiOutlineCash } from "react-icons/hi";
 
 const StudentSidebar: React.FC = memo(() => {
   const navigate = useNavigate();
@@ -62,6 +63,11 @@ const StudentSidebar: React.FC = memo(() => {
       name: 'LiveSessions',
       icon: <RiLiveFill size={22} />,
       path: '/student/live-session',
+    },
+    {
+      name: 'Payment',
+      icon: <HiOutlineCash  size={22} />,
+      path: '/student/payment',
     },
   ];
 

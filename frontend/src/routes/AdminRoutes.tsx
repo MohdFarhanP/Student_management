@@ -6,6 +6,7 @@ import Student from '../pages/admin/Student';
 import Teacher from '../pages/admin/Teacher';
 import TimetableManagement from '../pages/admin/TimetableManagement';
 import NotFound from '../components/NotFound';
+import Payment from '../pages/admin/Payment';
 
 const AdminRoutes = () => {
   return (
@@ -16,6 +17,7 @@ const AdminRoutes = () => {
       <Route path="/teachers" element={<Teacher />} />
       <Route path="/subject" element={<Subject />} />
       <Route path="/timetable" element={<TimetableManagement />} />
+      <Route path="/payment" element={<Payment />} />
       <Route path="*" element={<NotFound />} />
 
     </Routes>

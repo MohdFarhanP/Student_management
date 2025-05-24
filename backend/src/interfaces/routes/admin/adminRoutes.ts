@@ -10,6 +10,8 @@ import { IBulkUploadController } from '../../../domain/interface/IBulkUploadCont
 import { IStudentController } from '../../../domain/interface/IStudentController';
 import { ITeacherController } from '../../../domain/interface/ITeacherController';
 import { ITimetableController } from '../../../domain/interface/ITimetableController';
+import { IRecurringFeeController } from '../../../domain/interface/IRecurringFeeController';
+import { IPaymentController } from '../../../domain/interface/IPaymentController';
 
 const router = express.Router();
 
@@ -20,13 +22,19 @@ export const setAdminControllers = (controllers: {
   studentController: IStudentController;
   teacherController: ITeacherController;
   timetableController: ITimetableController;
+  recurringFeeController: IRecurringFeeController;
+  paymentController: IPaymentController;
 }) => {
   setClassControllers({
     classController: controllers.classController,
     subjectController: controllers.subjectController,
   });
+  setStudentController({
+    studentController: controllers.studentController,
+    recurringFeeController: controllers.recurringFeeController,
+    paymentController: controllers.paymentController
+  });
   setBulkUploadController(controllers.bulkUploadController);
-  setStudentController(controllers.studentController);
   setTeacherController(controllers.teacherController);
   setTimetableController(controllers.timetableController);
 };

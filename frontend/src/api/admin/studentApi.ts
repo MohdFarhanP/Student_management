@@ -1,5 +1,7 @@
 import { apiRequest } from '../apiClient';
 
+const ADMIN_STUDENT_API_URL = '/admin/students';
+
 interface Adresss {
   houseName?: string;
   place?: string;
@@ -23,8 +25,27 @@ export interface IStudent {
   profileImage?: string;
   address?: Adresss;
 }
+export interface RecurringFee {
+  id: string;
+  title: string;
+  amount: number;
+  startMonth: string;
+  endMonth?: string;
+  classId: string;
+  className?: string;
+  recurring: boolean;
+}
 
-const ADMIN_STUDENT_API_URL = '/admin/students';
+export interface StudentFeeDue {
+  id: string;
+  studentId: string;
+  feeTitle: string;
+  month: string;
+  dueDate: Date;
+  amount: number;
+  isPaid: boolean;
+  paymentId?: string;
+}
 
 interface StudentsResponse {
   students: IStudent[];
@@ -80,3 +101,33 @@ export const deleteStudent = (studentId: string) =>
     'delete',
     `${ADMIN_STUDENT_API_URL}/${studentId}`
   );
+
+export const createRecurringFee = async (feeData: Omit<RecurringFee, 'id'>)=>
+  await apiRequest<ApiResponse<RecurringFee>, typeof feeData>(
+    'post',
+    `${ADMIN_STUDENT_API_URL}/fees/recurring`,
+    feeData
+  )
+    .then((res)=> res.data);
+    
+export const getAllRecurringFees = async () =>
+  await apiRequest<ApiResponse<RecurringFee[]>>(
+    'get',
+    `${ADMIN_STUDENT_API_URL}/fees/recurring`
+  )
+    .then((res)=> res.data);
+
+export const generateMonthlyDues = async (month: string) =>
+  await apiRequest<ApiResponse<{ message: string }>, { month: string }>(
+    'post',
+    `${ADMIN_STUDENT_API_URL}/fees/generate-dues`,
+    { month }
+  )
+    .then((res)=> res.data);
+
+export const getPaymentStatuses = async () =>
+  await apiRequest<ApiResponse<StudentFeeDue[]>>(
+    'get',
+    `${ADMIN_STUDENT_API_URL}/payments`
+  )
+    .then((res)=> res.data);

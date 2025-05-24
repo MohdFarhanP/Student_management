@@ -35,7 +35,7 @@ import { GetSubjectsByGradeUseCase } from '../../application/useCases/admin/subj
 import { DeleteSubjectUseCase } from '../../application/useCases/admin/subject/deleteSubjectUseCase';
 import { UpdateSubjectUseCase } from '../../application/useCases/admin/subject/updateSubjectUseCase';
 import { SubjectController } from '../../interfaces/controllers/admin/subjectController';
-import { StudentController } from '../../interfaces/controllers/admin/studentsController';
+import { StudentController } from '../../interfaces/controllers/admin/studentController';
 import { AddStudentUseCase } from '../../application/useCases/admin/student/addStudentUseCase';
 import { DeleteStudentUseCase } from '../../application/useCases/admin/student/deleteStudentUseCase';
 import { EditStudentUseCase } from '../../application/useCases/admin/student/editStudentUseCase';
@@ -175,6 +175,17 @@ import { GetStdSessionsUsecase } from '../../application/useCases/student/getStd
 import { TrackSessionDurationUseCase } from '../../application/useCases/liveSession/TrackSessionDurationUseCase';
 import { MongoSessionDurationRepository } from '../repositories/sessionDurationRepository';
 import { GetRecentSessionAttendanceUseCase } from '../../application/useCases/liveSession/GetRecentSessionAttendanceUseCase';
+import { MongoStudentFeeDueRepository } from '../repositories/MongoStudentFeeDueRepository';
+import { ProcessPaymentUseCase } from '../../application/useCases/fee/ProcessPaymentUseCase';
+import { GenerateMonthlyDuesUseCase } from '../../application/useCases/fee/GenerateMonthlyDuesUseCase';
+import { MongoRecurringFeeRepository } from '../repositories/MongoRecurringFeeRepository';
+import { IRecurringFeeController } from '../../domain/interface/IRecurringFeeController';
+import { RecurringFeeController } from '../../interfaces/controllers/admin/RecurringFeeController';
+import { RazorpayAdapter } from '../adapters/RazorpayAdapter';
+import { PaymentController } from '../../interfaces/controllers/admin/PaymentController';
+import { IPaymentController } from '../../domain/interface/IPaymentController';
+import { GetStudentInfoUseCase } from '../../application/useCases/student/GetStudentInfoUseCase';
+import { MongoPaymentRepository } from '../repositories/MongoPaymentRepository';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -198,6 +209,9 @@ export class DependencyContainer {
     this.dependencies.set('ILeaveRepository', new LeaveRepository());
     this.dependencies.set('IDashboardRepository', new DashboardRepositoryMongo())
     this.dependencies.set('ISessionDurationRepository', new MongoSessionDurationRepository())
+    this.dependencies.set('IStudentFeeDueRepository',new MongoStudentFeeDueRepository());
+    this.dependencies.set('IPaymentRepository',new MongoPaymentRepository());
+    this.dependencies.set('IRecurringFeeRepository',new MongoRecurringFeeRepository());
 
     // Services
     this.dependencies.set('IAuthService', new AuthService());
@@ -211,6 +225,8 @@ export class DependencyContainer {
     );
     this.dependencies.set('IStorageService', new S3StorageService());
     this.dependencies.set('IFileValidationService', new FileValidationService(this.dependencies.get('INoteRepository')));
+    this.dependencies.set('IPaymentGateway', new RazorpayAdapter());
+
 
     // Initialize BullMQ Queue for Notifications
     const notificationQueue = new Queue('notifications', {
@@ -551,10 +567,30 @@ export class DependencyContainer {
       new GetStudentProfileUseCase(this.dependencies.get('IStudentProfileRepository'))
     );
     this.dependencies.set(
+      'IGetStudentInfoUseCase',
+      new GetStudentInfoUseCase(this.dependencies.get('IStudentProfileRepository'))
+    );
+    this.dependencies.set(
       'IUpdateStudentProfileImageUseCase',
       new UpdateStudentProfileImageUseCase(
         this.dependencies.get('IStudentProfileRepository'),
         this.dependencies.get('IStorageService')
+      )
+    );
+    this.dependencies.set(
+      'IProcessPaymentUseCase',
+      new ProcessPaymentUseCase(
+        this.dependencies.get('IStudentFeeDueRepository'),
+        this.dependencies.get('IPaymentRepository'),
+        this.dependencies.get('IPaymentGateway')
+      )
+    );
+    this.dependencies.set(
+      'IGenerateMonthlyDuesUseCase',
+      new GenerateMonthlyDuesUseCase(
+        this.dependencies.get('IRecurringFeeRepository'),
+        this.dependencies.get('IStudentRepository'),
+        this.dependencies.get('IStudentFeeDueRepository')
       )
     );
 
@@ -642,6 +678,12 @@ export class DependencyContainer {
       )
     );
     this.dependencies.set(
+      'IRecurringFeeController',
+      new RecurringFeeController(
+        this.dependencies.get('IRecurringFeeRepository'),
+      )
+    );
+    this.dependencies.set(
       'IBulkUploadController',
       new BulkUploadController(
         this.dependencies.get('IBulkUploadStudentUseCase'),
@@ -707,7 +749,10 @@ export class DependencyContainer {
       'IStudentProfileController',
       new StudentProfileController(
         this.dependencies.get('IGetStudentProfileUseCase'),
-        this.dependencies.get('IUpdateStudentProfileImageUseCase')
+        this.dependencies.get('IUpdateStudentProfileImageUseCase'),
+        this.dependencies.get('IStudentFeeDueRepository'),
+        this.dependencies.get('IProcessPaymentUseCase'),
+        this.dependencies.get('IGetStudentInfoUseCase')
       )
     );
     this.dependencies.set(
@@ -753,6 +798,10 @@ export class DependencyContainer {
     this.dependencies.set(
       'IPresignedUrlController',
       new PresignedUrlController(this.dependencies.get('IGeneratePresignedUrlUseCase'))
+    );
+    this.dependencies.set(
+      'IPaymentController',
+      new PaymentController(this.dependencies.get('IStudentFeeDueRepository'))
     );
   }
 
@@ -840,6 +889,13 @@ export class DependencyContainer {
 
   getTimetableController(): ITimetableController {
     return this.dependencies.get('ITimetableController');
+  }
+  getRecurringFeeController(): IRecurringFeeController {
+    return this.dependencies.get('IRecurringFeeController');
+  }
+
+  getPaymentController(): IPaymentController {
+    return this.dependencies.get('IPaymentController');
   }
 
   getStudentProfileController(): IStudentProfileController {

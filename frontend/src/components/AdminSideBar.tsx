@@ -4,6 +4,7 @@ import { logoutUser } from '../redux/slices/authSlice';
 import { toast } from 'react-toastify';
 import { AppDispatch } from '../redux/store';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { BanknotesIcon } from '@heroicons/react/24/outline';
 import {
   HomeIcon,
   UserGroupIcon,
@@ -41,8 +42,10 @@ const AdminSideBar: React.FC<AdminSideBarProps> = ({ isOpen, setIsOpen }) => {
     { name: 'Class', icon: <BuildingOfficeIcon className="h-6 w-6" />, path: '/admin/class' },
     { name: 'Subject', icon: <BookOpenIcon className="h-6 w-6" />, path: '/admin/subject' },
     { name: 'TimeTable', icon: <TableCellsIcon className="h-6 w-6" />, path: '/admin/timetable' },
+    { name: 'Payment', icon: <BanknotesIcon className="h-6 w-6" />, path: '/admin/payment' },
   ];
 
+  
   return (
     <>
       {/* Hamburger Menu Button with Logo for Mobile */}

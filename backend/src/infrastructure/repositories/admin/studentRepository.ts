@@ -7,6 +7,7 @@ import { Gender } from '../../../domain/types/enums';
 import { LiveSessionModel } from '../../database/models/liveSessionModel';
 import { format } from 'date-fns';
 import { UserInfo } from '../../../domain/types/interfaces';
+import mongoose from 'mongoose';
 
 // Utility function to map MongoDB data to IStudent with Gender enum
 const mapToStudentData = (data: any): Partial<IStudent> => ({
@@ -101,6 +102,14 @@ export class StudentRepository implements IStudentRepository {
 
   async findById(id: string): Promise<Student | null> {
     const student = await studentModel.findOne({ _id: id, isDeleted: false }).lean();
+    if (!student) return null;
+    return new Student(mapToStudentData(student));
+  }
+
+  async findByPhoneNo(userId: string ,phonNo: number): Promise<Student | null> {
+    console.log('user id ',userId)
+    const student = await studentModel.findOne({ "address.phoneNo": phonNo, isDeleted: false, _id:{$ne:new mongoose.Types.ObjectId(userId)}}).lean();
+    console.log('findByphoneNO in student repo',student);
     if (!student) return null;
     return new Student(mapToStudentData(student));
   }

@@ -18,5 +18,6 @@ export interface IStudentRepository {
   removeStudentFromClass(classId: string, studentId: string): Promise<void>;
   getSessions(userId: string): Promise< ILiveSessionDto[] | null>;
   findManyByIds(ids: string[]): Promise<UserInfo[]>
+  findByPhoneNo(userId: string ,phonNo: number): Promise<Student | null>
 }
   

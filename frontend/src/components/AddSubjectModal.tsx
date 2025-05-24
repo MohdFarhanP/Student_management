@@ -128,6 +128,7 @@ const AddSubjectModal: React.FC<AddSubjectModalProps> = ({
       setErrors({});
       onClose();
     } catch (error) {
+      console.log(error);
       toast.error('Failed to add subject.');
     } finally {
       setLoading(false);

@@ -7,4 +7,5 @@ export interface IStudentProfileRepository {
     profileImage: string,
     fileHash: string,
   ): Promise<Student | null>;
+  getStudentInfo(userId: string): Promise<Student | null>
 }
