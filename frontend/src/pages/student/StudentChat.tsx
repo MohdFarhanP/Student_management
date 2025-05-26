@@ -78,18 +78,14 @@ const StudentChat: React.FC = () => {
   
     socket.emit('joinRoom', chatRoomId, (res: { [key: string]: boolean }) => {
       console.log(`Join room response for ${chatRoomId}:`, res || 'Success');
-      socket.emit('loadMessages', chatRoomId, (messagesRes: any) => {
-        console.log(`Load messages response for ${chatRoomId}:`, messagesRes || 'Success');
-      });
+      socket.emit('loadMessages', chatRoomId);
     });
   
     const handleConnect = () => {
       console.log('StudentChat: Socket connected, socket ID:', socket.id);
       socket.emit('joinRoom', chatRoomId, (res: { [key: string]: boolean }) => {
         console.log(`Join room response for ${chatRoomId}:`, res || 'Success');
-        socket.emit('loadMessages', chatRoomId, (messagesRes: any) => {
-          console.log(`Load messages response for ${chatRoomId}:`, messagesRes || 'Success');
-        });
+        socket.emit('loadMessages', chatRoomId);
       });
     };
   
@@ -127,7 +123,7 @@ const StudentChat: React.FC = () => {
       socket.off('message', handleMessage);
       socket.off('error', handleError);
     };
-  }, [isReady, dispatch]);
+  }, [isReady, dispatch, classData ]);
 
   const sendMessage = useCallback(
     (content: string, mediaUrl?: string, mediaType?: string) => {

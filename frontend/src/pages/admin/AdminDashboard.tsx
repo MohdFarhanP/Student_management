@@ -5,7 +5,6 @@ import { socket } from '../../socket';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
-// Lazy-load components
 const AdminSideBar = lazy(() => import('../../components/AdminSideBar'));
 const NotificationBell = lazy(() => import('../../components/NotificationBell'));
 const DashboardStatsCard = lazy(() => import('../../components/DashboardStatsCard'));

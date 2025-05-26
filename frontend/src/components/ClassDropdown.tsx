@@ -18,7 +18,13 @@ const ClassDropdown: React.FC<ClassDropdownProps> = ({ onSelectClass }) => {
     async function fetch() {
       const classes = await getClassNames();
       console.log('Classes from ClassDropdown:', classes);
-      setClasses(classes || []);
+      
+      const mappedClasses: ClassType[] = classes?.map((cls) => ({
+        id: cls.id!,
+        grade: cls.grade,
+      })) || [];
+
+      setClasses(mappedClasses);
     }
     fetch();
   }, []);

@@ -13,7 +13,6 @@ export interface Class {
   grade?: string;
 }
 
-// Lazy-load components
 const AdminSideBar = lazy(() => import('../../components/AdminSideBar'));
 const ClassSelector = lazy(() => import('../../components/ClassSelector'));
 const TimetableTable = lazy(() => import('../../components/TimetableTable'));
@@ -23,7 +22,7 @@ const TimetableManagement: React.FC = () => {
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(false); // For AdminSideBar
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {

@@ -10,6 +10,7 @@ import profile from '../../assets/profile.jpg';
 import { toast } from 'react-toastify';
 import { UserGroupIcon, CalendarIcon, ClockIcon, AcademicCapIcon, MagnifyingGlassIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import { TimetableData, TimetableSlot } from '../../types/timetable';
 
 const TeacherSidebar = lazy(() => import('../../components/TeacherSidebar'));
 const LoadingSpinner = lazy(() => import('../../components/LoadingSpinner'));
@@ -53,7 +54,7 @@ const TeacherAttendanceDashboard: React.FC = () => {
   const [attendance, setAttendance] = useState<
     Record<string, AttendanceStatus>
   >({});
-  const [timetable, setTimetable] = useState<any | null>(null);
+  const [timetable, setTimetable] = useState<TimetableData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -63,9 +64,11 @@ const TeacherAttendanceDashboard: React.FC = () => {
         if (!user?.email) throw new Error('User not authenticated');
         await dispatch(fetchTeacherProfile(user.email)).unwrap();
         const classesData = await fetchClasses();
-        setClasses(classesData);
-        if (classesData?.length > 0) {
-          setSelectedClassId(classesData[0]._id ?? '');
+        if (classesData){
+          setClasses(classesData);
+          if (classesData.length > 0) {
+            setSelectedClassId(classesData[0]._id ?? '');
+          }
         }
       } catch (err: unknown) {
         toast.error(
@@ -114,7 +117,7 @@ const TeacherAttendanceDashboard: React.FC = () => {
     if (!timetable || !teacher?.id) return false;
     const slots = timetable.schedule[selectedDay] || [];
     return slots.some(
-      (slot: any) =>
+      (slot: TimetableSlot) =>
         slot.teacherId === teacher.id && slot.period === selectedPeriod
     );
   };

@@ -87,7 +87,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
     setIsSubmitting(true);
     try {
       const updatedStudent = await editStudent(studentData.id, formData);
-      onUpdate?.(updatedStudent);
+      if(updatedStudent) onUpdate?.(updatedStudent);
       onClose();
     } catch (error) {
       console.error('Failed to edit student:', error);

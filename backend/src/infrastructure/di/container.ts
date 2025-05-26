@@ -186,6 +186,7 @@ import { PaymentController } from '../../interfaces/controllers/admin/PaymentCon
 import { IPaymentController } from '../../domain/interface/IPaymentController';
 import { GetStudentInfoUseCase } from '../../application/useCases/student/GetStudentInfoUseCase';
 import { MongoPaymentRepository } from '../repositories/MongoPaymentRepository';
+import { IGenerateMonthlyDuesUseCase } from '../../domain/interface/IGenerateMonthlyDuesUseCase';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -309,7 +310,7 @@ export class DependencyContainer {
       'IApplyForLeaveUseCase',
       new ApplyForLeaveUseCase(
         this.dependencies.get('ILeaveRepository'),
-        this.dependencies.get('IUserRepository'),
+        this.dependencies.get('IStudentRepository'),
         this.dependencies.get('ISendNotificationUseCase')
       )
     );
@@ -590,7 +591,9 @@ export class DependencyContainer {
       new GenerateMonthlyDuesUseCase(
         this.dependencies.get('IRecurringFeeRepository'),
         this.dependencies.get('IStudentRepository'),
-        this.dependencies.get('IStudentFeeDueRepository')
+        this.dependencies.get('IStudentFeeDueRepository'),
+        this.dependencies.get('ISendNotificationUseCase'),
+        process.env.ADMIN_ID
       )
     );
 
@@ -992,6 +995,10 @@ export class DependencyContainer {
 
   getGetClassNameUseCase(): IGetClassNameUseCase {
     return this.dependencies.get('IGetClassNameUseCase');
+  }
+
+  getGenerateMonthlyDuesUseCase(): IGenerateMonthlyDuesUseCase {
+    return this.dependencies.get('IGenerateMonthlyDuesUseCase');
   }
 
   getGetStudentsByClassUseCase(): IGetStudentsByClassUseCase {

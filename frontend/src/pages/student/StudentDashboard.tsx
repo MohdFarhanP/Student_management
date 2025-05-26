@@ -31,8 +31,12 @@ export const StudentDashboard: React.FC = () => {
 
     try {
       const classData = await getClassesById(user.id);
-      setClassInfo(classData!);
+      if (!classData || !classData.id) {
+        throw new Error('Invalid class data');
+      }
+      setClassInfo(classData);
 
+      
       const [timetableData, sessionsData] = await Promise.all([
         fetchTimetableForToday(classData.id),
         getStdLiveSessions(user.id),

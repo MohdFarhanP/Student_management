@@ -32,11 +32,13 @@ const NoteUpload: React.FC = () => {
       setFile(null);
     } catch (err) {
       console.error('Upload error:', err);
-      const message = err.message || 'Failed to upload note';
-      if (message.includes('already exists') && err.response?.data?.data?.fileUrl) {
-        setLocalError(`File already exists at: ${err.response.data.data.fileUrl}`);
-      } else {
-        setLocalError(message);
+      if(err instanceof AxiosError){
+        const message = err.message || 'Failed to upload note';
+        if (message.includes('already exists') && err.response?.data?.data?.fileUrl) {
+          setLocalError(`File already exists at: ${err.response.data.data.fileUrl}`);
+        } else {
+          setLocalError(message);
+        }
       }
     }
   };

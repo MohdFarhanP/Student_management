@@ -12,7 +12,6 @@ import { uploadToS3 } from '../../services/UploadToS3';
 import { toast } from 'react-toastify';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
-// Lazy load components
 const StudentSidebar = lazy(() => import('../../components/StudentSidebar'));
 
 const StudentProfile: React.FC = () => {

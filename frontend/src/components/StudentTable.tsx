@@ -4,7 +4,6 @@ import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import ErrorBoundary from './ErrorBoundary';
 import LoadingSpinner from './LoadingSpinner';
 
-// Lazy-load components
 const PaginationButton = lazy(() => import('./PaginationButton'));
 const ConfirmDialog = lazy(() => import('./ConfirmDialog'));
 

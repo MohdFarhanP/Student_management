@@ -4,7 +4,6 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { PencilIcon } from '@heroicons/react/24/outline';
 
-// Lazy-load EditClassModal
 const EditClassModal = lazy(() => import('./EditClassModal'));
 
 interface UserTableProps {
@@ -20,7 +19,6 @@ const ClassTable: React.FC<UserTableProps> = ({ data = [] }) => {
     );
   }
 
-  // Memoized ClassCard to prevent unnecessary re-renders
   const ClassCard = memo(({ cls }: { cls: IClassData }) => (
     <div
       className="card bg-base-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"

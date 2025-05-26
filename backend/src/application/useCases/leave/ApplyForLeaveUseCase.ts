@@ -5,11 +5,12 @@ import { ApplyForLeaveDTO, Leave } from '../../../domain/types/interfaces';
 import { ValidationError, UnauthorizedError } from '../../../domain/errors';
 import { Role, LeaveStatus, RecipientType } from '../../../domain/types/enums';
 import { IApplyForLeaveUseCase } from '../../../domain/interface/IApplyForLeaveUseCase';
+import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository';
 
 export class ApplyForLeaveUseCase implements IApplyForLeaveUseCase {
   constructor(
     private leaveRepository: ILeaveRepository,
-    private userRepository: IUserRepository,
+    private studentRepository: IStudentRepository,
     private notificationService: ISendNotificationUseCase
   ) {}
 
@@ -18,12 +19,9 @@ export class ApplyForLeaveUseCase implements IApplyForLeaveUseCase {
       throw new ValidationError('Missing required fields: studentId, date, reason');
     }
 
-    const user = await this.userRepository.findById(dto.studentId);
+    const user = await this.studentRepository.findById(dto.studentId);
     if (!user) {
       throw new ValidationError('Student not found');
-    }
-    if (user.role !== Role.Student) {
-      throw new UnauthorizedError('Only students can apply for leaves');
     }
 
     const leave: Omit<Leave, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -38,7 +36,7 @@ export class ApplyForLeaveUseCase implements IApplyForLeaveUseCase {
     // Notify teachers about the new leave application
     await this.notificationService.execute({
       title: 'New Leave Application',
-      message: `New leave request from student ${dto.studentId} for ${dto.date}`,
+      message: `New leave request from student ${user.name} for ${dto.date}`,
       senderId: dto.studentId,
       senderRole: Role.Student,
       recipientType: RecipientType.Role,

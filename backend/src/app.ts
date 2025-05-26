@@ -17,6 +17,7 @@ import notificationRoutes, { setNotificationController } from './interfaces/rout
 import noteRoutes, { setNoteController } from './interfaces/routes/noteRoutes';
 import PresignedUrlRoute, { setPresignedUrlController } from './interfaces/routes/presignedUrl';
 import chatRouter, { setChatController } from './interfaces/routes/chatRoutes';
+import { startMonthlyDuesCronJob } from './infrastructure/cron/startMonthlyDuesCronJob';
 
 const app = express();
 const server = new Server(app);
@@ -77,7 +78,7 @@ app.use(
     setNotificationController(dependencyContainer.getNotificationController());
     setNoteController(dependencyContainer.getNoteController());
     setPresignedUrlController(dependencyContainer.getPresignedUrlController());
-
+    startMonthlyDuesCronJob(dependencyContainer.getGenerateMonthlyDuesUseCase());
 // Routes
 app.use('/api/admin/', adminRoutes);
 app.use('/api/auth', authenticationRoutes);
@@ -110,5 +111,17 @@ app.use((error: Error, req: express.Request, res: express.Response, next: expres
 // Initialize Socket Server with dependencies
 const socketServer: ISocketServer = dependencyContainer.getSocketServer();
 socketServer.initialize();
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, shutting down gracefully...');
+  await dependencyContainer.shutdown();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  await dependencyContainer.shutdown();
+  process.exit(0);
+});
 
 export { server };

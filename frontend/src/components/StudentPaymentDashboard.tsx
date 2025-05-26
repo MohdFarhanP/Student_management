@@ -94,6 +94,7 @@ const StudentPaymentDashboard: React.FC = () => {
         description: `Payment for ${feeDue.feeTitle} (${feeDue.month})`,
         order_id: order.id,
         handler: (response: RazorpayResponse) => {
+          console.log(response,'response form razorpay');
           toast.success('Payment successful!');
           setDues(dues.filter((d) => d.id !== feeDue.id));
         },

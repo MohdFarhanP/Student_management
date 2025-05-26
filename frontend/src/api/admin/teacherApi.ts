@@ -56,7 +56,7 @@ export const getTeachers = (page: number, limit: number) =>
     .then((res)=> res.data);
 
 export const editTeacher = (teacherId: string, data: ITeacher) =>
-  apiRequest<ApiResponse<TeachersResponse>, ITeacher>(
+  apiRequest<ApiResponse<ITeacher>, ITeacher>(
     'patch',
     `${ADMIN_TEACHER_API_URL}/${teacherId}`,
     data

@@ -5,7 +5,6 @@ import { AppDispatch, RootState } from '../../redux/store';
 import { INote } from '../../types/notes';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
-// Lazy load components
 const StudentSidebar = lazy(() => import('../../components/StudentSidebar'));
 
 const NoteList: React.FC = () => {

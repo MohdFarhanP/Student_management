@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { createRecurringFee, generateMonthlyDues, getAllRecurringFees, getPaymentStatuses, RecurringFee, StudentFeeDue } from '../api/admin/studentApi';
-import { getClassNames } from '../api/admin/classApi';
+import { createRecurringFee, getAllRecurringFees, getPaymentStatuses, RecurringFee, StudentFeeDue } from '../api/admin/studentApi';
+import { fetchClasses, } from '../api/admin/classApi';
 import ClassSelector from './ClassSelector';
 
-// Define the Class type to match the expected structure
 type Class = {
   _id?: string;
   name: string;
@@ -23,7 +22,7 @@ const AdminPaymentDashboard: React.FC = () => {
   const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch recurring fees, payment statuses, and classes on mount
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -31,14 +30,14 @@ const AdminPaymentDashboard: React.FC = () => {
         const [fees, statuses, classData] = await Promise.all([
           getAllRecurringFees(),
           getPaymentStatuses(),
-          getClassNames(),
+          fetchClasses(),
         ]);
         setRecurringFees(fees!);
         setPaymentStatuses(statuses!);
-        // Map the class data to match the Class type (assuming getClassNames returns { id, grade })
-        const mappedClasses: Class[] = classData?.map((cls: { id: string; grade: string }) => ({
-          _id: cls.id,
-          name: cls.grade,
+        // Map the class data to match the Class type 
+        const mappedClasses: Class[] = classData?.map((cls) => ({
+          _id: cls._id,
+          name: cls.name,
         })) || [];
         setClasses(mappedClasses);
       } catch (error: unknown) {
@@ -71,36 +70,12 @@ const AdminPaymentDashboard: React.FC = () => {
         startMonth: feeForm.startMonth,
         endMonth: feeForm.endMonth || undefined,
         classId: feeForm.classId,
+        className: 'unknown',
         recurring: true,
       });
       setRecurringFees([...recurringFees, newFee!]);
       setFeeForm({ title: '', amount: '', startMonth: '', endMonth: '', classId: '' });
       toast.success('Recurring fee created successfully!');
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-        console.error('Error:', error.message);
-      } else {
-        toast.error('An unexpected error occurred.');
-        console.error('Unknown error:', error);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle manual dues generation
-  const handleGenerateDues = async () => {
-    if (!generateMonth) {
-      toast.error('Please select a month');
-      return;
-    }
-    try {
-      setLoading(true);
-      await generateMonthlyDues(generateMonth);
-      const updatedStatuses = await getPaymentStatuses();
-      setPaymentStatuses(updatedStatuses!);
-      toast.success(`Dues generated for ${generateMonth}`);
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message);

@@ -2,13 +2,17 @@ import { StudentFeeDue } from "../../../domain/entities/StudentFeeDue";
 import { IStudentRepository } from "../../../domain/interface/admin/IStudentRepository";
 import { IGenerateMonthlyDuesUseCase } from "../../../domain/interface/IGenerateMonthlyDuesUseCase";
 import { IRecurringFeeRepository } from "../../../domain/interface/IRecurringFeeRepository";
+import { ISendNotificationUseCase } from "../../../domain/interface/ISendNotificationUseCase";
 import { IStudentFeeDueRepository } from "../../../domain/interface/IStudentFeeDueRepository";
+import { RecipientType, Role } from "../../../domain/types/enums";
 
 export class GenerateMonthlyDuesUseCase implements IGenerateMonthlyDuesUseCase {
     constructor(
     private recurringFeeRepository: IRecurringFeeRepository,
     private studentRepository: IStudentRepository,
-    private studentFeeDueRepository: IStudentFeeDueRepository
+    private studentFeeDueRepository: IStudentFeeDueRepository,
+    private sendNotificationUseCase: ISendNotificationUseCase,
+    private senderId: string,
     ){}
 
     async execute(currentMonth: string): Promise<void> {
@@ -30,8 +34,20 @@ export class GenerateMonthlyDuesUseCase implements IGenerateMonthlyDuesUseCase {
                     fee.getAmount()
                 );
             });
-            
-            await this.studentFeeDueRepository.createMany(dues)
+            await this.studentFeeDueRepository.createMany(dues);
+
+            for (const due of dues) {
+                await this.sendNotificationUseCase.execute({
+                    title: `Monthly Fee Due - ${fee.getTitle()}`,
+                    message: `Dear Student, your fee of ₹${due.getAmount()} for ${due.getFeeTitle()} is due by ${due.getDueDate().toDateString()}.`,
+                    senderId: this.senderId,
+                    senderRole: Role.Admin, 
+                    recipientType: RecipientType.Student,
+                    recipientIds: [due.getStudentId()],
+                    scheduledAt: new Date(), 
+                });
+            }
+
         }
 
     }

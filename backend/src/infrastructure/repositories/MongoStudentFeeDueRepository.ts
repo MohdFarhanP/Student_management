@@ -11,7 +11,6 @@ export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
   
   async createMany(dues: StudentFeeDue[]): Promise<void> {
     const models = dues.map((due) => ({
-      _id: new mongoose.Types.ObjectId(due.getId()),
       studentId: new mongoose.Types.ObjectId(due.getStudentId()),
       feeTitle: due.getFeeTitle(),
       month: due.getMonth(),
@@ -55,9 +54,6 @@ async update(feeDue: StudentFeeDue): Promise<void> {
         paymentIdObj = new mongoose.Types.ObjectId(paymentIdRaw);
       } else {
         console.error(`Invalid paymentId provided: ${paymentIdRaw}`);
-        // You can either:
-        // - set paymentIdObj = undefined (ignore it)
-        // - or throw an error explicitly here to catch upstream bugs
         paymentIdObj = undefined;
       }
     } else {
@@ -77,7 +73,7 @@ async update(feeDue: StudentFeeDue): Promise<void> {
     );
   } catch (error) {
     console.log("form update on mongostddrrdue repo", error);
-    throw error;  // rethrow the original error (don't wrap in new Error to preserve stack)
+    throw error; 
   }
 }
 

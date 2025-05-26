@@ -4,7 +4,6 @@ import { toast } from 'react-toastify';
 import { socket } from '../../socket';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
-// Lazy load components
 const StudentSidebar = lazy(() => import('../../components/StudentSidebar'));
 const ErrorMessage = lazy(() => import('../../components/ErrorMessage'));
 const LoadingSpinner = lazy(() => import('../../components/LoadingSpinner'));
@@ -279,7 +278,7 @@ const StudentLiveSession: React.FC<StudentLiveSessionProps> = ({ userRole, userI
     }
 
     toast.success('You have left the session.');
-  }, [cleanup, sessionInfo, userId]);
+  }, [cleanup, joinTime, sessionInfo, userId]);
 
   const playLocalVideo = useCallback(async () => {
     if (localTracks?.videoTrack && videoOn && !tracksClosedRef.current.video) {
