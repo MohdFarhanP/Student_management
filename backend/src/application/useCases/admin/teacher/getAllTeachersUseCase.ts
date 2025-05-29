@@ -1,6 +1,6 @@
-import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
-import { IGetAllTeachersUseCase } from '../../../../domain/interface/IGetAllTeachersUseCase';
-import { TeacherNameDTO } from '../../../../domain/types/interfaces';
+import { ITeacherRepository } from '../../../../domain/repositories/ITeacherRepository';
+import { IGetAllTeachersUseCase } from '../../../../domain/useCase/IGetAllTeachersUseCase';
+import { TeacherNameDTO } from '../../../dtos/teacherDtos';
 
 export class GetAllTeachersUseCase implements IGetAllTeachersUseCase {
   constructor(private teacherRepository: ITeacherRepository) {}
@@ -8,12 +8,14 @@ export class GetAllTeachersUseCase implements IGetAllTeachersUseCase {
   async execute(): Promise<TeacherNameDTO[]> {
     try {
       const { data } = await this.teacherRepository.getAll();
-      return data.map((teacher)=>({
-          id:teacher.id,
-          name:teacher.name
+      return data.map((teacher) => ({
+        id: teacher.id,
+        name: teacher.name,
       }));
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to fetch teachers');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to fetch teachers');
     }
   }
 }

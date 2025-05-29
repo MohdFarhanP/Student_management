@@ -1,10 +1,14 @@
 import { Request, Response } from 'express';
-import { INotificationController } from '../../../domain/interface/INotificationController';
-import { INotificationRepository } from '../../../domain/interface/INotificationRepository';
-import { IMarkNotificationAsRead } from '../../../domain/interface/IMarkNotificationAsRead';
-import { IGetNotificationsUseCase } from '../../../domain/interface/IGetNotificationsUseCase';
-import { AppError, ValidationError, UnauthorizedError } from '../../../domain/errors';
-import HttpStatus from '../../../utils/httpStatus';
+import { INotificationController } from './INotificationController';
+import { INotificationRepository } from '../../../domain/repositories/INotificationRepository';
+import { IMarkNotificationAsRead } from '../../../domain/useCase/IMarkNotificationAsRead';
+import { IGetNotificationsUseCase } from '../../../domain/useCase/IGetNotificationsUseCase';
+import {
+  AppError,
+  ValidationError,
+  UnauthorizedError,
+} from '../../../domain/errors';
+import { HttpStatus } from '../../../domain/types/enums';
 
 export class NotificationController implements INotificationController {
   constructor(
@@ -15,16 +19,19 @@ export class NotificationController implements INotificationController {
 
   async getNotifications(req: Request, res: Response) {
     try {
-      const {userId, userRole} = req.query;
-      
+      const { userId, userRole } = req.query;
+
       if (typeof userId !== 'string' || typeof userRole !== 'string') {
         throw new Error('Invalid query parameters');
       }
       if (!userId) {
         throw new UnauthorizedError('User not authenticated');
       }
-      
-      const notifications = await this.getNotificationsUseCase.execute(userId, userRole);
+
+      const notifications = await this.getNotificationsUseCase.execute(
+        userId,
+        userRole
+      );
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Notification fetched successfully',
@@ -36,7 +43,10 @@ export class NotificationController implements INotificationController {
       } else {
         console.error(error);
         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-          error: error instanceof Error ? error.message : 'Failed to fetch notifications',
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Failed to fetch notifications',
         });
       }
     }
@@ -45,7 +55,7 @@ export class NotificationController implements INotificationController {
   async markAsRead(req: Request, res: Response) {
     try {
       const { notificationId } = req.params;
-      const {id,role} = req.user;
+      const { id, role } = req.user;
       if (!id) {
         throw new UnauthorizedError('User not authenticated');
       }
@@ -60,7 +70,10 @@ export class NotificationController implements INotificationController {
       } else {
         console.error(error);
         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-          error: error instanceof Error ? error.message : 'Failed to mark notification as read',
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Failed to mark notification as read',
         });
       }
     }

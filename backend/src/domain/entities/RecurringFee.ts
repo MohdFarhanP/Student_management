@@ -2,8 +2,8 @@ export class RecurringFee {
   private id: string;
   private title: string;
   private amount: number;
-  private startMonth: string; 
-  private endMonth?: string;  
+  private startMonth: string;
+  private endMonth?: string;
   private classId: string;
   private className?: string;
   private recurring: boolean;
@@ -16,7 +16,7 @@ export class RecurringFee {
     classId: string,
     recurring: boolean,
     endMonth?: string,
-    className?: string,
+    className?: string
   ) {
     this.id = id;
     this.title = title;
@@ -25,7 +25,7 @@ export class RecurringFee {
     this.classId = classId;
     this.recurring = recurring;
     this.endMonth = endMonth ? this.validateMonthFormat(endMonth) : undefined;
-    this.className = className ? className : 'Unknown'
+    this.className = className ? className : 'Unknown';
     this.validateMonths();
   }
 

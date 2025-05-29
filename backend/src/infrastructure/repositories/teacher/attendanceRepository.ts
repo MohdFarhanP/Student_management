@@ -1,13 +1,13 @@
 import { Types } from 'mongoose';
-import { IAttendanceRepository } from '../../../domain/interface/IAttendanceRepository';
+import { IAttendanceRepository } from '../../../domain/repositories/IAttendanceRepository';
 import { Attendance } from '../../../domain/entities/attendance';
-import { AttendanceModel } from '../../database/models/attendanceModel';
-import { AttendanceDataDto } from '../../../domain/types/interfaces';
+import { AttendanceModel } from '../../database/mongoos/models/attendanceModel';
+import { AttendanceDataDto } from '../../../application/dtos/attendanceDtos';
 
 export class AttendanceRepository implements IAttendanceRepository {
-
   async save(attendance: Attendance): Promise<void> {
-    const { classId, studentId, date, period, status, day, createdBy } = attendance;
+    const { classId, studentId, date, period, status, day, createdBy } =
+      attendance;
     const result = await AttendanceModel.findOneAndUpdate(
       {
         classId: new Types.ObjectId(classId as string),
@@ -83,7 +83,9 @@ export class AttendanceRepository implements IAttendanceRepository {
         $match: {
           classId: new Types.ObjectId(classId),
           date: { $gte: oneWeekAgo },
-          day: { $in: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] },
+          day: {
+            $in: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+          },
         },
       },
       {

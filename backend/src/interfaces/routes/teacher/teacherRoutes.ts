@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
-import { ITeacherProfileController } from '../../../domain/interface/ITeacherProfileController';
-import { IAttendanceController } from '../../../domain/interface/teacher/IAttendanceController';
-import { IClassController } from '../../../domain/interface/IClassController';
+import { ITeacherProfileController } from '../../controllers/teacher/ITeacherProfileController';
+import { IAttendanceController } from '../../controllers/teacher/IAttendanceController';
+import { IClassController } from '../../controllers/admin/class/IClassController';
 import { authenticateUser } from '../../middleware/authenticateUser';
 
 const router: Router = express.Router();
@@ -22,44 +22,78 @@ export const setTeacherControllers = (controllers: {
 
 router.get('/profile', authenticateUser, (req, res, next) => {
   if (!teacherProfileController) {
-    throw new Error('TeacherProfileController not initialized. Dependency injection failed.');
+    throw new Error(
+      'TeacherProfileController not initialized. Dependency injection failed.'
+    );
   }
-  teacherProfileController.getProfile.bind(teacherProfileController)(req, res, next);
+  teacherProfileController.getProfile.bind(teacherProfileController)(
+    req,
+    res,
+    next
+  );
 });
 
 router.put('/profile', authenticateUser, (req, res, next) => {
   if (!teacherProfileController) {
-    throw new Error('TeacherProfileController not initialized. Dependency injection failed.');
+    throw new Error(
+      'TeacherProfileController not initialized. Dependency injection failed.'
+    );
   }
-  teacherProfileController.updateProfile.bind(teacherProfileController)(req, res, next);
+  teacherProfileController.updateProfile.bind(teacherProfileController)(
+    req,
+    res,
+    next
+  );
 });
 
 router.post('/attendance/:classId/mark', authenticateUser, (req, res, next) => {
   if (!attendanceController) {
-    throw new Error('AttendanceController not initialized. Dependency injection failed.');
+    throw new Error(
+      'AttendanceController not initialized. Dependency injection failed.'
+    );
   }
-  attendanceController.markAttendance.bind(attendanceController)(req, res, next);
+  attendanceController.markAttendance.bind(attendanceController)(
+    req,
+    res,
+    next
+  );
 });
 
-router.post('/attendance/:classId/batch', authenticateUser, (req, res, next) => {
-  if (!attendanceController) {
-    throw new Error('AttendanceController not initialized.');
+router.post(
+  '/attendance/:classId/batch',
+  authenticateUser,
+  (req, res, next) => {
+    if (!attendanceController) {
+      throw new Error('AttendanceController not initialized.');
+    }
+    attendanceController.batchMarkAttendance.bind(attendanceController)(
+      req,
+      res,
+      next
+    );
   }
-  attendanceController.batchMarkAttendance.bind(attendanceController)(req, res, next);
-});
+);
 
 router.get('/classes', authenticateUser, (req, res, next) => {
   if (!classController) {
-    throw new Error('ClassController not initialized. Dependency injection failed.');
+    throw new Error(
+      'ClassController not initialized. Dependency injection failed.'
+    );
   }
   classController.getClassesForTeacher.bind(classController)(req, res, next);
 });
 
 router.get('/sessions/attendance', authenticateUser, (req, res, next) => {
   if (!attendanceController) {
-    throw new Error('ClassController not initialized. Dependency injection failed.');
+    throw new Error(
+      'ClassController not initialized. Dependency injection failed.'
+    );
   }
-  attendanceController.GetRecentSessionAttendance.bind(attendanceController)(req, res, next);
+  attendanceController.GetRecentSessionAttendance.bind(attendanceController)(
+    req,
+    res,
+    next
+  );
 });
 
 export default router;

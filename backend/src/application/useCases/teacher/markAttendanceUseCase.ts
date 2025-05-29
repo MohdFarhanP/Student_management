@@ -1,9 +1,12 @@
-import { IAttendanceRepository } from '../../../domain/interface/IAttendanceRepository';
+import { IAttendanceRepository } from '../../../domain/repositories/IAttendanceRepository';
 import { Attendance } from '../../../domain/entities/attendance';
-import { ITimetableService } from '../../../domain/interface/ITimetableService';
+import { ITimetableService } from '../../services/ITimetableService';
 import { Types } from 'mongoose';
-import { IMarkAttendanceUseCase } from '../../../domain/interface/IMarkAttendanceUseCase';
-import { BadRequestError, UnauthorizedError } from '../../../domain/errors/index';
+import { IMarkAttendanceUseCase } from '../../../domain/useCase/IMarkAttendanceUseCase';
+import {
+  BadRequestError,
+  UnauthorizedError,
+} from '../../../domain/errors/index';
 
 export class MarkAttendanceUseCase implements IMarkAttendanceUseCase {
   constructor(
@@ -43,15 +46,18 @@ export class MarkAttendanceUseCase implements IMarkAttendanceUseCase {
       throw new UnauthorizedError('Teacher not assigned to this period');
     }
 
-    const existingAttendance = await this.attendanceRepository.findByStudentClassDatePeriod(
-      classId,
-      studentId,
-      date,
-      period,
-      day
-    );
+    const existingAttendance =
+      await this.attendanceRepository.findByStudentClassDatePeriod(
+        classId,
+        studentId,
+        date,
+        period,
+        day
+      );
     if (existingAttendance) {
-      throw new BadRequestError('Attendance already marked for this student in this period');
+      throw new BadRequestError(
+        'Attendance already marked for this student in this period'
+      );
     }
 
     const attendance = Attendance.create({

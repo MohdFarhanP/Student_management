@@ -1,4 +1,4 @@
-import { ObjectId } from '../../types';
+import { ObjectId } from '../types/common';
 import { TimetableSchedule, TimetableSlot } from '../types/interfaces';
 import { Day } from '../types/enums';
 
@@ -45,10 +45,19 @@ export class Timetable {
           const existingSlots = schedule[day].filter(
             (slot) => slot.period >= 1 && slot.period <= 6
           );
-          const slotsMap = new Map(existingSlots.map((slot) => [slot.period, slot]));
+          const slotsMap = new Map(
+            existingSlots.map((slot) => [slot.period, slot])
+          );
           normalized[day] = Array(6)
             .fill(null)
-            .map((_, i) => slotsMap.get(i + 1) || { period: i + 1, teacherId: null, subject: null });
+            .map(
+              (_, i) =>
+                slotsMap.get(i + 1) || {
+                  period: i + 1,
+                  teacherId: null,
+                  subject: null,
+                }
+            );
         }
       }
     }
@@ -63,10 +72,14 @@ export class Timetable {
     subject: string | null
   ): void {
     if (!Object.values(Day).includes(day)) {
-      throw new Error(`Invalid day: ${day}. Must be one of: ${Object.values(Day).join(', ')}`);
+      throw new Error(
+        `Invalid day: ${day}. Must be one of: ${Object.values(Day).join(', ')}`
+      );
     }
     if (!Number.isInteger(period) || period < 1 || period > 6) {
-      throw new Error(`Invalid period: ${period}. Must be an integer between 1 and 6`);
+      throw new Error(
+        `Invalid period: ${period}. Must be an integer between 1 and 6`
+      );
     }
 
     this._schedule[day][period - 1] = { period, teacherId, subject };
@@ -74,12 +87,20 @@ export class Timetable {
 
   clearSlot(day: Day, period: number): void {
     if (!Object.values(Day).includes(day)) {
-      throw new Error(`Invalid day: ${day}. Must be one of: ${Object.values(Day).join(', ')}`);
+      throw new Error(
+        `Invalid day: ${day}. Must be one of: ${Object.values(Day).join(', ')}`
+      );
     }
     if (!Number.isInteger(period) || period < 1 || period > 6) {
-      throw new Error(`Invalid period: ${period}. Must be an integer between 1 and 6`);
+      throw new Error(
+        `Invalid period: ${period}. Must be an integer between 1 and 6`
+      );
     }
 
-    this._schedule[day][period - 1] = { period, teacherId: null, subject: null };
+    this._schedule[day][period - 1] = {
+      period,
+      teacherId: null,
+      subject: null,
+    };
   }
 }

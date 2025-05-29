@@ -1,8 +1,7 @@
-import { IAuthService } from '../../../domain/interface/IAuthService';
-import { IUserRepository } from '../../../domain/interface/IUserRepository';
-import { Role } from '../../../domain/types/enums';
+import { IAuthService } from '../../services/IAuthService';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
 import { ITokenResponse } from '../../../domain/types/interfaces';
-import { IRefreshTokenUseCase } from '../../../domain/interface/IRefreshTokenUseCase';
+import { IRefreshTokenUseCase } from '../../../domain/useCase/IRefreshTokenUseCase';
 
 export class RefreshTokenUseCase implements IRefreshTokenUseCase {
   constructor(

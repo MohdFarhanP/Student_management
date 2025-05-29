@@ -1,44 +1,22 @@
-import { studentModel } from '../../database/models/studentModel';
-import { ClassModel } from '../../database/models/classModel';
-import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository';
-import { Student } from '../../../domain/entities/student';
-import { ILiveSessionDto, IStudent } from '../../../domain/types/interfaces';
-import { Gender } from '../../../domain/types/enums';
-import { LiveSessionModel } from '../../database/models/liveSessionModel';
+import { studentModel } from '../../database/mongoos/models/studentModel';
+import { ClassModel } from '../../database/mongoos/models/classModel';
+import { IStudentRepository } from '../../../domain/repositories/IStudentRepository';
+import { StudentEntity } from '../../../domain/entities/student';
+import { IStudent } from '../../../domain/types/interfaces';
+import { LiveSessionModel } from '../../database/mongoos/models/liveSessionModel';
 import { format } from 'date-fns';
 import { UserInfo } from '../../../domain/types/interfaces';
 import mongoose from 'mongoose';
-
-// Utility function to map MongoDB data to IStudent with Gender enum
-const mapToStudentData = (data: any): Partial<IStudent> => ({
-  id: data._id?.toString(),
-  name: data.name,
-  email: data.email,
-  roleNumber: data.roleNumber,
-  dob: data.dob,
-  gender: data.gender === 'Male' ? Gender.Male : Gender.Female, // Map string to enum
-  age: data.age,
-  class: data.class ? (typeof data.class === 'object' ? data.class.name : data.class) : null,
-  profileImage: data.profileImage,
-  address: {
-    houseName: data.address?.houseName || '',
-    place: data.address?.place || '',
-    district: data.address?.district || '',
-    pincode: data.address?.pincode || 0,
-    phoneNo: data.address?.phoneNo || 0,
-    guardianName: data.address?.guardianName || '',
-    guardianContact: data.address?.guardianContact ?? null,
-  },
-});
-
+import { ILiveSessionDto } from '../../../application/dtos/liveSessionDtos';
+import { mapToFullStudent } from '../../database/mongoos/helpers/studentMapper';
 
 export class StudentRepository implements IStudentRepository {
-  async insertMany(students: Student[]): Promise<void> {
+  async insertMany(students: StudentEntity[]): Promise<void> {
     if (!students || students.length === 0) return;
-  
+
     const classMap = new Map<string, string>(); // Cache class name to ObjectId
     const classStudentMap = new Map<string, string[]>(); // classId => studentIds
-  
+
     // Step 1: Convert class name to ObjectId and prepare for bulk insert
     const processedStudents = await Promise.all(
       students.map(async (student) => {
@@ -46,22 +24,23 @@ export class StudentRepository implements IStudentRepository {
           let classId = classMap.get(student.class);
           if (!classId) {
             const classDoc = await ClassModel.findOne({ name: student.class });
-            if (!classDoc) throw new Error(`Class '${student.class}' not found`);
+            if (!classDoc)
+              throw new Error(`Class '${student.class}' not found`);
             classId = classDoc._id.toString();
             classMap.set(student.class, classId);
           }
           student.class = classId;
-  
+
           // Prepare to push student IDs into class
           if (!classStudentMap.has(classId)) classStudentMap.set(classId, []);
         }
         return student;
       })
     );
-  
+
     // Step 2: Bulk insert students
     const insertedStudents = await studentModel.insertMany(processedStudents);
-  
+
     // Step 3: Organize students by class
     insertedStudents.forEach((student) => {
       const classId = student.class?.toString();
@@ -69,7 +48,7 @@ export class StudentRepository implements IStudentRepository {
         classStudentMap.get(classId)?.push(student._id.toString());
       }
     });
-  
+
     // Step 4: Update each class with students and total count
     for (const [classId, studentIds] of classStudentMap.entries()) {
       await ClassModel.findByIdAndUpdate(
@@ -82,8 +61,11 @@ export class StudentRepository implements IStudentRepository {
       );
     }
   }
-  
-  async getAll(page: number, limit: number): Promise<{ students: Student[]; totalCount: number }> {
+
+  async getAll(
+    page: number,
+    limit: number
+  ): Promise<{ students: StudentEntity[]; totalCount: number }> {
     const skip = (page - 1) * limit;
 
     const rawStudentsData = await studentModel
@@ -94,63 +76,95 @@ export class StudentRepository implements IStudentRepository {
       .populate('class', 'name')
       .lean();
 
-    const students = rawStudentsData.map((s) => new Student(mapToStudentData(s)));
+    const students = rawStudentsData.map(
+      (s) => new StudentEntity(mapToFullStudent(s))
+    );
 
     const totalCount = await studentModel.countDocuments({ isDeleted: false });
     return { students, totalCount };
   }
 
-  async findById(id: string): Promise<Student | null> {
-    const student = await studentModel.findOne({ _id: id, isDeleted: false }).lean();
+  async findById(id: string): Promise<StudentEntity | null> {
+    const student = await studentModel
+      .findOne({ _id: id, isDeleted: false })
+      .lean();
     if (!student) return null;
-    return new Student(mapToStudentData(student));
+    return new StudentEntity(mapToFullStudent(student));
   }
 
-  async findByPhoneNo(userId: string ,phonNo: number): Promise<Student | null> {
-    console.log('user id ',userId)
-    const student = await studentModel.findOne({ "address.phoneNo": phonNo, isDeleted: false, _id:{$ne:new mongoose.Types.ObjectId(userId)}}).lean();
-    console.log('findByphoneNO in student repo',student);
+  async findByPhoneNo(
+    userId: string,
+    phonNo: number
+  ): Promise<StudentEntity | null> {
+    console.log('user id ', userId);
+    const student = await studentModel
+      .findOne({
+        'address.phoneNo': phonNo,
+        isDeleted: false,
+        _id: { $ne: new mongoose.Types.ObjectId(userId) },
+      })
+      .lean();
+    console.log('findByphoneNO in student repo', student);
     if (!student) return null;
-    return new Student(mapToStudentData(student));
+    return new StudentEntity(mapToFullStudent(student));
   }
-  
+
   async findManyByIds(ids: string[]): Promise<UserInfo[]> {
     const usersData = await studentModel.find({ _id: { $in: ids } });
-    return usersData.map((user)=>({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: 'Student'
-  }));
+    return usersData.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: 'Student',
+    }));
   }
 
-  async create(data: Partial<IStudent>): Promise<Student> {
-    const existStudent = await studentModel.findOne({ email: data.email, isDeleted: false });
+  async create(data: Partial<IStudent>): Promise<StudentEntity> {
+    const existStudent = await studentModel.findOne({
+      email: data.email,
+      isDeleted: false,
+    });
     if (existStudent) {
       throw new Error('Student already exists');
     }
+
+    // Convert class name to ObjectId
     if (data.class && typeof data.class === 'string') {
       const classDoc = await ClassModel.findOne({ name: data.class });
       if (!classDoc) throw new Error(`Class '${data.class}' not found`);
-      data.class = classDoc._id;
+      data.class = classDoc.id;
     }
-    const studentEntity = new Student(data);
 
-    const newStudent = await studentModel.create(studentEntity);
-    return new Student(mapToStudentData(newStudent.toObject()));
+    // Validate required fields
+    if (
+      !data.name ||
+      !data.email ||
+      !data.roleNumber ||
+      !data.dob ||
+      !data.gender ||
+      data.age === undefined ||
+      !data.address
+    ) {
+      throw new Error('Missing required fields to create a student');
+    }
+
+    const newStudent = await studentModel.create(data);
+
+    // Return domain entity (with proper mapping)
+    return new StudentEntity(mapToFullStudent(newStudent.toObject()));
   }
 
-  async update(id: string, data: Partial<IStudent>): Promise<Student> {
+  async update(id: string, data: Partial<IStudent>): Promise<StudentEntity> {
     if (data.class && typeof data.class === 'string') {
       const classDoc = await ClassModel.findOne({ name: data.class });
       if (!classDoc) throw new Error(`Class '${data.class}' not found`);
-      data.class = classDoc._id;
+      data.class = classDoc.id;
     }
     const updatedStudent = await studentModel
       .findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true })
       .lean();
     if (!updatedStudent) throw new Error('Student not found');
-    return new Student(mapToStudentData(updatedStudent));
+    return new StudentEntity(mapToFullStudent(updatedStudent));
   }
 
   async delete(id: string): Promise<void> {
@@ -162,34 +176,35 @@ export class StudentRepository implements IStudentRepository {
     if (!result) throw new Error('Student not found');
   }
 
-  async getSessions(userId: string): Promise< ILiveSessionDto[] | null> {
+  async getSessions(userId: string): Promise<ILiveSessionDto[] | null> {
     const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
+    startOfDay.setHours(0, 0, 0, 0);
 
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
 
-  const sessions = await LiveSessionModel.find({
-    studentIds: { $in: [userId] },
-    scheduledAt: { $gte: startOfDay, $lte: endOfDay },
-    status: 'SCHEDULED'
-  }).lean();
+    const sessions = await LiveSessionModel.find({
+      studentIds: { $in: [userId] },
+      scheduledAt: { $gte: startOfDay, $lte: endOfDay },
+      status: 'SCHEDULED',
+    }).lean();
 
-  const now = new Date();
+    const now = new Date();
 
-  return sessions.map(session => {
-    const start = new Date(session.scheduledAt);
-    const end = new Date(start.getTime() + 60 * 60000); // Add 1 hour
+    return sessions.map((session) => {
+      const start = new Date(session.scheduledAt);
+      const end = new Date(start.getTime() + 60 * 60000); // Add 1 hour
 
-    return {
-      title: session.title,
-      time: `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`,
-      isOngoing: now >= start && now <= end
-      // joinLink want to be add later
-    };
-  });
+      return {
+        title: session.title,
+        time: `${format(start, 'h:mm a')} - ${format(end, 'h:mm a')}`,
+        isOngoing: now >= start && now <= end,
+        // joinLink want to be add later
+      };
+    });
   }
-  async getProfile(email: string): Promise<Student | null> {
+
+  async getProfile(email: string): Promise<StudentEntity | null> {
     const rawStudent = await studentModel
       .findOne({ email, isDeleted: false })
       .select('-password')
@@ -197,32 +212,28 @@ export class StudentRepository implements IStudentRepository {
       .lean();
 
     if (!rawStudent) return null;
-    return new Student(mapToStudentData(rawStudent));
+    return new StudentEntity(mapToFullStudent(rawStudent));
   }
 
-  async findByEmail(email: string): Promise<Student | null> {
-    const student = await studentModel.findOne({ email, isDeleted: false }).lean();
+  async findByEmail(email: string): Promise<StudentEntity | null> {
+    const student = await studentModel
+      .findOne({ email, isDeleted: false })
+      .lean();
     if (!student) return null;
-    return new Student(mapToStudentData(student));
+    return new StudentEntity(mapToFullStudent(student));
   }
 
-  async getStudentsByClass(classId: string): Promise<Student[]> {
+  async getStudentsByClass(classId: string): Promise<StudentEntity[]> {
     const students = await studentModel
       .find({ class: classId, isDeleted: false })
       .populate('class', 'name')
       .lean();
 
-    return students.map((student) => {
-      const studentData = mapToStudentData(student);
-      return new Student({
-        id: studentData.id,
-        name: studentData.name,
-        class: studentData.class,
-        email: studentData.email,
-        profileImage: studentData.profileImage,
-      });
-    });
+    return students.map(
+      (student) => new StudentEntity(mapToFullStudent(student))
+    );
   }
+
   async addStudentToClass(classId: string, studentId: string): Promise<void> {
     await ClassModel.findByIdAndUpdate(
       classId,
@@ -233,7 +244,11 @@ export class StudentRepository implements IStudentRepository {
       { new: true }
     );
   }
-  async removeStudentFromClass(classId: string, studentId: string): Promise<void> {
+
+  async removeStudentFromClass(
+    classId: string,
+    studentId: string
+  ): Promise<void> {
     await ClassModel.findByIdAndUpdate(
       classId,
       {
@@ -243,6 +258,4 @@ export class StudentRepository implements IStudentRepository {
       { new: true }
     );
   }
-  
-  
 }

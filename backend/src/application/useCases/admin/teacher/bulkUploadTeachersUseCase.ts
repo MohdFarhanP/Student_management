@@ -1,13 +1,13 @@
-import { Teacher } from '../../../../domain/entities/teacher';
-import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
-import { IExcelParser } from '../../../../domain/interface/admin/IExcelParser';
+import { TeacherEntity } from '../../../../domain/entities/teacher';
+import { ITeacherRepository } from '../../../../domain/repositories/ITeacherRepository';
+import { IExcelParser } from '../../../services/IExcelParser';
 import { IBulkUploadResult } from '../../../../domain/types/interfaces';
-import { IBulkUploadTeacherUseCase } from '../../../../domain/interface/IBulkUploadTeacherUseCase';
+import { IBulkUploadTeacherUseCase } from '../../../../domain/useCase/IBulkUploadTeacherUseCase';
 
 export class BulkUploadTeacherUseCase implements IBulkUploadTeacherUseCase {
   constructor(
     private teacherRepo: ITeacherRepository,
-    private teacherParser: IExcelParser<Teacher>
+    private teacherParser: IExcelParser<TeacherEntity>
   ) {}
 
   async execute(fileBuffer: Buffer): Promise<IBulkUploadResult> {

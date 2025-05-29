@@ -1,6 +1,6 @@
-import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
-import { IFetchTodayScheduleUseCase } from '../../../../domain/interface/IFetchTodayScheduleUseCase';
-import { ScheduleDto } from '../../../../domain/types/interfaces';
+import { ITeacherRepository } from '../../../../domain/repositories/ITeacherRepository';
+import { IFetchTodayScheduleUseCase } from '../../../../domain/useCase/IFetchTodayScheduleUseCase';
+import { ScheduleDto } from '../../../dtos/liveSessionDtos';
 
 export class FetchTodayScheduleUseCase implements IFetchTodayScheduleUseCase {
   constructor(private readonly teacherRepository: ITeacherRepository) {}

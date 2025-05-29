@@ -1,9 +1,10 @@
-import { ILeaveRepository } from '../../../domain/interface/ILeaveRepository';
-import { IUserRepository } from '../../../domain/interface/IUserRepository';
-import { Leave, ViewLeaveHistoryDTO } from '../../../domain/types/interfaces';
+import { ILeaveRepository } from '../../../domain/repositories/ILeaveRepository';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { Leave } from '../../../domain/types/interfaces';
 import { ValidationError, UnauthorizedError } from '../../../domain/errors';
 import { Role } from '../../../domain/types/enums';
-import { IViewLeaveHistoryUseCase } from '../../../domain/interface/IViewLeaveHistoryUseCase';
+import { IViewLeaveHistoryUseCase } from '../../../domain/useCase/IViewLeaveHistoryUseCase';
+import { ViewLeaveHistoryDTO } from '../../dtos/leaveDtos';
 
 export class ViewLeaveHistoryUseCase implements IViewLeaveHistoryUseCase {
   constructor(
@@ -24,10 +25,12 @@ export class ViewLeaveHistoryUseCase implements IViewLeaveHistoryUseCase {
     if (!dto.studentId) {
       // Teacher requesting all pending leaves
       if (user.role !== Role.Teacher) {
-        throw new UnauthorizedError('Only teachers can view pending leave requests');
+        throw new UnauthorizedError(
+          'Only teachers can view pending leave requests'
+        );
       }
       const leave = await this.leaveRepository.findByStudentId('');
-      return leave
+      return leave;
     }
 
     // Student viewing their own leave history
@@ -35,10 +38,12 @@ export class ViewLeaveHistoryUseCase implements IViewLeaveHistoryUseCase {
       throw new UnauthorizedError('Only students can view their leave history');
     }
     if (dto.studentId !== dto.userId) {
-      throw new UnauthorizedError('Students can only view their own leave history');
+      throw new UnauthorizedError(
+        'Students can only view their own leave history'
+      );
     }
     const le = this.leaveRepository.findByStudentId(dto.studentId);
     console.log('finded the history for students ', le);
-    return le
+    return le;
   }
 }

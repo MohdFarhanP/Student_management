@@ -1,14 +1,15 @@
-import { IGetStudentProfileUseCase } from '../../../domain/interface/IGetStudentProfileUseCase';
-import { IUpdateStudentProfileImageUseCase } from '../../../domain/interface/IUpdateStudentProfileImageUseCase';
-import { IStudentProfileController } from '../../../domain/interface/IStudentProfileController';
+import { IGetStudentProfileUseCase } from '../../../domain/useCase/IGetStudentProfileUseCase';
+import { IUpdateStudentProfileImageUseCase } from '../../../domain/useCase/IUpdateStudentProfileImageUseCase';
+import { IStudentProfileController } from './IStudentProfileController';
 import { Request, Response } from 'express';
-import { IApiResponse,IUser, studentInfoDto } from '../../../domain/types/interfaces';
-import HttpStatus from '../../../utils/httpStatus';
-import { Student } from '../../../domain/entities/student';
+import { IApiResponse, IUser } from '../../../domain/types/interfaces';
+import { HttpStatus } from '../../../domain/types/enums';
+import { StudentEntity } from '../../../domain/entities/student';
 import { BadRequestError } from '../../../domain/errors';
-import { IStudentFeeDueRepository } from '../../../domain/interface/IStudentFeeDueRepository';
-import { IProcessPaymentUseCase } from '../../../domain/interface/IProcessPaymentUseCase';
-import { IGetStudentInfoUseCase } from '../../../domain/interface/IGetStudentInfoUseCase';
+import { IStudentFeeDueRepository } from '../../../domain/repositories/IStudentFeeDueRepository';
+import { IProcessPaymentUseCase } from '../../../domain/useCase/IProcessPaymentUseCase';
+import { IGetStudentInfoUseCase } from '../../../domain/useCase/IGetStudentInfoUseCase';
+import { studentInfoDto } from '../../../application/dtos/studentDtos';
 
 export class StudentProfileController implements IStudentProfileController {
   constructor(
@@ -16,7 +17,7 @@ export class StudentProfileController implements IStudentProfileController {
     private updateStudentProfileImageUseCase: IUpdateStudentProfileImageUseCase,
     private studentFeeDueRepository: IStudentFeeDueRepository,
     private processPaymentUseCase: IProcessPaymentUseCase,
-    private getStudentInfoUseCase: IGetStudentInfoUseCase,
+    private getStudentInfoUseCase: IGetStudentInfoUseCase
   ) {}
 
   async getProfile(req: Request, res: Response): Promise<void> {
@@ -30,11 +31,17 @@ export class StudentProfileController implements IStudentProfileController {
         success: true,
         message: 'Profile fetched successfully',
         data: student,
-      } as IApiResponse<Student>);
+      } as IApiResponse<StudentEntity>);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch profile';
-      const status = error instanceof BadRequestError ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;
-      res.status(status).json({ success: false, message } as IApiResponse<never>);
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch profile';
+      const status =
+        error instanceof BadRequestError
+          ? HttpStatus.BAD_REQUEST
+          : HttpStatus.INTERNAL_SERVER_ERROR;
+      res
+        .status(status)
+        .json({ success: false, message } as IApiResponse<never>);
     }
   }
 
@@ -48,9 +55,15 @@ export class StudentProfileController implements IStudentProfileController {
         data: studentInfo,
       } as IApiResponse<studentInfoDto>);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch profile';
-      const status = error instanceof BadRequestError ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;
-      res.status(status).json({ success: false, message } as IApiResponse<never>);
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch profile';
+      const status =
+        error instanceof BadRequestError
+          ? HttpStatus.BAD_REQUEST
+          : HttpStatus.INTERNAL_SERVER_ERROR;
+      res
+        .status(status)
+        .json({ success: false, message } as IApiResponse<never>);
     }
   }
 
@@ -64,21 +77,33 @@ export class StudentProfileController implements IStudentProfileController {
       if (!profileImage) {
         throw new BadRequestError('Profile image URL is required');
       }
-      const studentImgUrl = await this.updateStudentProfileImageUseCase.execute(user.email, profileImage, fileHash);
+      const studentImgUrl = await this.updateStudentProfileImageUseCase.execute(
+        user.email,
+        profileImage,
+        fileHash
+      );
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Profile image updated successfully',
         data: studentImgUrl,
       } as IApiResponse<string>);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update profile image';
-      const status = error instanceof BadRequestError ? HttpStatus.BAD_REQUEST : HttpStatus.INTERNAL_SERVER_ERROR;
-      res.status(status).json({ success: false, message } as IApiResponse<never>);
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to update profile image';
+      const status =
+        error instanceof BadRequestError
+          ? HttpStatus.BAD_REQUEST
+          : HttpStatus.INTERNAL_SERVER_ERROR;
+      res
+        .status(status)
+        .json({ success: false, message } as IApiResponse<never>);
     }
   }
-    async getUnpaidDues(req: Request, res: Response): Promise<void> {
+  async getUnpaidDues(req: Request, res: Response): Promise<void> {
     try {
-      const studentId = (req as any).user.id; // From auth middleware
+      const studentId = req.user.id;
 
       if (!studentId) {
         res.status(HttpStatus.UNAUTHORIZED).json({
@@ -88,7 +113,8 @@ export class StudentProfileController implements IStudentProfileController {
         return;
       }
 
-      const unpaidDues = await this.studentFeeDueRepository.findUnpaidByStudentId(studentId);
+      const unpaidDues =
+        await this.studentFeeDueRepository.findUnpaidByStudentId(studentId);
 
       const duesDto = unpaidDues.map((due) => ({
         id: due.getId(),
@@ -119,9 +145,7 @@ export class StudentProfileController implements IStudentProfileController {
   async processPayment(req: Request, res: Response): Promise<void> {
     try {
       const { feeDueId } = req.body;
-      console.log('feedueid',feeDueId)
       const studentId = req.user.id;
-      console.log('studentId',studentId);
 
       if (!studentId || !feeDueId) {
         res.status(HttpStatus.BAD_REQUEST).json({
@@ -131,9 +155,11 @@ export class StudentProfileController implements IStudentProfileController {
         return;
       }
 
-      const result = await this.processPaymentUseCase.execute(studentId, feeDueId);
-      
-      console.log('result form processpyamentusecase' ,result);
+      const result = await this.processPaymentUseCase.execute(
+        studentId,
+        feeDueId
+      );
+
       const payload = {
         order: result.order,
         paymentId: result.paymentId,

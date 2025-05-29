@@ -1,10 +1,12 @@
-import { ISubjectRepository } from '../../../../domain/interface/ISubjectRepository';
-import { IClassRepository } from '../../../../domain/interface/admin/IClassRepository';
-import { IFetchSubjectsByClassIdUseCase } from '../../../../domain/interface/IFetchSubjectsByClassIdUseCase';
-import mongoose from 'mongoose';
+import { ISubjectRepository } from '../../../../domain/repositories/ISubjectRepository';
+import { IClassRepository } from '../../../../domain/repositories/IClassRepository';
+import { IFetchSubjectsByClassIdUseCase } from '../../../../domain/useCase/IFetchSubjectsByClassIdUseCase';
+import mongoose, { Types } from 'mongoose';
 import { SubjectEntity } from '../../../../domain/entities/subject';
 
-export class FetchSubjectsByClassIdUseCase implements IFetchSubjectsByClassIdUseCase {
+export class FetchSubjectsByClassIdUseCase
+  implements IFetchSubjectsByClassIdUseCase
+{
   constructor(
     private subjectRepository: ISubjectRepository,
     private classRepository: IClassRepository
@@ -21,14 +23,18 @@ export class FetchSubjectsByClassIdUseCase implements IFetchSubjectsByClassIdUse
         throw new Error('Class not found');
       }
 
-      const subjectIds = existingClass.subjects;
+      const subjectIds = existingClass.subjects.map(
+        (id) => new Types.ObjectId(id)
+      );
       if (subjectIds.length === 0) {
         return [];
       }
 
       return await this.subjectRepository.findByIds(subjectIds);
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to fetch subjects');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to fetch subjects');
     }
   }
 }

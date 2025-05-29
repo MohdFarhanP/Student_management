@@ -1,7 +1,6 @@
-import { IAuthService } from '../../../domain/interface/IAuthService';
-import { IUserRepository } from '../../../domain/interface/IUserRepository';
-import { Role } from '../../../domain/types/enums';
-import { ILogoutUseCase } from '../../../domain/interface/ILogoutUseCase';
+import { IAuthService } from '../../services/IAuthService';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { ILogoutUseCase } from '../../../domain/useCase/ILogoutUseCase';
 
 export class LogoutUseCase implements ILogoutUseCase {
   constructor(

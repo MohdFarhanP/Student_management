@@ -1,6 +1,10 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { IStorageService } from '../../domain/interface/IStorageService';
+import { IStorageService } from '../../application/services/IStorageService';
 
 export class S3StorageService implements IStorageService {
   private s3Client: S3Client;
@@ -22,7 +26,10 @@ export class S3StorageService implements IStorageService {
     });
   }
 
-  async generatePresignedUrl(fileName: string, fileType: string): Promise<{ signedUrl: string; fileUrl: string }> {
+  async generatePresignedUrl(
+    fileName: string,
+    fileType: string
+  ): Promise<{ signedUrl: string; fileUrl: string }> {
     const key = `${Date.now()}-${fileName}`;
     const params = {
       Bucket: this.bucketName,
@@ -32,9 +39,13 @@ export class S3StorageService implements IStorageService {
     };
 
     const command = new PutObjectCommand(params);
-    const signedUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 60 });
+    const signedUrl = await getSignedUrl(this.s3Client, command, {
+      expiresIn: 60,
+    });
     const fileUrl = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${key}`;
-    console.log(`This is the signedUrl ${signedUrl} and this is the fileUrl ${fileUrl}`)
+    console.log(
+      `This is the signedUrl ${signedUrl} and this is the fileUrl ${fileUrl}`
+    );
     return { signedUrl, fileUrl };
   }
 
@@ -45,7 +56,9 @@ export class S3StorageService implements IStorageService {
       ResponseContentDisposition: `attachment; filename="${fileKey.split('-').pop()}"`,
     });
 
-    const signedUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 60 });
+    const signedUrl = await getSignedUrl(this.s3Client, command, {
+      expiresIn: 60,
+    });
     return signedUrl;
   }
 }

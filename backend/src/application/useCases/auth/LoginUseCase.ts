@@ -1,8 +1,8 @@
-import { IUserRepository } from '../../../domain/interface/IUserRepository';
-import { IAuthService } from '../../../domain/interface/IAuthService';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { IAuthService } from '../../services/IAuthService';
 import { Role } from '../../../domain/types/enums';
 import { ITokenResponse } from '../../../domain/types/interfaces';
-import { ILoginUseCase } from '../../../domain/interface/ILoginUseCase';
+import { ILoginUseCase } from '../../../domain/useCase/ILoginUseCase';
 
 export class LoginUseCase implements ILoginUseCase {
   constructor(
@@ -10,7 +10,11 @@ export class LoginUseCase implements ILoginUseCase {
     private authService: IAuthService
   ) {}
 
-  async execute(email: string, password: string, role: Role): Promise<ITokenResponse> {
+  async execute(
+    email: string,
+    password: string,
+    role: Role
+  ): Promise<ITokenResponse> {
     const user = await this.userRepository.findByEmailAndRole(email, role);
     if (!user) {
       throw new Error('Invalid credentials');

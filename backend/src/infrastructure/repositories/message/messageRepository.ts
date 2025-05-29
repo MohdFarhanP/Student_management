@@ -1,7 +1,11 @@
 import { MessageEntity } from '../../../domain/entities/message';
 import { IMessage } from '../../../domain/types/interfaces';
-import { IMessageRepository } from '../../../domain/interface/IMessageRepository';
-import { MessageModel } from '../../database/models/messageModel';
+import { IMessageRepository } from '../../../domain/repositories/IMessageRepository';
+import { MessageModel } from '../../database/mongoos/models/messageModel';
+import {
+  mapMediaType,
+  mapRole,
+} from '../../database/mongoos/helpers/enumMappers';
 
 export class MessageRepository implements IMessageRepository {
   async save(message: Omit<IMessage, 'id' | 'createdAt'>): Promise<IMessage> {
@@ -12,10 +16,10 @@ export class MessageRepository implements IMessageRepository {
         id: saved._id.toString(),
         chatRoomId: saved.chatRoomId,
         senderId: saved.senderId,
-        senderRole: saved.senderRole,
+        senderRole: mapRole(saved.senderRole),
         content: saved.content,
         mediaUrl: saved.mediaUrl,
-        mediaType: saved.mediaType,
+        mediaType: mapMediaType(saved.mediaType),
         createdAt: saved.createdAt,
       });
     } catch (error) {
@@ -37,10 +41,10 @@ export class MessageRepository implements IMessageRepository {
             id: doc._id.toString(),
             chatRoomId: doc.chatRoomId,
             senderId: doc.senderId,
-            senderRole: doc.senderRole,
+            senderRole: mapRole(doc.senderRole),
             content: doc.content,
             mediaUrl: doc.mediaUrl,
-            mediaType: doc.mediaType,
+            mediaType: mapMediaType(doc.mediaType),
             createdAt: doc.createdAt,
           })
       );

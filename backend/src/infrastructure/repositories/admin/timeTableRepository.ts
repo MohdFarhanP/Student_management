@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
-import { ObjectId } from '../../../types';
-import { ITimetableRepository } from '../../../domain/interface/admin/ITimetableRepository';
+import { ObjectId } from '../../../domain/types/common';
+import { ITimetableRepository } from '../../../domain/repositories/ITimetableRepository';
 import { Timetable } from '../../../domain/entities/timetable';
-import TimetableModel from '../../database/models/timeTableModel';
+import TimetableModel from '../../database/mongoos/models/timeTableModel';
 import { Day } from '../../../domain/types/enums';
 import { TimetableSlot } from '../../../domain/types/interfaces';
-import { TeacherModel } from '../../database/models/teacherModel';
+import { TeacherModel } from '../../database/mongoos/models/teacherModel';
 
 export class TimetableRepository implements ITimetableRepository {
   async getByClassId(classId: ObjectId): Promise<Timetable> {
@@ -43,13 +43,19 @@ export class TimetableRepository implements ITimetableRepository {
     }
   }
 
-  async findConflict(teacherId: ObjectId, day: Day, period: number): Promise<Timetable | null> {
+  async findConflict(
+    teacherId: ObjectId,
+    day: Day,
+    period: number
+  ): Promise<Timetable | null> {
     try {
       const conflict = await TimetableModel.findOne({
         [`schedule.${day}`]: { $elemMatch: { period, teacherId } },
       }).lean();
       if (!conflict) return null;
-      const classIdObj = new mongoose.Types.ObjectId(conflict.classId.toString());
+      const classIdObj = new mongoose.Types.ObjectId(
+        conflict.classId.toString()
+      );
       return new Timetable(classIdObj, conflict.schedule);
     } catch (error) {
       throw new Error(
@@ -58,43 +64,54 @@ export class TimetableRepository implements ITimetableRepository {
     }
   }
 
-async TodayTimeTable(classId: mongoose.Types.ObjectId): Promise<TimetableSlot[] | []> {
-  try {
-    const getToday = (): string => {
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      return days[new Date().getDay()];
-    };
+  async TodayTimeTable(
+    classId: mongoose.Types.ObjectId
+  ): Promise<TimetableSlot[] | []> {
+    try {
+      const getToday = (): string => {
+        const days = [
+          'Sunday',
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+        ];
+        return days[new Date().getDay()];
+      };
 
-    const today = getToday();
+      const today = getToday();
 
-    const timetable = await TimetableModel.findOne({ classId }).lean();
+      const timetable = await TimetableModel.findOne({ classId }).lean();
 
-    if (!timetable || !timetable.schedule || !timetable.schedule[today]) {
-      return [];
+      if (!timetable || !timetable.schedule || !timetable.schedule[today]) {
+        return [];
+      }
+
+      const todaysPeriods = timetable.schedule[today];
+
+      const enrichedPeriods = await Promise.all(
+        todaysPeriods.map(async (period) => {
+          if (!period.teacherId) {
+            return { ...period, teacherName: null };
+          }
+
+          const teacher = await TeacherModel.findById(period.teacherId)
+            .select('name')
+            .lean();
+          return {
+            ...period,
+            teacherName: teacher ? teacher.name : null,
+          };
+        })
+      );
+
+      return enrichedPeriods;
+    } catch (error) {
+      throw new Error(
+        `Failed to fetch timetable for classId ${classId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
-
-    const todaysPeriods = timetable.schedule[today];
-
-    const enrichedPeriods = await Promise.all(
-      todaysPeriods.map(async (period) => {
-        if (!period.teacherId) {
-          return { ...period, teacherName: null };
-        }
-
-        const teacher = await TeacherModel.findById(period.teacherId).select('name').lean();
-        return {
-          ...period,
-          teacherName: teacher ? teacher.name : null
-        };
-      })
-    );
-
-    return enrichedPeriods;
-  } catch (error) {
-    throw new Error(
-      `Failed to fetch timetable for classId ${classId}: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
   }
-}
-
 }

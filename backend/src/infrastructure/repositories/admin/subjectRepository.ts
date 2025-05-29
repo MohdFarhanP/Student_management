@@ -1,25 +1,16 @@
 import { SubjectEntity } from '../../../domain/entities/subject';
-import { SubjectModel } from '../../database/models/subjectModel';
+import { SubjectModel } from '../../database/mongoos/models/subjectModel';
 import { Types } from 'mongoose';
-import { ISubjectRepository } from '../../../domain/interface/ISubjectRepository';
+import { ISubjectRepository } from '../../../domain/repositories/ISubjectRepository';
+import { mapSubjectName } from '../../database/mongoos/helpers/enumMappers';
+import { mapToSubjectEntity } from '../../database/mongoos/helpers/subjectMapper';
 
 export class SubjectRepository implements ISubjectRepository {
   async create(subjectData: SubjectEntity): Promise<SubjectEntity> {
     try {
       const subject = await SubjectModel.create(subjectData);
       const populatedSubject = await subject.populate('teachers', 'name');
-
-      const teacherNames = Array.isArray(populatedSubject.teachers) 
-      ? populatedSubject.teachers.map((teacher:any)=> teacher.name)
-       : [];
-      console.log('teacher names',teacherNames);
-      return SubjectEntity.create({
-        id: populatedSubject._id.toString(),
-        subjectName: populatedSubject.subjectName,
-        teachers: teacherNames,
-        notes: populatedSubject.notes,
-      });
-
+      return mapToSubjectEntity(populatedSubject);
     } catch (error) {
       throw new Error(`Failed to create subject: ${(error as Error).message}`);
     }
@@ -28,23 +19,15 @@ export class SubjectRepository implements ISubjectRepository {
   async findByName(subjectName: string): Promise<SubjectEntity | null> {
     try {
       const subject = await SubjectModel.findOne({ subjectName })
-      .populate('teachers', 'name')
-      .lean();
+        .populate('teachers', 'name')
+        .lean();
 
       if (!subject) return null;
-
-      const teacherNames = Array.isArray(subject.teachers)
-      ? subject.teachers.map((teacher: any) => teacher.name)
-      : [];
-      console.log('teacher names',teacherNames);
-      return SubjectEntity.create({
-        id: subject._id.toString(),
-        subjectName: subject.subjectName,
-        teachers: teacherNames,
-        notes: subject.notes,
-      });
+      return mapToSubjectEntity(subject);
     } catch (error) {
-      throw new Error(`Failed to find subject by name: ${(error as Error).message}`);
+      throw new Error(
+        `Failed to find subject by name: ${(error as Error).message}`
+      );
     }
   }
 
@@ -52,40 +35,32 @@ export class SubjectRepository implements ISubjectRepository {
     try {
       const subjects = await SubjectModel.find({
         _id: { $in: subjectIds },
-      })      
-      .populate('teachers', 'name')
-      .lean();
-      subjects.map((s)=>console.log(s.teachers))
-      return subjects.map((subject) =>
-        SubjectEntity.create({
-          id: subject._id.toString(),
-          subjectName: subject.subjectName,
-          teachers: subject.teachers,
-          notes: subject.notes,
-        })
-      );
+      })
+        .populate('teachers', 'name')
+        .lean();
+      return subjects.map((subject) => mapToSubjectEntity(subject));
     } catch (error) {
-      throw new Error(`Failed to find subjects by IDs: ${(error as Error).message}`);
+      throw new Error(
+        `Failed to find subjects by IDs: ${(error as Error).message}`
+      );
     }
   }
 
-  async update(id: string, subjectData: Partial<SubjectEntity>): Promise<SubjectEntity | null> {
+  async update(
+    id: string,
+    subjectData: Partial<SubjectEntity>
+  ): Promise<SubjectEntity | null> {
     try {
       const updatedSubject = await SubjectModel.findByIdAndUpdate(
         id,
         { $set: subjectData },
         { new: true }
       )
-      .populate('teachers', 'name')
-      .lean();
+        .populate('teachers', 'name')
+        .lean();
 
       if (!updatedSubject) return null;
-      return SubjectEntity.create({
-        id: updatedSubject._id.toString(),
-        subjectName: updatedSubject.subjectName,
-        teachers: updatedSubject.teachers,
-        notes: updatedSubject.notes,
-      });
+      return mapToSubjectEntity(updatedSubject);
     } catch (error) {
       throw new Error(`Failed to update subject: ${(error as Error).message}`);
     }

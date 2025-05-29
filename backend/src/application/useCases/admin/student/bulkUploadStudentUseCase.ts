@@ -1,13 +1,13 @@
-import { Student } from '../../../../domain/entities/student';
-import { IExcelParser } from '../../../../domain/interface/admin/IExcelParser';
-import { IStudentRepository } from '../../../../domain/interface/admin/IStudentRepository';
+import { StudentEntity } from '../../../../domain/entities/student';
+import { IExcelParser } from '../../../services/IExcelParser';
+import { IStudentRepository } from '../../../../domain/repositories/IStudentRepository';
 import { IBulkUploadResult } from '../../../../domain/types/interfaces';
-import { IBulkUploadStudentUseCase } from '../../../../domain/interface/IBulkUploadStudentUseCase';
+import { IBulkUploadStudentUseCase } from '../../../../domain/useCase/IBulkUploadStudentUseCase';
 
 export class BulkUploadStudentUseCase implements IBulkUploadStudentUseCase {
   constructor(
     private studentRepo: IStudentRepository,
-    private studentParser: IExcelParser<Student>
+    private studentParser: IExcelParser<StudentEntity>
   ) {}
 
   async execute(fileBuffer: Buffer): Promise<IBulkUploadResult> {

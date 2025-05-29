@@ -1,7 +1,16 @@
-import { Role, Gender, Day, Grade, Section, SubjectName, RecipientType, MediaType, LeaveStatus } from './enums';
-import mongoose, { ObjectId } from 'mongoose';
+import {
+  Role,
+  Gender,
+  Day,
+  Grade,
+  Section,
+  SubjectName,
+  RecipientType,
+  MediaType,
+  LeaveStatus,
+} from './enums';
+import mongoose, { ObjectId, Types } from 'mongoose';
 import { SessionStatus, ParticipantRole } from './enums';
-
 
 // User entity (for authentication)
 export interface IUser {
@@ -22,7 +31,7 @@ export interface IStudent {
   dob: string;
   gender: Gender;
   age: number;
-  class?: mongoose.Types.ObjectId | string | null;
+  class?: string;
   password?: string;
   profileImage?: string;
   address: {
@@ -38,8 +47,8 @@ export interface IStudent {
   isInitialLogin?: boolean;
   isDeleted?: boolean;
   fileHash?: string;
-  createdAt?: Date; 
-  updatedAt?: Date; 
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // Teacher entity
@@ -51,8 +60,8 @@ export interface ITeacher {
   gender: Gender;
   phoneNo: number;
   empId: string;
-  assignedClass?: mongoose.Types.ObjectId | string | null;
-  subject?: mongoose.Types.ObjectId | string | null;
+  assignedClass?: string;
+  subject?: string;
   dateOfBirth: string;
   profileImage?: string;
   fileHash?: string;
@@ -61,23 +70,22 @@ export interface ITeacher {
   qualification?: string;
   availability?: { [key in Day]: number[] };
   isInitialLogin?: boolean;
-  isDeleted?: boolean
+  isDeleted?: boolean;
   refreshToken?: string;
 }
 
 // Class entity
 export interface IClass {
   id?: string;
-  _id?: mongoose.Types.ObjectId;
   name: string;
   section: Section;
-  teachers: mongoose.Types.ObjectId[];
-  timetable: mongoose.Types.ObjectId | null;
-  students: mongoose.Types.ObjectId[];
+  teachers: string[];
+  timetable: string | null;
+  students: string[];
   totalStudents: number;
-  tutor: mongoose.Types.ObjectId | null;
+  tutor: string;
   roomNo: string;
-  subjects: mongoose.Types.ObjectId[];
+  subjects: string[];
   grade: Grade;
   chatRoomId: string;
   isDeleted?: boolean;
@@ -146,32 +154,6 @@ export interface IApiResponse<T> {
   data?: T;
 }
 
-
-  export interface SendMessageDTO {
-    chatRoomId: string;
-    senderId: string;
-    senderRole: Role;
-    content?: string;
-    mediaUrl?: string;
-    mediaType?: MediaType;
-  }
-  
-  export interface TeacherNameDTO {
-    id: string;
-    name: string;
-  }
-  
-  export interface SendNotificationDTO {
-    title: string;
-    message: string;
-    recipientType: RecipientType;
-    recipientIds?: string[];
-    senderId: string;
-    senderRole: Role;
-    scheduledAt?: Date;
-  }
-
-  
 export interface IMessage {
   id: string;
   chatRoomId: string;
@@ -182,44 +164,16 @@ export interface IMessage {
   mediaType?: MediaType;
   createdAt: Date;
 }
-  
-  // DTO for frontend
-  export interface IClassData {
-    id: string;
-    name: string;
-    grade: string;
-    section: string;
-    roomNo: string;
-    tutor: string | null;
-    totalStudents?: number;
-  }
 
-  export interface ScheduleLiveSessionDTO {
-    title: string;
-    classId:string;
-    teacherId: string;
-    studentIds: string[];
-    scheduledAt: Date;
-  }  
-
-  export interface JoinLiveSessionDTO {
-    sessionId: string;
-    participantId: string;
-  }
-
-  export interface StudentIdsDTO {
-    studentIds: string[];
-  }
-  
 export interface ILiveSession {
   id: string;
   title: string;
-  classId:string;
+  classId: string;
   teacherId: string;
   studentIds: string[];
   scheduledAt: Date;
   status: SessionStatus;
-  roomId?: string; 
+  roomId?: string;
   token?: string;
   participants?: UserInfo[];
   createdAt?: Date;
@@ -233,131 +187,18 @@ export interface UserInfo {
   role: string;
 }
 
-export interface IParticipant {
-  userId: string;
-  role: ParticipantRole;
-}
-
 export interface Leave {
   id: string;
   studentId: string;
-  date: string; 
-  reason: string;
-  status: LeaveStatus;
-  createdAt: string; 
-  updatedAt: string; 
-}
-
-export interface ApplyForLeaveDTO {
-  studentId: string;
   date: string;
   reason: string;
-}
-
-export interface ViewLeaveHistoryDTO {
-  studentId: string; 
-  userId: string; 
-}
-
-export interface ApproveRejectLeaveDTO {
-  leaveId: string;
-  teacherId: string;
-  status: LeaveStatus.Approved | LeaveStatus.Rejected;
+  status: LeaveStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AdminDashboardStats {
   totalStudents: number;
   totalTeachers: number;
   totalClasses: number;
-}
-
-export interface StudentDashboardStats {
-  attendancePercentage: number;
-  pendingLeaves: number;
-  upcomingSessions: number;
-}
-
-export interface TeacherDashboardStats {
-  todayClasses: number;
-  pendingLeaves: number;
-  upcomingSessions: number;
-}
-
-export interface TopClassDto {
-  className: string;
-  attendancePercentage: number;
-}
-
-export interface AttendanceDataDto {
-  day: string;
-  attendance: number;
-}
-
-export interface ClassSubjectDto {
-  className: string;
-  subject: string;
-  classId: string;
-}
-
-export interface ScheduleDto {
-  period: number;
-  subject: string;
-  className: string;
-}
-
-export interface SessionDto {
-  title: string;
-  className: string;
-  time: string;
-  isOngoing: boolean;
-  joinLink: string;
-}
-
-export interface NewSessionDto {
-  title: string;
-  classId: string;
-  date: string; 
-  duration: number; 
-}
-export interface ILiveSessionDto {
-  title: string;
-  time: string;
-  isOngoing: boolean;
-  joinLink?: string; // not implemented yet
-}
-export interface TrackSessionDurationDTO {
-  userId: string;
-  sessionId: string;
-  durationSeconds: number;
-  joinTime: Date;
-  leaveTime: Date;
-}
-export interface StudentAttendance {
-  studentId: string;
-  studentName: string;
-  durationSeconds: number;
-  joinTime: Date;
-  leaveTime: Date;
-}
-
-export interface SessionAttendanceDTO {
-  sessionId: string;
-  title: string;
-  scheduledAt?: Date;
-  students: StudentAttendance[];
-}
-export interface IRecurringFeeDto {
-  id: string;
-  title: string;
-  amount: number;
-  startMonth: string;
-  endMonth: string;
-  classId: string;
-  className: string;
-  recurring: boolean;
-}
-export interface studentInfoDto {
-  id:string,
-  name:string,
-  email: string;
 }

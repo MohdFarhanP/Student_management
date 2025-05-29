@@ -1,4 +1,4 @@
-import HttpStatus from "../../utils/httpStatus";
+import { HttpStatus } from '../types/enums';
 
 export class BadRequestError extends Error {
   constructor(message: string) {

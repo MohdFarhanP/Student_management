@@ -1,39 +1,67 @@
-import mongoose from 'mongoose';
 import { Grade, Section } from '../types/enums';
-import { IClass } from '../types/interfaces';
 
-export class ClassEntity implements IClass {
-  id?: string;
-  name: string;
-  section: Section;
-  teachers: mongoose.Types.ObjectId[];
-  timetable: mongoose.Types.ObjectId | null;
-  students: mongoose.Types.ObjectId[];
-  totalStudents: number;
-  tutor: mongoose.Types.ObjectId;
-  roomNo: string;
-  subjects: mongoose.Types.ObjectId[];
-  grade: Grade;
-  chatRoomId: string;
-  isDeleted?: boolean;
+export class ClassEntity {
+  public readonly id?: string;
+  public readonly name: string;
+  public readonly section: Section;
+  public readonly teachers: string[];
+  public readonly timetable: string | null;
+  public readonly students: string[];
+  public readonly totalStudents: number;
+  public readonly tutor: string;
+  public readonly roomNo: string;
+  public readonly subjects: string[];
+  public readonly grade: Grade;
+  public readonly chatRoomId: string;
+  public readonly isDeleted?: boolean;
 
-  constructor(data: Partial<IClass>) {
-    this.id = data.id || data._id?.toString();
-    this.name = data.name || '';
-    this.section = Object.values(Section).includes(data.section as Section)
-      ? (data.section as Section)
-      : Section.A;
-    this.teachers = data.teachers || [];
-    this.timetable = data.timetable ?? null;
-    this.students = data.students || [];
-    this.totalStudents = data.totalStudents || 0;
-    this.tutor = data.tutor || new mongoose.Types.ObjectId(); 
-    this.roomNo = data.roomNo || '';
-    this.subjects = data.subjects || [];
-    this.grade = Object.values(Grade).includes(data.grade as Grade)
-      ? (data.grade as Grade)
-      : Grade.Grade1;
-    this.chatRoomId = data.chatRoomId || '';  
-    this.isDeleted = data.isDeleted ?? false;
+  constructor(params: {
+    id?: string;
+    name: string;
+    section: Section;
+    teachers: string[];
+    timetable: string | null;
+    students: string[];
+    totalStudents: number;
+    tutor: string;
+    roomNo: string;
+    subjects: string[];
+    grade: Grade;
+    chatRoomId: string;
+    isDeleted?: boolean;
+  }) {
+    const {
+      id,
+      name,
+      section,
+      teachers,
+      timetable,
+      students,
+      totalStudents,
+      tutor,
+      roomNo,
+      subjects,
+      grade,
+      chatRoomId,
+      isDeleted,
+    } = params;
+
+    if (!name || !tutor || !roomNo || !grade || !section) {
+      throw new Error('Missing required class fields');
+    }
+
+    this.id = id;
+    this.name = name;
+    this.section = section;
+    this.teachers = teachers;
+    this.timetable = timetable;
+    this.students = students;
+    this.totalStudents = totalStudents;
+    this.tutor = tutor;
+    this.roomNo = roomNo;
+    this.subjects = subjects;
+    this.grade = grade;
+    this.chatRoomId = chatRoomId;
+    this.isDeleted = isDeleted ?? false;
   }
 }

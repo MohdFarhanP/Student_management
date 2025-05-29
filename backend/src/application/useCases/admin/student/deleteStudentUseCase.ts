@@ -1,5 +1,5 @@
-import { IStudentRepository } from '../../../../domain/interface/admin/IStudentRepository';
-import { IDeleteStudentUseCase } from '../../../../domain/interface/IDeleteStudentUseCase';
+import { IStudentRepository } from '../../../../domain/repositories/IStudentRepository';
+import { IDeleteStudentUseCase } from '../../../../domain/useCase/IDeleteStudentUseCase';
 import { Types } from 'mongoose';
 
 export class DeleteStudentUseCase implements IDeleteStudentUseCase {
@@ -24,9 +24,10 @@ export class DeleteStudentUseCase implements IDeleteStudentUseCase {
           studentId
         );
       }
-  
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to delete student');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to delete student');
     }
   }
 }

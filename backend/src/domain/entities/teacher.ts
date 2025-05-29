@@ -1,8 +1,6 @@
-import mongoose from 'mongoose';
-import { ITeacher } from '../types/interfaces';
 import { Gender, Day } from '../types/enums';
 
-export class Teacher implements ITeacher {
+export class TeacherEntity {
   id?: string;
   name: string;
   email: string;
@@ -10,34 +8,52 @@ export class Teacher implements ITeacher {
   gender: Gender;
   phoneNo: number;
   empId: string;
-  assignedClass?: mongoose.Types.ObjectId | string | null;
-  subject?: mongoose.Types.ObjectId | string | null;
+  assignedClass?: string | null;
+  subject?: string | null;
   dateOfBirth: string;
   profileImage?: string;
   fileHash?: string;
   specialization?: string;
   experienceYears?: number;
   qualification?: string;
-  refreshToken: string;
-  availability?: { [key in Day]: number[] };
+  refreshToken?: string;
+  availability?: { [key in Day]?: number[] };
 
-  constructor(data: Partial<ITeacher>) {
+  constructor(data: {
+    id?: string;
+    name: string;
+    email: string;
+    password?: string;
+    gender: Gender;
+    phoneNo: number;
+    empId: string;
+    assignedClass?: string | null;
+    subject?: string | null;
+    dateOfBirth: string;
+    profileImage?: string;
+    fileHash?: string;
+    specialization?: string;
+    experienceYears?: number;
+    qualification?: string;
+    refreshToken?: string;
+    availability?: { [key in Day]?: number[] };
+  }) {
     this.id = data.id;
-    this.name = data.name || 'Unknown';
-    this.email = data.email || '';
+    this.name = data.name;
+    this.email = data.email;
     this.password = data.password;
-    this.gender = data.gender || Gender.Male;
-    this.phoneNo = data.phoneNo || 0;
-    this.empId = data.empId || '';
-    this.assignedClass = data.assignedClass || null;
-    this.subject = data.subject || undefined;
-    this.dateOfBirth = data.dateOfBirth || '';
-    this.profileImage = data.profileImage || '';
-    this.fileHash = data.fileHash || '';
-    this.specialization = data.specialization || '';
-    this.experienceYears = data.experienceYears || 0;
-    this.qualification = data.qualification || '';
+    this.gender = data.gender;
+    this.phoneNo = data.phoneNo;
+    this.empId = data.empId;
+    this.assignedClass = data.assignedClass ?? null;
+    this.subject = data.subject ?? null;
+    this.dateOfBirth = data.dateOfBirth;
+    this.profileImage = data.profileImage ?? '';
+    this.fileHash = data.fileHash ?? '';
+    this.specialization = data.specialization ?? '';
+    this.experienceYears = data.experienceYears ?? 0;
+    this.qualification = data.qualification ?? '';
     this.refreshToken = data.refreshToken;
-    this.availability = data.availability || undefined;
+    this.availability = data.availability;
   }
 }

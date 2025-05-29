@@ -1,8 +1,7 @@
-import { NextFunction, Request, Response } from "express";
-import { AuthService } from "../../application/services/authService";
-import { IAuthService } from "../../domain/interface/IAuthService";
-import HttpStatus from "../../utils/httpStatus";
-
+import { NextFunction, Request, Response } from 'express';
+import { AuthService } from '../../infrastructure/services/authService';
+import { IAuthService } from '../../application/services/IAuthService';
+import { HttpStatus } from '../../domain/types/enums';
 
 const authService: IAuthService = new AuthService();
 
@@ -14,10 +13,8 @@ export const authenticateUser = (
   const token = req.cookies.access_token;
 
   if (!token) {
-    res
-      .status(HttpStatus.UNAUTHORIZED)
-      .json({ message: 'No token provided' });
-      return;
+    res.status(HttpStatus.UNAUTHORIZED).json({ message: 'No token provided' });
+    return;
   }
 
   try {
@@ -30,14 +27,12 @@ export const authenticateUser = (
     req.user = {
       id: decoded.id,
       email: decoded.email,
-      role: decoded.role
+      role: decoded.role,
     };
     next();
   } catch (error) {
     console.error('Token verification failed:', error); // Add this
-    res
-      .status(HttpStatus.UNAUTHORIZED)
-      .json({ message: 'Invalid token' });
-      return;
+    res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid token' });
+    return;
   }
 };

@@ -1,8 +1,8 @@
-import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
-import { IFetchLiveSessionsUseCase } from '../../../../domain/interface/IFetchLiveSessionsUseCase';
-import { SessionDto } from '../../../../domain/types/interfaces';
+import { ITeacherRepository } from '../../../../domain/repositories/ITeacherRepository';
+import { IFetchLiveSessionsUseCase } from '../../../../domain/useCase/IFetchLiveSessionsUseCase';
+import { SessionDto } from '../../../dtos/liveSessionDtos';
 
-export class FetchLiveSessionsUseCase implements IFetchLiveSessionsUseCase  {
+export class FetchLiveSessionsUseCase implements IFetchLiveSessionsUseCase {
   constructor(private readonly teacherRepository: ITeacherRepository) {}
 
   async execute(teacherId: string): Promise<SessionDto[]> {

@@ -1,5 +1,5 @@
 import Razorpay from 'razorpay';
-import { IPaymentGateway } from '../../domain/interface/IPaymentGateway';
+import { IPaymentGateway } from '../../application/services/IPaymentGateway';
 
 export class RazorpayAdapter implements IPaymentGateway {
   private razorpay: Razorpay;

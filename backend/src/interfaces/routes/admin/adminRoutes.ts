@@ -4,14 +4,14 @@ import bulkUploadRoute, { setBulkUploadController } from './bulkUploadRoutes';
 import studentsRoute, { setStudentController } from './studentsRoutes';
 import teacherRoute, { setTeacherController } from './teachersRoutes';
 import timeTableRoutes, { setTimetableController } from './timeTableRoutes';
-import { IClassController } from '../../../domain/interface/IClassController';
-import { ISubjectController } from '../../../domain/interface/ISubjectController';
-import { IBulkUploadController } from '../../../domain/interface/IBulkUploadController';
-import { IStudentController } from '../../../domain/interface/IStudentController';
-import { ITeacherController } from '../../../domain/interface/ITeacherController';
-import { ITimetableController } from '../../../domain/interface/ITimetableController';
-import { IRecurringFeeController } from '../../../domain/interface/IRecurringFeeController';
-import { IPaymentController } from '../../../domain/interface/IPaymentController';
+import { IClassController } from '../../controllers/admin/class/IClassController';
+import { ISubjectController } from '../../controllers/admin/subject/ISubjectController';
+import { IBulkUploadController } from '../../controllers/admin/bulkUpload/IBulkUploadController';
+import { IStudentController } from '../../controllers/admin/student/IStudentController';
+import { ITeacherController } from '../../controllers/admin/teacher/ITeacherController';
+import { ITimetableController } from '../../controllers/admin/timetable/ITimetableController';
+import { IRecurringFeeController } from '../../controllers/admin/fees/IRecurringFeeController';
+import { IPaymentController } from '../../controllers/admin/payment/IPaymentController';
 
 const router = express.Router();
 
@@ -32,7 +32,7 @@ export const setAdminControllers = (controllers: {
   setStudentController({
     studentController: controllers.studentController,
     recurringFeeController: controllers.recurringFeeController,
-    paymentController: controllers.paymentController
+    paymentController: controllers.paymentController,
   });
   setBulkUploadController(controllers.bulkUploadController);
   setTeacherController(controllers.teacherController);

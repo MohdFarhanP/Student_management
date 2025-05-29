@@ -1,10 +1,11 @@
-import { studentModel } from '../../database/models/studentModel';
-import { Student } from '../../../domain/entities/student';
-import { IStudentProfileRepository } from '../../../domain/interface/student/IStudentProfileRepository';
+import { studentModel } from '../../database/mongoos/models/studentModel';
+import { StudentEntity } from '../../../domain/entities/student';
+import { IStudentProfileRepository } from '../../../domain/repositories/IStudentProfileRepository';
 import { Gender } from '../../../domain/types/enums';
+import { getClassName } from '../../database/mongoos/helpers/extractClassName';
 
 export class StudentProfileRepository implements IStudentProfileRepository {
-  async getProfile(email: string): Promise<Student | null> {
+  async getProfile(email: string): Promise<StudentEntity | null> {
     const rawStudent = await studentModel
       .findOne({ email })
       .select('-password')
@@ -14,7 +15,7 @@ export class StudentProfileRepository implements IStudentProfileRepository {
     if (!rawStudent) return null;
 
     const classData = rawStudent.class as unknown as { name: string } | null;
-    return new Student({
+    return new StudentEntity({
       id: rawStudent._id.toString(),
       name: rawStudent.name,
       email: rawStudent.email,
@@ -35,38 +36,55 @@ export class StudentProfileRepository implements IStudentProfileRepository {
       },
     });
   }
-  async getStudentInfo(userId: string): Promise<Student | null> {
+  async getStudentInfo(userId: string): Promise<StudentEntity | null> {
     try {
       const rawStudent = await studentModel
-      .findOne({ _id: userId })
-      .select('-password')
-      .lean();
+        .findOne({ _id: userId })
+        .select('-password')
+        .lean();
 
       if (!rawStudent) return null;
-      return new Student(rawStudent);
+      return new StudentEntity({
+        id: rawStudent._id.toString(),
+        name: rawStudent.name,
+        email: rawStudent.email,
+        roleNumber: rawStudent.roleNumber,
+        dob: rawStudent.dob,
+        gender: rawStudent.gender === 'Male' ? Gender.Male : Gender.Female,
+        age: rawStudent.age,
+        class: getClassName(rawStudent.class),
+        profileImage: rawStudent.profileImage,
+        address: rawStudent.address,
+      });
     } catch (error) {
-      throw new Error(error)
+      throw new Error(error);
     }
   }
 
   async updateProfileImage(
     email: string,
     profileImage: string,
-    fileHash: string,
-  ): Promise<Student | null> {
- const rawStudent = await studentModel
-      .findOneAndUpdate(
-        { email },
-        { profileImage, fileHash },
-        {new: true}
-      )
+    fileHash: string
+  ): Promise<StudentEntity | null> {
+    const rawStudent = await studentModel
+      .findOneAndUpdate({ email }, { profileImage, fileHash }, { new: true })
       .select('-password')
       .populate('class', 'name')
       .lean();
-      
 
-  if (!rawStudent) return null;
+    if (!rawStudent) return null;
 
-   return new Student(rawStudent);
+    return new StudentEntity({
+      id: rawStudent._id.toString(),
+      name: rawStudent.name,
+      email: rawStudent.email,
+      roleNumber: rawStudent.roleNumber,
+      dob: rawStudent.dob,
+      gender: rawStudent.gender === 'Male' ? Gender.Male : Gender.Female,
+      age: rawStudent.age,
+      class: getClassName(rawStudent.class),
+      profileImage: rawStudent.profileImage,
+      address: rawStudent.address,
+    });
   }
 }

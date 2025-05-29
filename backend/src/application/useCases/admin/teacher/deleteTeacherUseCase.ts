@@ -1,5 +1,5 @@
-import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
-import { IDeleteTeacherUseCase } from '../../../../domain/interface/IDeleteTeacherUseCase';
+import { ITeacherRepository } from '../../../../domain/repositories/ITeacherRepository';
+import { IDeleteTeacherUseCase } from '../../../../domain/useCase/IDeleteTeacherUseCase';
 import { Types } from 'mongoose';
 
 export class DeleteTeacherUseCase implements IDeleteTeacherUseCase {
@@ -16,7 +16,9 @@ export class DeleteTeacherUseCase implements IDeleteTeacherUseCase {
       }
       await this.teacherRepository.delete(teacherId);
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to delete teacher');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to delete teacher');
     }
   }
 }

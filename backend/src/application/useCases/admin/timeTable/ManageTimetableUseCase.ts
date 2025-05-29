@@ -1,11 +1,11 @@
-import { ObjectId } from '../../../../types';
+import { ObjectId } from '../../../../domain/types/common';
 import { Timetable } from '../../../../domain/entities/timetable';
-import { ITimetableRepository } from '../../../../domain/interface/admin/ITimetableRepository';
-import { IManageTimetableUseCase } from '../../../../domain/interface/IManageTimetableUseCase';
-import { IUpdateTeacherAvailabilityUseCase } from '../../../../domain/interface/IUpdateTeacherAvailabilityUseCase';
+import { ITimetableRepository } from '../../../../domain/repositories/ITimetableRepository';
+import { IManageTimetableUseCase } from '../../../../domain/useCase/IManageTimetableUseCase';
+import { IUpdateTeacherAvailabilityUseCase } from '../../../../domain/useCase/IUpdateTeacherAvailabilityUseCase';
 import { Day } from '../../../../domain/types/enums';
-import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
-import {TimetableSlot } from '../../../../domain/types/interfaces';
+import { ITeacherRepository } from '../../../../domain/repositories/ITeacherRepository';
+import { TimetableSlot } from '../../../../domain/types/interfaces';
 
 export class ManageTimetableUseCase implements IManageTimetableUseCase {
   constructor(
@@ -29,17 +29,30 @@ export class ManageTimetableUseCase implements IManageTimetableUseCase {
         throw new Error('Teacher unavailable for this period');
       }
 
-      const conflict = await this.timetableRepo.findConflict(teacherId, day, period);
+      const conflict = await this.timetableRepo.findConflict(
+        teacherId,
+        day,
+        period
+      );
       if (conflict) {
-        throw new Error('Teacher already assigned to another class for this slot');
+        throw new Error(
+          'Teacher already assigned to another class for this slot'
+        );
       }
 
       timetable.assignTeacher(day, period, teacherId, subject);
-      await this.updateTeacherAvailability.updateAvailability(teacherId, day, period, false);
+      await this.updateTeacherAvailability.updateAvailability(
+        teacherId,
+        day,
+        period,
+        false
+      );
       await this.timetableRepo.save(timetable);
       return timetable;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to assign teacher');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to assign teacher');
     }
   }
 
@@ -58,12 +71,20 @@ export class ManageTimetableUseCase implements IManageTimetableUseCase {
         throw new Error('Teacher unavailable for this period');
       }
 
-      const conflict = await this.timetableRepo.findConflict(teacherId, day, period);
+      const conflict = await this.timetableRepo.findConflict(
+        teacherId,
+        day,
+        period
+      );
       if (conflict && conflict.classId.toString() !== classId.toString()) {
-        throw new Error('Teacher already assigned to another class for this slot');
+        throw new Error(
+          'Teacher already assigned to another class for this slot'
+        );
       }
 
-      const currentSlot = timetable.schedule[day]?.find((s) => s.period === period);
+      const currentSlot = timetable.schedule[day]?.find(
+        (s) => s.period === period
+      );
       if (currentSlot?.teacherId && !currentSlot.teacherId.equals(teacherId)) {
         await this.updateTeacherAvailability.updateAvailability(
           currentSlot.teacherId,
@@ -74,15 +95,26 @@ export class ManageTimetableUseCase implements IManageTimetableUseCase {
       }
 
       timetable.assignTeacher(day, period, teacherId, subject);
-      await this.updateTeacherAvailability.updateAvailability(teacherId, day, period, false);
+      await this.updateTeacherAvailability.updateAvailability(
+        teacherId,
+        day,
+        period,
+        false
+      );
       await this.timetableRepo.save(timetable);
       return timetable;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to update timetable slot');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to update timetable slot');
     }
   }
 
-  async deleteTimetableSlot(classId: ObjectId, day: Day, period: number): Promise<Timetable> {
+  async deleteTimetableSlot(
+    classId: ObjectId,
+    day: Day,
+    period: number
+  ): Promise<Timetable> {
     try {
       const timetable = await this.timetableRepo.getByClassId(classId);
       const slot = timetable.schedule[day]?.find((s) => s.period === period);
@@ -90,12 +122,19 @@ export class ManageTimetableUseCase implements IManageTimetableUseCase {
         throw new Error('No teacher assigned to this slot');
       }
 
-      await this.updateTeacherAvailability.updateAvailability(slot.teacherId, day, period, true);
+      await this.updateTeacherAvailability.updateAvailability(
+        slot.teacherId,
+        day,
+        period,
+        true
+      );
       timetable.clearSlot(day, period);
       await this.timetableRepo.save(timetable);
       return timetable;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to delete timetable slot');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to delete timetable slot');
     }
   }
 
@@ -104,7 +143,9 @@ export class ManageTimetableUseCase implements IManageTimetableUseCase {
       const timetable = await this.timetableRepo.getByClassId(classId);
       return timetable;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to fetch timetable');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to fetch timetable');
     }
   }
   async getTimetableForToday(classId: ObjectId): Promise<TimetableSlot[] | []> {
@@ -112,7 +153,9 @@ export class ManageTimetableUseCase implements IManageTimetableUseCase {
       const timetable = await this.timetableRepo.TodayTimeTable(classId);
       return timetable;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to fetch timetable');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to fetch timetable');
     }
   }
 }

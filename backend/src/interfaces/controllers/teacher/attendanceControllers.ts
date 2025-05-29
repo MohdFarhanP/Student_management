@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
-import HttpStatus from '../../../utils/httpStatus';
-import { IAttendanceController } from '../../../domain/interface/teacher/IAttendanceController';
-import { IApiResponse, SessionAttendanceDTO } from '../../../domain/types/interfaces';
+import { HttpStatus } from '../../../domain/types/enums';
+import { IAttendanceController } from './IAttendanceController';
+import { IApiResponse } from '../../../domain/types/interfaces';
 import { Attendance } from '../../../domain/entities/attendance';
 import { IUser } from '../../../domain/types/interfaces';
 import mongoose from 'mongoose';
-import { IGetRecentSessionAttendanceUseCase } from '../../../domain/interface/IGetRecentSessionAttendanceUseCase';
-import { IViewAttendanceUseCase } from '../../../domain/interface/IViewAttendanceUseCase';
-import { IMarkAttendanceUseCase } from '../../../domain/interface/IMarkAttendanceUseCase';
+import { IGetRecentSessionAttendanceUseCase } from '../../../domain/useCase/IGetRecentSessionAttendanceUseCase';
+import { IViewAttendanceUseCase } from '../../../domain/useCase/IViewAttendanceUseCase';
+import { IMarkAttendanceUseCase } from '../../../domain/useCase/IMarkAttendanceUseCase';
+import { SessionAttendanceDTO } from '../../../application/dtos/liveSessionDtos';
 
 export class AttendanceController implements IAttendanceController {
   constructor(
@@ -37,8 +38,12 @@ export class AttendanceController implements IAttendanceController {
       if (!Number.isInteger(period) || period < 1 || period > 6) {
         throw new Error('Invalid period: Must be an integer between 1 and 6');
       }
-      if (!['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(day)) {
-        throw new Error('Invalid day: Must be Monday, Tuesday, Wednesday, Thursday, or Friday');
+      if (
+        !['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(day)
+      ) {
+        throw new Error(
+          'Invalid day: Must be Monday, Tuesday, Wednesday, Thursday, or Friday'
+        );
       }
       const parsedDate = new Date(date);
       if (isNaN(parsedDate.getTime())) {
@@ -60,9 +65,10 @@ export class AttendanceController implements IAttendanceController {
       } as IApiResponse<never>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      const status = message.includes('Unauthorized') || message.includes('Invalid')
-        ? HttpStatus.BAD_REQUEST
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+      const status =
+        message.includes('Unauthorized') || message.includes('Invalid')
+          ? HttpStatus.BAD_REQUEST
+          : HttpStatus.INTERNAL_SERVER_ERROR;
       res.status(status).json({
         success: false,
         message,
@@ -71,61 +77,68 @@ export class AttendanceController implements IAttendanceController {
   }
 
   async batchMarkAttendance(req: Request, res: Response): Promise<void> {
-  try {
-    const { classId } = req.params;
-    const { changes, date, period, day, teacherId } = req.body;
-    const user = req.user as IUser | undefined;
+    try {
+      const { classId } = req.params;
+      const { changes, date, period, day, teacherId } = req.body;
+      const user = req.user as IUser | undefined;
 
-    if (!user?.id || !mongoose.Types.ObjectId.isValid(user.id)) {
-      throw new Error('Unauthorized: Valid teacher ID required');
-    }
-    if (!mongoose.Types.ObjectId.isValid(classId)) {
-      throw new Error('Invalid class ID format');
-    }
-    if (!Number.isInteger(period) || period < 1 || period > 6) {
-      throw new Error('Invalid period: Must be an integer between 1 and 6');
-    }
-    if (!['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(day)) {
-      throw new Error('Invalid day: Must be Monday, Tuesday, Wednesday, Thursday, or Friday');
-    }
-    const parsedDate = new Date(date);
-    if (isNaN(parsedDate.getTime())) {
-      throw new Error('Invalid date format');
-    }
-
-    for (const { studentId, status } of changes) {
-      if (!mongoose.Types.ObjectId.isValid(studentId)) {
-        throw new Error(`Invalid student ID format: ${studentId}`);
+      if (!user?.id || !mongoose.Types.ObjectId.isValid(user.id)) {
+        throw new Error('Unauthorized: Valid teacher ID required');
       }
-      if (!['present', 'absent'].includes(status)) {
-        throw new Error(`Invalid status for student ${studentId}: Must be "present" or "absent"`);
+      if (!mongoose.Types.ObjectId.isValid(classId)) {
+        throw new Error('Invalid class ID format');
       }
-      await this.markAttendanceUseCase.execute(
-        classId,
-        studentId,
-        parsedDate,
-        period,
-        status,
-        user.id,
-        day
-      );
-    }
+      if (!Number.isInteger(period) || period < 1 || period > 6) {
+        throw new Error('Invalid period: Must be an integer between 1 and 6');
+      }
+      if (
+        !['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].includes(day)
+      ) {
+        throw new Error(
+          'Invalid day: Must be Monday, Tuesday, Wednesday, Thursday, or Friday'
+        );
+      }
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error('Invalid date format');
+      }
 
-    res.status(HttpStatus.OK).json({
-      success: true,
-      message: 'Batch attendance marked successfully',
-    } as IApiResponse<never>);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    const status = message.includes('Unauthorized') || message.includes('Invalid')
-      ? HttpStatus.BAD_REQUEST
-      : HttpStatus.INTERNAL_SERVER_ERROR;
-    res.status(status).json({
-      success: false,
-      message,
-    } as IApiResponse<never>);
+      for (const { studentId, status } of changes) {
+        if (!mongoose.Types.ObjectId.isValid(studentId)) {
+          throw new Error(`Invalid student ID format: ${studentId}`);
+        }
+        if (!['present', 'absent'].includes(status)) {
+          throw new Error(
+            `Invalid status for student ${studentId}: Must be "present" or "absent"`
+          );
+        }
+        await this.markAttendanceUseCase.execute(
+          classId,
+          studentId,
+          parsedDate,
+          period,
+          status,
+          user.id,
+          day
+        );
+      }
+
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Batch attendance marked successfully',
+      } as IApiResponse<never>);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      const status =
+        message.includes('Unauthorized') || message.includes('Invalid')
+          ? HttpStatus.BAD_REQUEST
+          : HttpStatus.INTERNAL_SERVER_ERROR;
+      res.status(status).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
+    }
   }
-}
 
   async viewAttendance(req: Request, res: Response): Promise<void> {
     try {
@@ -139,7 +152,8 @@ export class AttendanceController implements IAttendanceController {
         throw new Error('Invalid student ID format');
       }
 
-      const attendanceRecords = await this.viewAttendanceUseCase.execute(studentId);
+      const attendanceRecords =
+        await this.viewAttendanceUseCase.execute(studentId);
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Attendance records fetched successfully',
@@ -147,9 +161,10 @@ export class AttendanceController implements IAttendanceController {
       } as IApiResponse<Attendance[]>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      const status = message.includes('Unauthorized') || message.includes('Invalid')
-        ? HttpStatus.BAD_REQUEST
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+      const status =
+        message.includes('Unauthorized') || message.includes('Invalid')
+          ? HttpStatus.BAD_REQUEST
+          : HttpStatus.INTERNAL_SERVER_ERROR;
       res.status(status).json({
         success: false,
         message,
@@ -168,8 +183,9 @@ export class AttendanceController implements IAttendanceController {
         throw new Error('Invalid student ID format');
       }
 
-      const sessionAttendance = await this.getRecentSessionAttendanceUseCase.execute(user.id);
-      console.log('this is the session attendance',sessionAttendance)
+      const sessionAttendance =
+        await this.getRecentSessionAttendanceUseCase.execute(user.id);
+      console.log('this is the session attendance', sessionAttendance);
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Attendance records fetched successfully',
@@ -177,9 +193,10 @@ export class AttendanceController implements IAttendanceController {
       } as IApiResponse<SessionAttendanceDTO[]>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      const status = message.includes('Unauthorized') || message.includes('Invalid')
-        ? HttpStatus.BAD_REQUEST
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+      const status =
+        message.includes('Unauthorized') || message.includes('Invalid')
+          ? HttpStatus.BAD_REQUEST
+          : HttpStatus.INTERNAL_SERVER_ERROR;
       res.status(status).json({
         success: false,
         message,

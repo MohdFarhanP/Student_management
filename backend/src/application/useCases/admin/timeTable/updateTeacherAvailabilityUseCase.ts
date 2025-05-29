@@ -1,10 +1,13 @@
-import { ITeacherRepository } from '../../../../domain/interface/admin/ITeacherRepository';
-import { IUpdateTeacherAvailabilityUseCase } from '../../../../domain/interface/IUpdateTeacherAvailabilityUseCase';
-import { ObjectId } from '../../../../types';
+import { ITeacherRepository } from '../../../../domain/repositories/ITeacherRepository';
+import { IUpdateTeacherAvailabilityUseCase } from '../../../../domain/useCase/IUpdateTeacherAvailabilityUseCase';
+import { ObjectId } from '../../../../domain/types/common';
 import { Day } from '../../../../domain/types/enums';
-import { Teacher } from '../../../../domain/entities/teacher';
+import { TeacherEntity } from '../../../../domain/entities/teacher';
+import { mapAvailability } from '../../../../infrastructure/database/mongoos/helpers/enumMappers';
 
-export class UpdateTeacherAvailabilityUseCase implements IUpdateTeacherAvailabilityUseCase {
+export class UpdateTeacherAvailabilityUseCase
+  implements IUpdateTeacherAvailabilityUseCase
+{
   constructor(private teacherRepository: ITeacherRepository) {}
 
   async updateAvailability(
@@ -12,7 +15,7 @@ export class UpdateTeacherAvailabilityUseCase implements IUpdateTeacherAvailabil
     day: Day,
     period: number,
     isAdding: boolean
-  ): Promise<Teacher> {
+  ): Promise<TeacherEntity> {
     try {
       const teacher = await this.teacherRepository.getById(teacherId);
       if (!teacher) {
@@ -25,15 +28,22 @@ export class UpdateTeacherAvailabilityUseCase implements IUpdateTeacherAvailabil
           teacher.availability[day].sort((a, b) => a - b);
         }
       } else {
-        teacher.availability[day] = teacher.availability[day].filter((p) => p !== period);
+        teacher.availability[day] = teacher.availability[day].filter(
+          (p) => p !== period
+        );
       }
 
-      const updatedTeacher = await this.teacherRepository.update(teacherId.toString(), {
-        availability: teacher.availability,
-      });
+      const updatedTeacher = await this.teacherRepository.update(
+        teacherId.toString(),
+        {
+          availability: mapAvailability(teacher.availability),
+        }
+      );
       return updatedTeacher;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to update teacher availability');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to update teacher availability');
     }
   }
 }

@@ -1,6 +1,6 @@
 import { IMessage } from '../../../domain/types/interfaces';
-import { IMessageRepository } from '../../../domain/interface/IMessageRepository';
-import { ISendMessageUseCase } from '../../../domain/interface/ISendMessageUseCase';
+import { IMessageRepository } from '../../../domain/repositories/IMessageRepository';
+import { ISendMessageUseCase } from '../../../domain/useCase/ISendMessageUseCase';
 import { ValidationError } from '../../../domain/errors';
 
 export class SendMessage implements ISendMessageUseCase {

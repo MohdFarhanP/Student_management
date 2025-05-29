@@ -1,11 +1,11 @@
-import { ILeaveRepository } from '../../../domain/interface/ILeaveRepository';
-import { IUserRepository } from '../../../domain/interface/IUserRepository';
-import { ISendNotificationUseCase } from '../../../domain/interface/ISendNotificationUseCase';
-import { ApplyForLeaveDTO, Leave } from '../../../domain/types/interfaces';
-import { ValidationError, UnauthorizedError } from '../../../domain/errors';
+import { ILeaveRepository } from '../../../domain/repositories/ILeaveRepository';
+import { ISendNotificationUseCase } from '../../../domain/useCase/ISendNotificationUseCase';
+import { Leave } from '../../../domain/types/interfaces';
+import { ValidationError } from '../../../domain/errors';
 import { Role, LeaveStatus, RecipientType } from '../../../domain/types/enums';
-import { IApplyForLeaveUseCase } from '../../../domain/interface/IApplyForLeaveUseCase';
-import { IStudentRepository } from '../../../domain/interface/admin/IStudentRepository';
+import { IApplyForLeaveUseCase } from '../../../domain/useCase/IApplyForLeaveUseCase';
+import { IStudentRepository } from '../../../domain/repositories/IStudentRepository';
+import { ApplyForLeaveDTO } from '../../dtos/leaveDtos';
 
 export class ApplyForLeaveUseCase implements IApplyForLeaveUseCase {
   constructor(
@@ -16,7 +16,9 @@ export class ApplyForLeaveUseCase implements IApplyForLeaveUseCase {
 
   async execute(dto: ApplyForLeaveDTO): Promise<Leave> {
     if (!dto.studentId || !dto.date || !dto.reason) {
-      throw new ValidationError('Missing required fields: studentId, date, reason');
+      throw new ValidationError(
+        'Missing required fields: studentId, date, reason'
+      );
     }
 
     const user = await this.studentRepository.findById(dto.studentId);

@@ -1,7 +1,8 @@
-import { ISubjectRepository } from '../../../../domain/interface/ISubjectRepository';
-import { IClassRepository } from '../../../../domain/interface/admin/IClassRepository';
-import { IGetSubjectsByGradeUseCase } from '../../../../domain/interface/IGetSubjectsByGradeUseCase';
+import { ISubjectRepository } from '../../../../domain/repositories/ISubjectRepository';
+import { IClassRepository } from '../../../../domain/repositories/IClassRepository';
+import { IGetSubjectsByGradeUseCase } from '../../../../domain/useCase/IGetSubjectsByGradeUseCase';
 import { SubjectEntity } from '../../../../domain/entities/subject';
+import { Types } from 'mongoose';
 
 export class GetSubjectsByGradeUseCase implements IGetSubjectsByGradeUseCase {
   constructor(
@@ -16,10 +17,14 @@ export class GetSubjectsByGradeUseCase implements IGetSubjectsByGradeUseCase {
         throw new Error('No classes found for the specified grade');
       }
 
-      const subjectIds = [...new Set(existingClasses.flatMap((cls) => cls.subjects))];
-      return  await this.subjectRepository.findByIds(subjectIds);
+      const subjectIds = [
+        ...new Set(existingClasses.flatMap((cls) => cls.subjects)),
+      ].map((id) => new Types.ObjectId(id));
+      return await this.subjectRepository.findByIds(subjectIds);
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to fetch subjects');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to fetch subjects');
     }
   }
 }

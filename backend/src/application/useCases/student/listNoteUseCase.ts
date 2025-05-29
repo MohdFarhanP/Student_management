@@ -1,5 +1,5 @@
-import { INoteRepository } from '../../../domain/interface/INotRepository';
-import { IListNotesUseCase } from '../../../domain/interface/IListNotesUseCase';
+import { INoteRepository } from '../../../domain/repositories/INotRepository';
+import { IListNotesUseCase } from '../../../domain/useCase/IListNotesUseCase';
 import { Note } from '../../../domain/entities/note';
 
 export class ListNotesUseCase implements IListNotesUseCase {

@@ -1,8 +1,8 @@
-import { IUserRepository } from '../../../domain/interface/IUserRepository';
-import { IAuthService } from '../../../domain/interface/IAuthService';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { IAuthService } from '../../services/IAuthService';
 import { Role } from '../../../domain/types/enums';
 import { IUser } from '../../../domain/types/interfaces';
-import { IUpdatePasswordUseCase } from '../../../domain/interface/IUpdatePasswordUseCase';
+import { IUpdatePasswordUseCase } from '../../../domain/useCase/IUpdatePasswordUseCase';
 
 export class UpdatePasswordUseCase implements IUpdatePasswordUseCase {
   constructor(

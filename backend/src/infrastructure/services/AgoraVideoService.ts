@@ -1,4 +1,4 @@
-import { IVideoService } from '../../domain/interface/IVideoService';
+import { IVideoService } from '../../application/services/IVideoService';
 import { v4 as uuidv4 } from 'uuid';
 import { RtcTokenBuilder, RtcRole } from 'agora-token';
 
@@ -12,7 +12,9 @@ export class AgoraVideoService implements IVideoService {
     console.log('AgoraVideoService - App ID:', this.appId);
     console.log('AgoraVideoService - App Certificate:', this.appCertificate);
     if (!this.appId || !this.appCertificate) {
-      throw new Error('AGORA_APP_ID and AGORA_APP_CERTIFICATE must be set in environment variables');
+      throw new Error(
+        'AGORA_APP_ID and AGORA_APP_CERTIFICATE must be set in environment variables'
+      );
     }
   }
 
@@ -42,7 +44,7 @@ export class AgoraVideoService implements IVideoService {
       participantId,
       RtcRole.PUBLISHER,
       expirationTimeInSeconds, // 6th argument: tokenExpire
-      privilegeExpiredTs       // 7th argument: privilegeExpiredTs
+      privilegeExpiredTs // 7th argument: privilegeExpiredTs
     );
 
     console.log('Generated Agora Token:', token);

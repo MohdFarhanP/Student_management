@@ -1,9 +1,13 @@
 import { Types } from 'mongoose';
 import { Timetable } from '../../domain/entities/timetable';
-import { ITimetableRepository } from '../../domain/interface/admin/ITimetableRepository';
-import { ITeacherRepository } from '../../domain/interface/admin/ITeacherRepository';
-import { ITimetableService } from '../../domain/interface/ITimetableService';
-import { BadRequestError, ConflictError, NotFoundError } from '../../domain/errors';
+import { ITimetableRepository } from '../../domain/repositories/ITimetableRepository';
+import { ITeacherRepository } from '../../domain/repositories/ITeacherRepository';
+import { ITimetableService } from '../../application/services/ITimetableService';
+import {
+  BadRequestError,
+  ConflictError,
+  NotFoundError,
+} from '../../domain/errors';
 import { Day } from '../../domain/types/enums';
 
 export class TimetableService implements ITimetableService {
@@ -29,7 +33,10 @@ export class TimetableService implements ITimetableService {
     period: number,
     teacherId: Types.ObjectId
   ): Promise<boolean> {
-    if (!Types.ObjectId.isValid(classId) || !Types.ObjectId.isValid(teacherId)) {
+    if (
+      !Types.ObjectId.isValid(classId) ||
+      !Types.ObjectId.isValid(teacherId)
+    ) {
       throw new BadRequestError('Invalid class or teacher ID');
     }
     if (!Object.values(Day).includes(day)) {
@@ -54,7 +61,10 @@ export class TimetableService implements ITimetableService {
     teacherId: Types.ObjectId,
     subject: string
   ): Promise<Timetable> {
-    if (!Types.ObjectId.isValid(classId) || !Types.ObjectId.isValid(teacherId)) {
+    if (
+      !Types.ObjectId.isValid(classId) ||
+      !Types.ObjectId.isValid(teacherId)
+    ) {
       throw new BadRequestError('Invalid class or teacher ID');
     }
     if (!Object.values(Day).includes(day)) {
@@ -77,7 +87,11 @@ export class TimetableService implements ITimetableService {
       throw new ConflictError('Teacher unavailable for this period');
     }
 
-    const conflict = await this.timetableRepo.findConflict(teacherId, day, period);
+    const conflict = await this.timetableRepo.findConflict(
+      teacherId,
+      day,
+      period
+    );
     if (conflict) {
       throw new ConflictError('Teacher already assigned to another class');
     }

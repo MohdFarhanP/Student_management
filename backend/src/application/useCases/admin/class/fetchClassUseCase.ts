@@ -1,5 +1,5 @@
-import { IClassRepository } from '../../../../domain/interface/admin/IClassRepository';
-import { IFetchClassUseCase } from '../../../../domain/interface/IFetchClassUseCase';
+import { IClassRepository } from '../../../../domain/repositories/IClassRepository';
+import { IFetchClassUseCase } from '../../../../domain/useCase/IFetchClassUseCase';
 
 export class FetchClassUseCase implements IFetchClassUseCase {
   constructor(private classRepository: IClassRepository) {}
@@ -8,7 +8,9 @@ export class FetchClassUseCase implements IFetchClassUseCase {
     try {
       return await this.classRepository.fetchClass();
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to fetch classes');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to fetch classes');
     }
   }
 }

@@ -1,8 +1,8 @@
 import { Model, Document } from 'mongoose';
-import { AdminModel } from '../database/models/adminModel';
-import { studentModel } from '../database/models/studentModel';
-import { TeacherModel } from '../database/models/teacherModel';
-import { IUserRepository } from '../../domain/interface/IUserRepository';
+import { AdminModel } from '../database/mongoos/models/adminModel';
+import { studentModel } from '../database/mongoos/models/studentModel';
+import { TeacherModel } from '../database/mongoos/models/teacherModel';
+import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { Role } from '../../domain/types/enums';
 import { IUser } from '../../domain/types/interfaces';
 
@@ -73,12 +73,19 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async updateRefreshToken(id: string, refreshToken: string | null): Promise<void> {
+  async updateRefreshToken(
+    id: string,
+    refreshToken: string | null
+  ): Promise<void> {
     try {
       const roles = [Role.Admin, Role.Student, Role.Teacher];
       for (const role of roles) {
         const Model = this.getModel(role);
-        const user = await Model.findByIdAndUpdate(id, { refreshToken }, { new: true });
+        const user = await Model.findByIdAndUpdate(
+          id,
+          { refreshToken },
+          { new: true }
+        );
         if (user) break;
       }
     } catch (error) {

@@ -1,5 +1,5 @@
-import { INoteRepository } from '../../../domain/interface/INotRepository';
-import { IDownloadNoteUseCase } from '../../../domain/interface/IDownloadNoteUseCase';
+import { INoteRepository } from '../../../domain/repositories/INotRepository';
+import { IDownloadNoteUseCase } from '../../../domain/useCase/IDownloadNoteUseCase';
 import { Note } from '../../../domain/entities/note';
 import { NotFoundError } from '../../../domain/errors';
 

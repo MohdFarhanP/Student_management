@@ -1,5 +1,5 @@
-import { IClassRepository } from '../../../../domain/interface/admin/IClassRepository';
-import { IGetClassNameUseCase } from '../../../../domain/interface/IGetClassNameUseCase';
+import { IClassRepository } from '../../../../domain/repositories/IClassRepository';
+import { IGetClassNameUseCase } from '../../../../domain/useCase/IGetClassNameUseCase';
 
 export class GetClassNameUseCase implements IGetClassNameUseCase {
   constructor(private classRepository: IClassRepository) {}
@@ -8,7 +8,9 @@ export class GetClassNameUseCase implements IGetClassNameUseCase {
     try {
       return await this.classRepository.findAllGrades();
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to fetch class names');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to fetch class names');
     }
   }
 }

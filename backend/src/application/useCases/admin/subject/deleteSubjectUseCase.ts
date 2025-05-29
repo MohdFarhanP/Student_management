@@ -1,6 +1,6 @@
-import { ISubjectRepository } from '../../../../domain/interface/ISubjectRepository';
-import { IClassRepository } from '../../../../domain/interface/admin/IClassRepository';
-import { IDeleteSubjectUseCase } from '../../../../domain/interface/IDeleteSubjectUseCase';
+import { ISubjectRepository } from '../../../../domain/repositories/ISubjectRepository';
+import { IClassRepository } from '../../../../domain/repositories/IClassRepository';
+import { IDeleteSubjectUseCase } from '../../../../domain/useCase/IDeleteSubjectUseCase';
 
 export class DeleteSubjectUseCase implements IDeleteSubjectUseCase {
   constructor(
@@ -10,7 +10,8 @@ export class DeleteSubjectUseCase implements IDeleteSubjectUseCase {
 
   async execute(classGrade: string, subjectId: string): Promise<string> {
     try {
-      const existingClassList = await this.classRepository.findByGrade(classGrade);
+      const existingClassList =
+        await this.classRepository.findByGrade(classGrade);
       if (!existingClassList || existingClassList.length === 0) {
         throw new Error('No classes found for the specified grade');
       }
@@ -26,7 +27,9 @@ export class DeleteSubjectUseCase implements IDeleteSubjectUseCase {
 
       await Promise.all(
         existingClassList.map(async (cls) => {
-          const updatedSubjects = cls.subjects.filter((id) => id.toString() !== subjectId);
+          const updatedSubjects = cls.subjects.filter(
+            (id) => id.toString() !== subjectId
+          );
           await this.classRepository.update(cls.id, {
             subjects: updatedSubjects,
           });
@@ -35,7 +38,9 @@ export class DeleteSubjectUseCase implements IDeleteSubjectUseCase {
 
       return 'Subject deleted successfully';
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to delete subject');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to delete subject');
     }
   }
 }

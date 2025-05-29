@@ -1,7 +1,6 @@
-import { INoteRepository } from '../../domain/interface/INotRepository';
-import { NoteModel } from '../database/models/notesModel';
+import { INoteRepository } from '../../domain/repositories/INotRepository';
+import { NoteModel } from '../database/mongoos/models/notesModel';
 import { Note } from '../../domain/entities/note';
-
 
 export class NoteRepository implements INoteRepository {
   async save(note: Note): Promise<Note> {
@@ -22,7 +21,7 @@ export class NoteRepository implements INoteRepository {
       createdAt: savedNote.createdAt,
     });
   }
-  
+
   async findByHash(fileHash: string): Promise<Note | null> {
     const note = await NoteModel.findOne({ fileHash });
     if (!note) return null;
@@ -62,8 +61,8 @@ export class NoteRepository implements INoteRepository {
       })
     );
   }
-  
-   async findByUploadedBy(uploadedBy: string): Promise<Note[]> {
+
+  async findByUploadedBy(uploadedBy: string): Promise<Note[]> {
     const docs = await NoteModel.find({ uploadedBy }).lean();
     return docs.map((doc) =>
       Note.create({

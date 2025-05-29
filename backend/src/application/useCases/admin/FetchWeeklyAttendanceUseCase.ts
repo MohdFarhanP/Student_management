@@ -1,8 +1,10 @@
-import { IAttendanceRepository } from '../../../domain/interface/IAttendanceRepository';
-import { IFetchWeeklyAttendanceUseCase } from '../../../domain/interface/IFetchWeeklyAttendanceUseCase';
-import { AttendanceDataDto } from '../../../domain/types/interfaces';
+import { IAttendanceRepository } from '../../../domain/repositories/IAttendanceRepository';
+import { IFetchWeeklyAttendanceUseCase } from '../../../domain/useCase/IFetchWeeklyAttendanceUseCase';
+import { AttendanceDataDto } from '../../dtos/attendanceDtos';
 
-export class FetchWeeklyAttendanceUseCase implements IFetchWeeklyAttendanceUseCase {
+export class FetchWeeklyAttendanceUseCase
+  implements IFetchWeeklyAttendanceUseCase
+{
   constructor(private attendanceRepository: IAttendanceRepository) {}
 
   async execute(classId: string): Promise<AttendanceDataDto[]> {

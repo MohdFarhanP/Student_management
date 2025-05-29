@@ -1,8 +1,10 @@
-import { SessionDuration } from "../../domain/entities/sessionDuration";
-import { ISessionDurationRepository } from "../../domain/interface/ISessionDurationRepository";
-import { SessionDurationModel } from "../database/models/sessionDurationModel";
+import { SessionDuration } from '../../domain/entities/sessionDuration';
+import { ISessionDurationRepository } from '../../domain/repositories/ISessionDurationRepository';
+import { SessionDurationModel } from '../database/mongoos/models/sessionDurationModel';
 
-export class MongoSessionDurationRepository implements ISessionDurationRepository {
+export class MongoSessionDurationRepository
+  implements ISessionDurationRepository
+{
   async save(sessionDuration: SessionDuration): Promise<void> {
     const doc = new SessionDurationModel({
       userId: sessionDuration.userId,
@@ -12,7 +14,11 @@ export class MongoSessionDurationRepository implements ISessionDurationRepositor
       leaveTime: sessionDuration.leaveTime,
     });
     await doc.save();
-    console.log('[MongoSessionDurationRepository] Saved duration at', new Date().toISOString(), { userId: sessionDuration.userId, sessionId: sessionDuration.sessionId });
+    console.log(
+      '[MongoSessionDurationRepository] Saved duration at',
+      new Date().toISOString(),
+      { userId: sessionDuration.userId, sessionId: sessionDuration.sessionId }
+    );
   }
 
   async findBySessionId(sessionId: string): Promise<SessionDuration[]> {

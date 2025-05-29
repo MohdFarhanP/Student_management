@@ -1,7 +1,7 @@
-import { SessionStatus } from "../types/enums";
-import { ILiveSession, UserInfo } from "../types/interfaces";
+import { SessionStatus } from '../types/enums';
+import { UserInfo } from '../types/interfaces';
 
-export class LiveSession implements ILiveSession {
+export class LiveSession {
   constructor(
     public readonly id: string,
     public readonly title: string,
@@ -22,8 +22,13 @@ export class LiveSession implements ILiveSession {
     if (!this.teacherId) {
       throw new Error('Teacher ID is required');
     }
-    if (this.status === SessionStatus.Scheduled && this.scheduledAt < new Date()) {
-      throw new Error('Scheduled time cannot be in the past for a Scheduled session');
+    if (
+      this.status === SessionStatus.Scheduled &&
+      this.scheduledAt < new Date()
+    ) {
+      throw new Error(
+        'Scheduled time cannot be in the past for a Scheduled session'
+      );
     }
     const validStatuses = Object.values(SessionStatus);
     if (!validStatuses.includes(this.status)) {

@@ -1,14 +1,21 @@
-import { INoteRepository } from '../../../domain/interface/INotRepository';
-import { IUploadNoteUseCase } from '../../../domain/interface/IUploadNoteUseCase';
+import { INoteRepository } from '../../../domain/repositories/INotRepository';
+import { IUploadNoteUseCase } from '../../../domain/useCase/IUploadNoteUseCase';
 import { Note } from '../../../domain/entities/note';
 import { BadRequestError } from '../../../domain/errors';
 
 export class UploadNoteUseCase implements IUploadNoteUseCase {
   constructor(private readonly noteRepository: INoteRepository) {}
 
-  async execute(title: string, fileUrl: string, fileHash: string, uploadedBy: string): Promise<Note> {
+  async execute(
+    title: string,
+    fileUrl: string,
+    fileHash: string,
+    uploadedBy: string
+  ): Promise<Note> {
     if (!title || !fileUrl || !fileHash || !uploadedBy) {
-      throw new BadRequestError('Title, fileUrl, fileHash, and uploadedBy are required');
+      throw new BadRequestError(
+        'Title, fileUrl, fileHash, and uploadedBy are required'
+      );
     }
 
     const note = Note.create({

@@ -1,34 +1,27 @@
-import { ILeaveRepository } from '../../domain/interface/ILeaveRepository';
+import { ILeaveRepository } from '../../domain/repositories/ILeaveRepository';
 import { LeaveStatus } from '../../domain/types/enums';
 import { Leave } from '../../domain/types/interfaces';
-import { LeaveModel } from '../database/models/leaveModel';
-    
+import { mapToLeaveEntity } from '../database/mongoos/helpers/leaveMapper';
+import { LeaveModel } from '../database/mongoos/models/leaveModel';
 
 export class LeaveRepository implements ILeaveRepository {
-  async create(leave: Omit<Leave, 'id' | 'createdAt' | 'updatedAt'>): Promise<Leave> {
+  async create(
+    leave: Omit<Leave, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<Leave> {
     const newLeave = await LeaveModel.create(leave);
-    return {
-      id: newLeave._id.toString(),
-      ...newLeave.toObject(),
-    };
+    return mapToLeaveEntity(newLeave);
   }
 
   async findByStudentId(studentId: string): Promise<Leave[]> {
     const query = studentId ? { studentId } : { status: LeaveStatus.Pending };
     const leaves = await LeaveModel.find(query).exec();
-    return await leaves.map((leave) => ({
-      id: leave._id.toString(),
-      ...leave.toObject(),
-    }));
+    return leaves.map((leave) => mapToLeaveEntity(leave));
   }
 
   async findById(id: string): Promise<Leave | null> {
     const leave = await LeaveModel.findById(id).exec();
     if (!leave) return null;
-    return {
-      id: leave._id.toString(),
-      ...leave.toObject(),
-    };
+    return mapToLeaveEntity(leave);
   }
 
   async update(id: string, data: Partial<Leave>): Promise<Leave> {
@@ -40,9 +33,6 @@ export class LeaveRepository implements ILeaveRepository {
     if (!updatedLeave) {
       throw new Error('Leave not found');
     }
-    return {
-      id: updatedLeave._id.toString(),
-      ...updatedLeave.toObject(),
-    };
+    return mapToLeaveEntity(updatedLeave);
   }
 }

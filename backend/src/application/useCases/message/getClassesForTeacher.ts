@@ -1,10 +1,12 @@
-import { IGetClassesForTeacherUseCase } from '../../../domain/interface/IGetClassesForTeacherUseCase';
-import { IClassRepository } from '../../../domain/interface/admin/IClassRepository';
+import { IGetClassesForTeacherUseCase } from '../../../domain/useCase/IGetClassesForTeacherUseCase';
+import { IClassRepository } from '../../../domain/repositories/IClassRepository';
 import { IClass } from '../../../domain/types/interfaces';
 import { ForbiddenError } from '../../../domain/errors';
 import { Role } from '../../../domain/types/enums';
 
-export class GetClassesForTeacherUseCase implements IGetClassesForTeacherUseCase {
+export class GetClassesForTeacherUseCase
+  implements IGetClassesForTeacherUseCase
+{
   constructor(private classRepository: IClassRepository) {}
 
   async execute(teacherId: string, role: string): Promise<Partial<IClass>[]> {

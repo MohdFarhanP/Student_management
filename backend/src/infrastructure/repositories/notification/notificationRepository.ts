@@ -1,33 +1,46 @@
 import { INotification } from '../../../domain/types/interfaces';
 import { NotificationEntity } from '../../../domain/entities/Notification';
-import { INotificationRepository } from '../../../domain/interface/INotificationRepository';
-import { NotificationModel } from '../../database/models/notificationModel';
-import { SendNotificationDTO } from '../../../domain/types/interfaces';
+import { INotificationRepository } from '../../../domain/repositories/INotificationRepository';
+import { NotificationModel } from '../../database/mongoos/models/notificationModel';
+import { SendNotificationDTO } from '../../../application/dtos/notificationDtos';
 import { ValidationError, NotFoundError } from '../../../domain/errors';
 import { RecipientType } from '../../../domain/types/enums';
+import {
+  mapRecipientType,
+  mapRole,
+} from '../../database/mongoos/helpers/enumMappers';
 
 export class NotificationRepository implements INotificationRepository {
   async save(notification: SendNotificationDTO): Promise<INotification> {
     try {
-      if (notification.scheduledAt && isNaN(new Date(notification.scheduledAt).getTime())) {
+      if (
+        notification.scheduledAt &&
+        isNaN(new Date(notification.scheduledAt).getTime())
+      ) {
         throw new ValidationError('Invalid scheduledAt format');
       }
-      console.log('Saving notification at server time (UTC):', new Date().toISOString());
+      console.log(
+        'Saving notification at server time (UTC):',
+        new Date().toISOString()
+      );
       console.log('Scheduled at (UTC):', notification.scheduledAt);
       const doc = new NotificationModel({
         ...notification,
         scheduledAt: notification.scheduledAt || undefined,
       });
       const saved = await doc.save();
-      console.log('Saved notification with createdAt (UTC):', saved.createdAt.toISOString());
+      console.log(
+        'Saved notification with createdAt (UTC):',
+        saved.createdAt.toISOString()
+      );
       return new NotificationEntity({
         id: saved._id.toString(),
         title: saved.title,
         message: saved.message,
-        recipientType: saved.recipientType,
+        recipientType: mapRecipientType(doc.recipientType),
         recipientIds: saved.recipientIds,
         senderId: saved.senderId,
-        senderRole: saved.senderRole,
+        senderRole: mapRole(doc.senderRole),
         isRead: saved.isRead,
         sent: saved.sent,
         createdAt: saved.createdAt,
@@ -43,7 +56,9 @@ export class NotificationRepository implements INotificationRepository {
   async findScheduled(currentTime: Date): Promise<INotification[]> {
     try {
       const utcCurrentTime = currentTime.toISOString();
-      console.log(`findScheduled querying for notifications with scheduledAt <= ${utcCurrentTime}, sent: false`);
+      console.log(
+        `findScheduled querying for notifications with scheduledAt <= ${utcCurrentTime}, sent: false`
+      );
       const docs = await NotificationModel.find({
         scheduledAt: { $lte: utcCurrentTime, $exists: true },
         sent: false,
@@ -55,10 +70,10 @@ export class NotificationRepository implements INotificationRepository {
             id: doc._id.toString(),
             title: doc.title,
             message: doc.message,
-            recipientType: doc.recipientType,
+            recipientType: mapRecipientType(doc.recipientType),
             recipientIds: doc.recipientIds,
             senderId: doc.senderId,
-            senderRole: doc.senderRole,
+            senderRole: mapRole(doc.senderRole),
             isRead: doc.isRead,
             sent: doc.sent,
             createdAt: doc.createdAt,
@@ -72,31 +87,33 @@ export class NotificationRepository implements INotificationRepository {
     }
   }
 
-  async findByUserId(userId: string,userRole:string): Promise<INotification[]> {
+  async findByUserId(
+    userId: string,
+    userRole: string
+  ): Promise<INotification[]> {
     try {
       if (!userId) {
         throw new ValidationError('User ID is required');
       }
-const filters: any[] = [
-      { recipientType: RecipientType.Global },
-    ];
+      const filters: any[] = [{ recipientType: RecipientType.Global }];
 
-    if (userRole === 'Teacher' || userRole === 'Admin') {
-      filters.push({
-        recipientType: RecipientType.Role,
-        recipientIds: { $in: [userRole] },
+      if (userRole === 'Teacher' || userRole === 'Admin') {
+        filters.push({
+          recipientType: RecipientType.Role,
+          recipientIds: { $in: [userRole] },
+        });
+      }
+
+      if (userRole === 'Student') {
+        filters.push({
+          recipientType: RecipientType.Student,
+          recipientIds: { $in: [userId] },
+        });
+      }
+
+      const docs = await NotificationModel.find({ $or: filters }).sort({
+        createdAt: -1,
       });
-    }
-
-    if (userRole === 'Student') {
-      filters.push({
-        recipientType: RecipientType.Student,
-        recipientIds: { $in: [userId] },
-      });
-    }
-
-    const docs = await NotificationModel.find({ $or: filters }).sort({ createdAt: -1 });
-
 
       return docs.map(
         (doc) =>
@@ -104,10 +121,10 @@ const filters: any[] = [
             id: doc._id.toString(),
             title: doc.title,
             message: doc.message,
-            recipientType: doc.recipientType,
+            recipientType: mapRecipientType(doc.recipientType),
             recipientIds: doc.recipientIds,
             senderId: doc.senderId,
-            senderRole: doc.senderRole,
+            senderRole: mapRole(doc.senderRole),
             isRead: doc.isRead,
             sent: doc.sent,
             createdAt: doc.createdAt,
@@ -137,7 +154,11 @@ const filters: any[] = [
     }
   }
 
-  async markAsRead(notificationId: string, userId: string, userRole: string): Promise<void> {
+  async markAsRead(
+    notificationId: string,
+    userId: string,
+    userRole: string
+  ): Promise<void> {
     try {
       const notification = await NotificationModel.findById(notificationId);
       if (!notification) {
@@ -145,8 +166,12 @@ const filters: any[] = [
       }
 
       const isGlobal = notification.recipientType === 'global';
-      const isIndividual = notification.recipientType === 'Student' && notification.recipientIds.includes(userId);
-      const isRoleBased = notification.recipientType === 'role' && notification.recipientIds.includes(userRole);
+      const isIndividual =
+        notification.recipientType === 'Student' &&
+        notification.recipientIds.includes(userId);
+      const isRoleBased =
+        notification.recipientType === 'role' &&
+        notification.recipientIds.includes(userRole);
 
       if (!isGlobal && !isIndividual && !isRoleBased) {
         throw new NotFoundError('Notification not accessible to this user');
@@ -160,7 +185,6 @@ const filters: any[] = [
       if (result.matchedCount === 0) {
         throw new NotFoundError('Notification could not be updated');
       }
-
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
 
@@ -169,5 +193,4 @@ const filters: any[] = [
       );
     }
   }
-
 }

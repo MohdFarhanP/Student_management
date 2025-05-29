@@ -1,6 +1,6 @@
-import { IAttendanceRepository } from '../../../domain/interface/IAttendanceRepository';
+import { IAttendanceRepository } from '../../../domain/repositories/IAttendanceRepository';
 import { Attendance } from '../../../domain/entities/attendance';
-import { IViewAttendanceUseCase } from '../../../domain/interface/IViewAttendanceUseCase';
+import { IViewAttendanceUseCase } from '../../../domain/useCase/IViewAttendanceUseCase';
 import { Types } from 'mongoose';
 
 export class ViewAttendanceUseCase implements IViewAttendanceUseCase {

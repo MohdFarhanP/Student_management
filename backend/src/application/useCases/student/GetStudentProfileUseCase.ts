@@ -1,11 +1,11 @@
-import { IStudentProfileRepository } from '../../../domain/interface/student/IStudentProfileRepository';
-import { IGetStudentProfileUseCase } from '../../../domain/interface/IGetStudentProfileUseCase';
-import { Student } from '../../../domain/entities/student';
+import { IStudentProfileRepository } from '../../../domain/repositories/IStudentProfileRepository';
+import { IGetStudentProfileUseCase } from '../../../domain/useCase/IGetStudentProfileUseCase';
+import { StudentEntity } from '../../../domain/entities/student';
 
 export class GetStudentProfileUseCase implements IGetStudentProfileUseCase {
   constructor(private studentRepository: IStudentProfileRepository) {}
 
-  async execute(email: string): Promise<Student | null> {
+  async execute(email: string): Promise<StudentEntity | null> {
     try {
       if (!email || !email.includes('@')) {
         throw new Error('Valid email is required');
@@ -16,7 +16,9 @@ export class GetStudentProfileUseCase implements IGetStudentProfileUseCase {
       }
       return profile;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to fetch student profile');
+      throw error instanceof Error
+        ? error
+        : new Error('Failed to fetch student profile');
     }
   }
 }

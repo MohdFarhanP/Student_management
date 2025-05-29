@@ -1,10 +1,15 @@
-import { ILeaveRepository } from '../../../domain/interface/ILeaveRepository';
-import { IUserRepository } from '../../../domain/interface/IUserRepository';
-import { ISendNotificationUseCase } from '../../../domain/interface/ISendNotificationUseCase';
-import { ApproveRejectLeaveDTO, Leave } from '../../../domain/types/interfaces';
-import { ValidationError, UnauthorizedError, ForbiddenError } from '../../../domain/errors';
+import { ILeaveRepository } from '../../../domain/repositories/ILeaveRepository';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { ISendNotificationUseCase } from '../../../domain/useCase/ISendNotificationUseCase';
+import { Leave } from '../../../domain/types/interfaces';
+import {
+  ValidationError,
+  UnauthorizedError,
+  ForbiddenError,
+} from '../../../domain/errors';
 import { Role, LeaveStatus, RecipientType } from '../../../domain/types/enums';
-import { IApproveRejectLeaveUseCase } from '../../../domain/interface/IApproveRejectLeaveUseCase';
+import { IApproveRejectLeaveUseCase } from '../../../domain/useCase/IApproveRejectLeaveUseCase';
+import { ApproveRejectLeaveDTO } from '../../dtos/leaveDtos';
 
 export class ApproveRejectLeaveUseCase implements IApproveRejectLeaveUseCase {
   constructor(
@@ -15,9 +20,14 @@ export class ApproveRejectLeaveUseCase implements IApproveRejectLeaveUseCase {
 
   async execute(dto: ApproveRejectLeaveDTO): Promise<Leave> {
     if (!dto.leaveId || !dto.teacherId || !dto.status) {
-      throw new ValidationError('Missing required fields: leaveId, teacherId, status');
+      throw new ValidationError(
+        'Missing required fields: leaveId, teacherId, status'
+      );
     }
-    if (dto.status !== LeaveStatus.Approved && dto.status !== LeaveStatus.Rejected) {
+    if (
+      dto.status !== LeaveStatus.Approved &&
+      dto.status !== LeaveStatus.Rejected
+    ) {
       throw new ValidationError('Invalid status: must be Approved or Rejected');
     }
 

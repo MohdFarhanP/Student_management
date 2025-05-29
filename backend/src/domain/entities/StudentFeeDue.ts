@@ -2,7 +2,7 @@ export class StudentFeeDue {
   private id: string;
   private studentId: string;
   private feeTitle: string;
-  private month: string; 
+  private month: string;
   private dueDate: Date;
   private amount: number;
   private isPaid: boolean;
