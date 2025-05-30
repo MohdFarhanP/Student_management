@@ -34,11 +34,9 @@ interface AttendanceData {
   day: string;
   attendance: number;
 }
-
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
+interface GetClassResopnse {
+  classes: IClassData[],
+  totalCount: number
 }
 interface Class {
   _id: string;
@@ -65,7 +63,7 @@ export const addClass = (data: IClassData) =>
   });
 
 export const getClasses = (page: number, limit: number) =>
-  apiRequest<ApiResponse<IClassData[]>>(
+  apiRequest<ApiResponse<GetClassResopnse>>(
     'get',
     `${ADMIN_CLASS_API_URL}/classdata`,
     undefined,

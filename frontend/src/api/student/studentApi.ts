@@ -77,7 +77,7 @@ export const studentsProfileFetch = (email: string) =>
 
 export const fetchAttendance = (id: string) =>
   apiRequest<ApiResponse<Attendance[]>>('get', `${STUDENT_API_URL}/attendance/${id}`)
-    .then((res)=> res.data);
+    .then((res)=> res.data!);
 
 export const updateProfileImg = (fileHash: string, imgUrl: string, email: string) =>{
   console.log('student profile details', imgUrl,email)

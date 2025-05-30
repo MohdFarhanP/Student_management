@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  backend:
+    image: mfarhanp/mern-backend:latest
+    expose:
+      - "5000"
+    depends_on:
+      - redis
+    networks:
+      - mern-network
+    env_file:
+      - ./backend/.env
+
+  frontend:
+    image: mfarhanp/mern-frontend:latest
+    expose:
+      - "80"
+    depends_on:
+      - backend
+    networks:
+      - mern-network
+    env_file:
+      - ./frontend/.env
+
+  redis:
+    image: redis:alpine
+    command: redis-server --requirepass myredispassword123
+    expose:
+      - "6379"
+    networks:
+      - mern-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - mern-network
+
+networks:
+  mern-network:
+    driver: bridge
