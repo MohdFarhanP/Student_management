@@ -3,6 +3,7 @@ import { deleteStudent, IStudent } from '../api/admin/studentApi';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import ErrorBoundary from './ErrorBoundary';
 import LoadingSpinner from './LoadingSpinner';
+import profile from '../assets/profile.jpg';
 
 const PaginationButton = lazy(() => import('./PaginationButton'));
 const ConfirmDialog = lazy(() => import('./ConfirmDialog'));
@@ -72,17 +73,11 @@ const StudentTable: React.FC<StudentTableProps> = ({
               {/* Avatar */}
               <div className="avatar">
                 <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                  {student.profileImage ? (
-                    <img
-                      src={student.profileImage}
-                      alt={student.name}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-lg font-medium text-gray-500 dark:text-gray-300">
-                      {student.name.charAt(0).toUpperCase()}
-                    </span>
-                  )}
+                  <img
+                    src={student.profileImage || profile}
+                    alt={student.name}
+                    className="w-full h-full rounded-full object-cover"
+                  />
                 </div>
               </div>
 

@@ -1,7 +1,6 @@
 import { IFileValidationService } from '../services/IFileValidationService';
 import { IStorageService } from '../services/IStorageService';
 import { IGeneratePresignedUrlUseCase } from '../../domain/useCase/IGeneratePresignedUrlUseCase';
-import { INoteRepository } from '../../domain/repositories/INotRepository';
 import { FileEntity } from '../../domain/entities/FileEntity';
 import { BadRequestError } from '../../domain/errors';
 

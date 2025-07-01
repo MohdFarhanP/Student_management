@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 import { IRecurringFeeRepository } from '../../domain/repositories/IRecurringFeeRepository';
 import { RecurringFee } from '../../domain/entities/RecurringFee';
 import { RecurringFeeModel } from '../database/mongoos/models/RecurringFeeModel';
-import { populate } from 'dotenv';
 
 export class MongoRecurringFeeRepository implements IRecurringFeeRepository {
   async create(fee: RecurringFee): Promise<void> {

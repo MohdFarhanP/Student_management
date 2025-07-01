@@ -20,7 +20,7 @@ export class PaymentController implements IPaymentController {
         isPaid: due.isPaidStatus(),
         paymentId: due.getPaymentId(),
       }));
-      res.status(200).json({
+      res.status(HttpStatus.OK).json({
         success: true,
         message: 'Successfully sent response',
         data: duesDto,

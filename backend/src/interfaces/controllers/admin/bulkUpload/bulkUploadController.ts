@@ -6,6 +6,7 @@ import {
   IBulkUploadResult,
 } from '../../../../domain/types/interfaces';
 import { IBulkUploadController } from './IBulkUploadController';
+import { HttpStatus } from '../../../../domain/types/enums';
 
 export class BulkUploadController implements IBulkUploadController {
   constructor(
@@ -16,7 +17,7 @@ export class BulkUploadController implements IBulkUploadController {
   async uploadStudents(req: Request, res: Response): Promise<void> {
     try {
       if (!req.file) {
-        res.status(400).json({
+        res.status(HttpStatus.BAD_REQUEST).json({
           success: false,
           message: 'No file uploaded',
         } as IApiResponse<never>);
@@ -25,7 +26,7 @@ export class BulkUploadController implements IBulkUploadController {
 
       const result = await this.studentUseCase.execute(req.file.buffer);
 
-      res.status(200).json({
+      res.status(HttpStatus.OK).json({
         success: true,
         message: 'Student bulk upload successful',
         data: { addedCount: result.addedCount },
@@ -36,7 +37,7 @@ export class BulkUploadController implements IBulkUploadController {
       if (typeof error === 'object' && error !== null && 'code' in error) {
         const mongoError = error as { code: number };
         if (mongoError.code === 11000) {
-          res.status(400).json({
+          res.status(HttpStatus.BAD_REQUEST).json({
             success: false,
             message: 'Some students already exist in the database.',
           } as IApiResponse<never>);
@@ -46,7 +47,7 @@ export class BulkUploadController implements IBulkUploadController {
 
       const errorMessage =
         error instanceof Error ? error.message : 'Internal Server Error';
-      res.status(500).json({
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: errorMessage,
       } as IApiResponse<never>);
@@ -56,7 +57,7 @@ export class BulkUploadController implements IBulkUploadController {
   async uploadTeachers(req: Request, res: Response): Promise<void> {
     try {
       if (!req.file) {
-        res.status(400).json({
+        res.status(HttpStatus.BAD_REQUEST).json({
           success: false,
           message: 'No file uploaded',
         } as IApiResponse<never>);
@@ -65,7 +66,7 @@ export class BulkUploadController implements IBulkUploadController {
 
       const result = await this.teacherUseCase.execute(req.file.buffer);
 
-      res.status(200).json({
+      res.status(HttpStatus.OK).json({
         success: true,
         message: 'Teacher bulk upload successful',
         data: { addedCount: result.addedCount },
@@ -76,7 +77,7 @@ export class BulkUploadController implements IBulkUploadController {
       if (typeof error === 'object' && error !== null && 'code' in error) {
         const mongoError = error as { code: number };
         if (mongoError.code === 11000) {
-          res.status(400).json({
+          res.status(HttpStatus.BAD_REQUEST).json({
             success: false,
             message: 'Some teachers already exist in the database.',
           } as IApiResponse<never>);
@@ -86,7 +87,7 @@ export class BulkUploadController implements IBulkUploadController {
 
       const errorMessage =
         error instanceof Error ? error.message : 'Internal Server Error';
-      res.status(500).json({
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: errorMessage,
       } as IApiResponse<never>);

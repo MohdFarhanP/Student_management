@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { toast } from 'react-toastify';
 import { store } from '../redux/store';
 import { refreshToken, logoutUser } from '../redux/slices/authSlice';
+import { HttpStatus } from '../types/httpStatus';
 
 const AXIOS_BASE_URL = import.meta.env.VITE_AXIOS_BASE_URL;
 
@@ -16,7 +17,7 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     if (
-      error.response?.status === 401 &&
+      error.response?.status === HttpStatus.UNAUTHORIZED &&
       !originalRequest._retry &&
       originalRequest.url !== '/auth/refresh-token'
     ) {
@@ -54,20 +55,20 @@ const apiRequest = async <T, D = undefined>(
       const status = error.response?.status;
       const isRefresh = error.config?.url === '/auth/refresh-token';
 
-      if (status === 500) {
+      if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
         console.error('[apiRequest] 500 Internal Server Error at', new Date().toISOString(), { method, url });
         window.location.href = '/500';
         toast.error('Internal Server Error');
       }
 
-      if (status === 401 && !isRefresh && showToast) {
+      if (status === HttpStatus.UNAUTHORIZED && !isRefresh && showToast) {
         toast.error('Unauthorized');
       }
 
       const message =
         error.response?.data?.message || `${method.toUpperCase()} request failed`;
 
-      if (showToast && status !== 401) toast.error(message);
+      if (showToast && status !== HttpStatus.UNAUTHORIZED) toast.error(message);
 
       throw new Error(message);
     }
