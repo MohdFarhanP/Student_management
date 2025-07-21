@@ -2,11 +2,12 @@ import mongoose from 'mongoose';
 import { IPaymentRepository } from '../../domain/repositories/IPaymentRepository';
 import { Payment } from '../../domain/entities/Payment';
 import { PaymentModel } from '../database/mongoos/models/PaymentModel';
+import logger from '../../logger';
 
 export class MongoPaymentRepository implements IPaymentRepository {
   async create(payment: Payment): Promise<void> {
-    console.log('studentId:', payment.getStudentId());
-    console.log('feeDueId:', payment.getFeeDueId());
+    logger.debug('studentId:', payment.getStudentId());
+    logger.debug('feeDueId:', payment.getFeeDueId());
 
     try {
       const paymentModel = new PaymentModel({
@@ -19,7 +20,7 @@ export class MongoPaymentRepository implements IPaymentRepository {
       });
       await paymentModel.save();
     } catch (error) {
-      console.error('error form payment repo', error);
+      logger.error('error form payment repo', error);
       throw new Error(error);
     }
   }

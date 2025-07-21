@@ -4,6 +4,7 @@ import { Queue, Worker } from 'bullmq';
 import { ILiveSession } from '../../domain/types/interfaces';
 import { Server as SocketIOServer } from 'socket.io';
 import { SessionStatus } from '../../domain/types/enums';
+import logger from '../../logger';
 
 export const setupLiveSessionQueue = (
   io: SocketIOServer,
@@ -15,7 +16,7 @@ export const setupLiveSessionQueue = (
     'live-session',
     async (job) => {
       const session = job.data as ILiveSession;
-      console.log(
+      logger.info(
         `Starting live session ${session.id} at ${new Date().toISOString()}`
       );
 
@@ -38,7 +39,7 @@ export const setupLiveSessionQueue = (
         scheduledAt: session.scheduledAt, // Include scheduledAt
       });
 
-      console.log(`Live session ${session.id} started`);
+      logger.info(`Live session ${session.id} started`);
     },
     {
       connection: {
@@ -50,15 +51,15 @@ export const setupLiveSessionQueue = (
   );
 
   worker.on('error', (error) => {
-    console.error('Live session worker error:', error);
+    logger.error('Live session worker error:', error);
   });
 
   worker.on('completed', (job) => {
-    console.log(`Live session job ${job.id} completed`);
+    logger.info(`Live session job ${job.id} completed`);
   });
 
   worker.on('failed', (job, error) => {
-    console.error(`Live session job ${job.id} failed with error:`, error);
+    logger.error(`Live session job ${job.id} failed with error:`, error);
   });
 
   return worker;

@@ -9,6 +9,7 @@ import { UserInfo } from '../../../domain/types/interfaces';
 import mongoose from 'mongoose';
 import { ILiveSessionDto } from '../../../application/dtos/liveSessionDtos';
 import { mapToFullStudent } from '../../database/mongoos/helpers/studentMapper';
+import logger from '../../../logger';
 
 export class StudentRepository implements IStudentRepository {
   async insertMany(students: StudentEntity[]): Promise<void> {
@@ -96,7 +97,7 @@ export class StudentRepository implements IStudentRepository {
     userId: string,
     phonNo: number
   ): Promise<StudentEntity | null> {
-    console.log('user id ', userId);
+    logger.debug('user id ', userId);
     const student = await studentModel
       .findOne({
         'address.phoneNo': phonNo,
@@ -104,7 +105,7 @@ export class StudentRepository implements IStudentRepository {
         _id: { $ne: new mongoose.Types.ObjectId(userId) },
       })
       .lean();
-    console.log('findByphoneNO in student repo', student);
+    logger.debug('findByphoneNO in student repo', student);
     if (!student) return null;
     return new StudentEntity(mapToFullStudent(student));
   }

@@ -7,6 +7,7 @@ import {
 } from '../../../../domain/types/interfaces';
 import { IBulkUploadController } from './IBulkUploadController';
 import { HttpStatus } from '../../../../domain/types/enums';
+import logger from '../../../../logger';
 
 export class BulkUploadController implements IBulkUploadController {
   constructor(
@@ -32,7 +33,7 @@ export class BulkUploadController implements IBulkUploadController {
         data: { addedCount: result.addedCount },
       } as IApiResponse<IBulkUploadResult>);
     } catch (error: unknown) {
-      console.error('Student bulk upload error:', error);
+      logger.error('Student bulk upload error:', error);
 
       if (typeof error === 'object' && error !== null && 'code' in error) {
         const mongoError = error as { code: number };
@@ -72,7 +73,7 @@ export class BulkUploadController implements IBulkUploadController {
         data: { addedCount: result.addedCount },
       } as IApiResponse<IBulkUploadResult>);
     } catch (error: unknown) {
-      console.error('Teacher bulk upload error:', error);
+      logger.error('Teacher bulk upload error:', error);
 
       if (typeof error === 'object' && error !== null && 'code' in error) {
         const mongoError = error as { code: number };

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '../../infrastructure/services/authService';
 import { IAuthService } from '../../application/services/IAuthService';
 import { HttpStatus } from '../../domain/types/enums';
+import logger from '../../logger';
 
 const authService: IAuthService = new AuthService();
 
@@ -31,7 +32,7 @@ export const authenticateUser = (
     };
     next();
   } catch (error) {
-    console.error('Token verification failed:', error); // Add this
+    logger.error('Token verification failed:', error); // Add this
     res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid token' });
     return;
   }

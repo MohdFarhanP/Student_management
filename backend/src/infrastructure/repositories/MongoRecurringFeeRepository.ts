@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { IRecurringFeeRepository } from '../../domain/repositories/IRecurringFeeRepository';
 import { RecurringFee } from '../../domain/entities/RecurringFee';
 import { RecurringFeeModel } from '../database/mongoos/models/RecurringFeeModel';
+import logger from '../../logger';
 
 export class MongoRecurringFeeRepository implements IRecurringFeeRepository {
   async create(fee: RecurringFee): Promise<void> {
@@ -20,7 +21,7 @@ export class MongoRecurringFeeRepository implements IRecurringFeeRepository {
       });
       await feeModel.save();
     } catch (error) {
-      console.log('error getting on recurring fee repository', error);
+      logger.error('error getting on recurring fee repository', error);
     }
   }
 

@@ -40,6 +40,7 @@ import {
   ScheduleLiveSessionDTO,
   TrackSessionDurationDTO,
 } from '../../application/dtos/liveSessionDtos';
+import logger from '../../logger';
 
 interface AdminDashboardResponse {
   success: boolean;
@@ -70,23 +71,10 @@ export class SocketServer implements ISocketServer {
     private teacherRepository: ITeacherRepository,
     private studentRepository: IStudentRepository,
     private trackSessionDurationUseCase: ITrackSessionDurationUseCase
-  ) {
-    console.log('SocketServer constructor called');
-    console.log(
-      'SocketServer initialized with sendNotificationUseCase:',
-      !!sendNotificationUseCase
-    );
-    console.log('SocketServer initialized with videoService:', !!videoService);
-    console.log(
-      'SocketServer initialized with leave use cases:',
-      !!applyForLeaveUseCase,
-      !!viewLeaveHistoryUseCase,
-      !!approveRejectLeaveUseCase
-    );
-  }
+  ) {}
 
   initialize() {
-    console.log('SocketServer initializing...');
+    logger.info('SocketServer initializing...');
 
     this.io.use((socket, next) => {
       let userId: string | undefined;
@@ -100,9 +88,6 @@ export class SocketServer implements ISocketServer {
       ) {
         userId = socket.handshake.auth.userId as string;
         userRole = socket.handshake.auth.userRole as Role;
-        console.log(
-          `Socket authenticated via auth for user ${userId} with role ${userRole}`
-        );
       }
       // Fallback to query (temporary for compatibility)
       else if (
@@ -111,13 +96,13 @@ export class SocketServer implements ISocketServer {
       ) {
         userId = socket.handshake.query.userId as string;
         userRole = socket.handshake.query.userRole as Role;
-        console.warn(
+        logger.warn(
           `Socket authenticated via query for user ${userId} with role ${userRole} (deprecated, use auth)`
         );
       }
 
       if (!userId || !userRole) {
-        console.error('Authentication error: userId and userRole required');
+        logger.error('Authentication error: userId and userRole required');
         return next(
           new ValidationError(
             'Authentication error: userId and userRole required'
@@ -131,9 +116,6 @@ export class SocketServer implements ISocketServer {
     });
 
     this.io.on('connection', (socket: Socket) => {
-      console.log(
-        `User connected: ${socket.data.userId} (socket ID: ${socket.id})`
-      );
 
       socket.on('joinRoom', async (chatRoomId: string, callback) => {
         if (!chatRoomId) {
@@ -232,7 +214,7 @@ export class SocketServer implements ISocketServer {
           const savedMessage = await this.sendMessageUseCase.execute(message);
           this.io.to(message.chatRoomId).emit('message', savedMessage);
         } catch (error) {
-          console.error('Error sending message:', error);
+          logger.error('Error sending message:', error);
           socket.emit(
             'error',
             error instanceof Error ? error.message : 'An unknown error occurred'
@@ -243,9 +225,6 @@ export class SocketServer implements ISocketServer {
       socket.on('joinNotification', () => {
         socket.join(`user-${socket.data.userId}`);
         socket.join(`role-${socket.data.userRole}`);
-        console.log(
-          `User ${socket.data.userId} joined notification rooms: user-${socket.data.userId}, role-${socket.data.userRole}`
-        );
       });
 
       socket.on(
@@ -305,7 +284,7 @@ export class SocketServer implements ISocketServer {
             }
             socket.emit('notificationScheduled', savedNotification);
           } catch (error) {
-            console.error('Error sending notification:', error);
+            logger.error('Error sending notification:', error);
             socket.emit(
               'error',
               error instanceof Error
@@ -323,7 +302,6 @@ export class SocketServer implements ISocketServer {
           callback: (response: { success: boolean; error?: string }) => void
         ) => {
           try {
-            console.log('Received apply-for-leave event with data:', dto);
             if (!dto.studentId || !dto.date || !dto.reason) {
               throw new ValidationError(
                 'Missing required fields: studentId, date, reason'
@@ -338,15 +316,11 @@ export class SocketServer implements ISocketServer {
               throw new UnauthorizedError('Only students can apply for leaves');
             }
 
-            console.log(
-              `[DEBUG] Applying for leave: ${dto.studentId}, ${dto.date}`
-            );
             const leave = await this.applyForLeaveUseCase.execute(dto);
             socket.emit('leave-applied', { leave }); // Emit leave object in a payload
-            console.log(`[DEBUG] Leave applied successfully: ${leave.id}`);
             callback({ success: true });
           } catch (error) {
-            console.error(`[DEBUG] Error applying for leave:`, error);
+            logger.error(`[DEBUG] Error applying for leave:`, error);
             const message =
               error instanceof Error
                 ? error.message
@@ -371,7 +345,6 @@ export class SocketServer implements ISocketServer {
           }) => void
         ) => {
           try {
-            console.log('Received view-leave-history event with data:', dto);
             if (!dto.studentId && socket.data.userRole !== Role.Teacher) {
               throw new UnauthorizedError(
                 'Only teachers can view pending leave requests'
@@ -388,19 +361,13 @@ export class SocketServer implements ISocketServer {
               );
             }
 
-            console.log(
-              `[DEBUG] Viewing leave history for student: ${dto.studentId || 'all pending (teacher)'}, userId: ${socket.data.userId}`
-            );
             const leaves = await this.viewLeaveHistoryUseCase.execute({
               studentId: dto.studentId || '',
               userId: socket.data.userId,
             });
             callback({ success: true, leaves });
-            console.log(
-              `[DEBUG] Leave history retrieved: ${leaves.length} leaves`
-            );
           } catch (error) {
-            console.error(`[DEBUG] Error viewing leave history:`, error);
+            logger.error(`[DEBUG] Error viewing leave history:`, error);
             const message =
               error instanceof Error
                 ? error.message
@@ -421,7 +388,6 @@ export class SocketServer implements ISocketServer {
           callback: (response: { success: boolean; error?: string }) => void
         ) => {
           try {
-            console.log('Received approve-reject-leave event with data:', dto);
             if (!dto.leaveId || !dto.teacherId || !dto.status) {
               throw new ValidationError(
                 'Missing required fields: leaveId, teacherId, status'
@@ -438,20 +404,14 @@ export class SocketServer implements ISocketServer {
               );
             }
 
-            console.log(
-              `[DEBUG] Approving/Rejecting leave: ${dto.leaveId}, ${dto.status}`
-            );
+
             const leave = await this.approveRejectLeaveUseCase.execute(dto);
             socket.emit('leave-updated', { leave }); // Emit leave object in a payload
             this.io
               .to(`user-${leave.studentId}`)
               .emit('leave-updated', { leave });
-            console.log(
-              `[DEBUG] Leave updated successfully: ${leave.id}, ${leave.status}`
-            );
             callback({ success: true });
           } catch (error) {
-            console.error(`[DEBUG] Error approving/rejecting leave:`, error);
             const message =
               error instanceof Error
                 ? error.message
@@ -537,7 +497,7 @@ export class SocketServer implements ISocketServer {
               });
             }
           } catch (error) {
-            console.error('Error scheduling live session:', error);
+            logger.error('Error scheduling live session:', error);
             socket.emit(
               'error',
               error instanceof Error
@@ -566,9 +526,6 @@ export class SocketServer implements ISocketServer {
           socket.emit('live-session-joined', response);
 
           socket.join(dto.sessionId);
-          console.log(
-            `User ${socket.data.userId} joined session room ${dto.sessionId}`
-          );
 
           const updatedSession = await this.liveSessionRepository.findById(
             dto.sessionId
@@ -585,7 +542,7 @@ export class SocketServer implements ISocketServer {
             .to(dto.sessionId)
             .emit('participants-updated', { participants });
         } catch (error) {
-          console.error('Error joining live session:', error);
+          logger.error('Error joining live session:', error);
           socket.emit(
             'error',
             error instanceof Error
@@ -597,9 +554,6 @@ export class SocketServer implements ISocketServer {
 
       socket.on('join-session-room', (sessionId: string) => {
         socket.join(sessionId);
-        console.log(
-          `User ${socket.data.userId} joined session room ${sessionId}`
-        );
       });
 
       socket.on(
@@ -642,7 +596,7 @@ export class SocketServer implements ISocketServer {
 
             socket.leave(sessionId);
           } catch (error) {
-            console.error('Error leaving live session:', error);
+            logger.error('Error leaving live session:', error);
             socket.emit(
               'error',
               error instanceof Error
@@ -656,11 +610,6 @@ export class SocketServer implements ISocketServer {
       socket.on(
         'student-session-duration',
         async (data: TrackSessionDurationDTO) => {
-          console.log(
-            '[SessionDurationController] Received student-session-duration at',
-            new Date().toISOString(),
-            data
-          );
           try {
             await this.trackSessionDurationUseCase.execute({
               userId: data.userId,
@@ -669,16 +618,9 @@ export class SocketServer implements ISocketServer {
               joinTime: new Date(data.joinTime),
               leaveTime: new Date(data.leaveTime),
             });
-            console.log(
-              '[SessionDurationController] Session duration tracked successfully at',
-              new Date().toISOString()
-            );
+
           } catch (error) {
-            console.error(
-              '[SessionDurationController] Error at',
-              new Date().toISOString(),
-              error
-            );
+
             socket.emit('error', {
               message: `Failed to track session duration: ${(error as Error).message}`,
             });
@@ -718,7 +660,7 @@ export class SocketServer implements ISocketServer {
             });
             this.io.emit('live-session-ended', { sessionId });
           } catch (error) {
-            console.error('Error ending live session:', error);
+            logger.error('Error ending live session:', error);
             socket.emit(
               'error',
               error instanceof Error
@@ -733,9 +675,6 @@ export class SocketServer implements ISocketServer {
         'renew-token',
         async ({ sessionId, participantId }, callback) => {
           try {
-            console.log(
-              `Renewing token for session ${sessionId}, participant ${participantId}`
-            );
             const session =
               await this.liveSessionRepository.findById(sessionId);
             if (!session || !session.roomId) {
@@ -745,12 +684,12 @@ export class SocketServer implements ISocketServer {
               session.roomId,
               participantId
             );
-            console.log('Token renewed successfully:', token);
+            logger.info('Token renewed successfully:', token);
             callback({ token });
           } catch (error) {
             const errorMessage =
               error instanceof Error ? error.message : 'Unknown error';
-            console.error('Error renewing token:', errorMessage);
+            logger.error('Error renewing token:', errorMessage);
             socket.emit('error', { message: errorMessage });
             callback({ error: errorMessage });
           }
@@ -775,7 +714,7 @@ export class SocketServer implements ISocketServer {
       });
 
       socket.on('disconnect', () => {
-        console.log(
+        logger.info(
           `User disconnected: ${socket.data.userId} (socket ID: ${socket.id})`
         );
       });

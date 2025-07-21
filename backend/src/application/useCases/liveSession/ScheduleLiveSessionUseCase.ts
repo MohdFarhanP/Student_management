@@ -6,6 +6,7 @@ import { SessionStatus } from '../../../domain/types/enums';
 import { Queue } from 'bullmq';
 import { ValidationError } from '../../../domain/errors';
 import { ScheduleLiveSessionDTO } from '../../dtos/liveSessionDtos';
+import logger from '../../../logger';
 
 export class ScheduleLiveSession implements IScheduleLiveSessionUseCase {
   constructor(
@@ -66,7 +67,7 @@ export class ScheduleLiveSession implements IScheduleLiveSessionUseCase {
 
     // Schedule the session start using BullMQ
     const delay = effectiveScheduledAt.getTime() - Date.now();
-    console.log(
+    logger.info(
       `Scheduling live session ${savedSession.id} with delay ${delay}ms`
     );
     await this.sessionQueue.add('live-session', savedSession, {

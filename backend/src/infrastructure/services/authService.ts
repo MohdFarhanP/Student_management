@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { IAuthService } from '../../application/services/IAuthService';
 import { Role } from '../../domain/types/enums';
+import logger from '../../logger';
 
 export class AuthService implements IAuthService {
   private jwtSecret = process.env.JWT_SECRET;
@@ -19,7 +20,6 @@ export class AuthService implements IAuthService {
       const saltRounds = 10;
       return bcrypt.hash(password, saltRounds);
     } catch (error) {
-      console.log('this is the error from the hashPassword', error);
       throw new Error('Failed to hash password');
     }
   }
@@ -40,7 +40,7 @@ export class AuthService implements IAuthService {
       };
       return obj;
     } catch (error) {
-      console.log('error on verify Refresh token ', error);
+      logger.error('error on verify Refresh token ', error);
       throw error;
     }
   }
@@ -52,7 +52,7 @@ export class AuthService implements IAuthService {
         role: Role;
       };
     } catch (error) {
-      console.error('Error verifying token in AuthService:', error);
+      logger.error('Error verifying token in AuthService:', error);
       throw error;
     }
   }

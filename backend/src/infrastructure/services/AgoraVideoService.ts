@@ -1,6 +1,7 @@
 import { IVideoService } from '../../application/services/IVideoService';
 import { v4 as uuidv4 } from 'uuid';
 import { RtcTokenBuilder, RtcRole } from 'agora-token';
+import logger from '../../logger';
 
 export class AgoraVideoService implements IVideoService {
   private appId: string;
@@ -9,8 +10,6 @@ export class AgoraVideoService implements IVideoService {
   constructor() {
     this.appId = process.env.AGORA_APP_ID || '';
     this.appCertificate = process.env.AGORA_APP_CERTIFICATE || '';
-    console.log('AgoraVideoService - App ID:', this.appId);
-    console.log('AgoraVideoService - App Certificate:', this.appCertificate);
     if (!this.appId || !this.appCertificate) {
       throw new Error(
         'AGORA_APP_ID and AGORA_APP_CERTIFICATE must be set in environment variables'
@@ -27,7 +26,7 @@ export class AgoraVideoService implements IVideoService {
     const expirationTimeInSeconds = 3600; // Token expires in 1 hour
     const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
 
-    console.log('Generating Agora token with:', {
+    logger.debug('Generating Agora token with:', {
       appId: this.appId,
       appCertificate: this.appCertificate,
       channelName: roomId,
@@ -47,19 +46,19 @@ export class AgoraVideoService implements IVideoService {
       privilegeExpiredTs // 7th argument: privilegeExpiredTs
     );
 
-    console.log('Generated Agora Token:', token);
+    logger.debug('Generated Agora Token:', token);
     return token;
   }
 
   async startSession(roomId: string): Promise<void> {
-    console.log(`Starting video session in room ${roomId}`);
+    logger.info(`Starting video session in room ${roomId}`);
   }
 
   async joinSession(roomId: string, participantId: string): Promise<void> {
-    console.log(`Participant ${participantId} joined room ${roomId}`);
+    logger.info(`Participant ${participantId} joined room ${roomId}`);
   }
 
   async endSession(roomId: string): Promise<void> {
-    console.log(`Ending video session in room ${roomId}`);
+    logger.info(`Ending video session in room ${roomId}`);
   }
 }

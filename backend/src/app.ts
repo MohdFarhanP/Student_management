@@ -6,6 +6,7 @@ import { DependencyContainer } from './infrastructure/config/dependencyContainer
 import { ISocketServer } from './application/services/ISocketServer';
 import { connectDB } from './infrastructure/database/mongoos/database';
 import cookieParser from 'cookie-parser';
+import logger from './logger';
 import {
   AppError,
   BadRequestError,
@@ -41,7 +42,7 @@ const app = express();
 const server = new Server(app);
 
 if (!process.env.FRONTEND_CLINT_URL) {
-  console.error('Error: FRONTEND_CLINT_URL environment variable is not set.');
+  logger.error('Error: FRONTEND_CLINT_URL environment variable is not set.');
   process.exit(1);
 }
 
@@ -53,7 +54,7 @@ const io = new SocketIOServer(server, {
   },
 });
 
-console.log('SocketIOServer created');
+logger.info('SocketIOServer created');
 // Initialize Dependency Container
 const dependencyContainer = DependencyContainer.getInstance(io);
 
@@ -127,7 +128,7 @@ app.use(
     } else if (error instanceof ForbiddenError) {
       res.status(HttpStatus.FORBIDDEN).json({ error: error.message });
     } else {
-      console.error(error);
+      logger.error(error);
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ error: 'An unexpected error occurred' });
@@ -140,13 +141,13 @@ const socketServer: ISocketServer = dependencyContainer.getSocketServer();
 socketServer.initialize();
 
 process.on('SIGINT', async () => {
-  console.log('SIGINT received, shutting down gracefully...');
+  logger.info('SIGINT received, shutting down gracefully...');
   await dependencyContainer.shutdown();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully...');
+  logger.info('SIGTERM received, shutting down gracefully...');
   await dependencyContainer.shutdown();
   process.exit(0);
 });

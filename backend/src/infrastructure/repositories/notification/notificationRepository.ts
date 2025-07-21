@@ -9,6 +9,7 @@ import {
   mapRecipientType,
   mapRole,
 } from '../../database/mongoos/helpers/enumMappers';
+import logger from '../../../logger';
 
 export class NotificationRepository implements INotificationRepository {
   async save(notification: SendNotificationDTO): Promise<INotification> {
@@ -19,17 +20,17 @@ export class NotificationRepository implements INotificationRepository {
       ) {
         throw new ValidationError('Invalid scheduledAt format');
       }
-      console.log(
+      logger.info(
         'Saving notification at server time (UTC):',
         new Date().toISOString()
       );
-      console.log('Scheduled at (UTC):', notification.scheduledAt);
+      logger.info('Scheduled at (UTC):', notification.scheduledAt);
       const doc = new NotificationModel({
         ...notification,
         scheduledAt: notification.scheduledAt || undefined,
       });
       const saved = await doc.save();
-      console.log(
+      logger.info(
         'Saved notification with createdAt (UTC):',
         saved.createdAt.toISOString()
       );
@@ -56,14 +57,14 @@ export class NotificationRepository implements INotificationRepository {
   async findScheduled(currentTime: Date): Promise<INotification[]> {
     try {
       const utcCurrentTime = currentTime.toISOString();
-      console.log(
+      logger.info(
         `findScheduled querying for notifications with scheduledAt <= ${utcCurrentTime}, sent: false`
       );
       const docs = await NotificationModel.find({
         scheduledAt: { $lte: utcCurrentTime, $exists: true },
         sent: false,
       }).sort({ scheduledAt: 1 });
-      console.log(`findScheduled found ${docs.length} notifications`);
+      logger.info(`findScheduled found ${docs.length} notifications`);
       return docs.map(
         (doc) =>
           new NotificationEntity({

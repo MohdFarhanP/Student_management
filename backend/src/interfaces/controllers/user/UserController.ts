@@ -8,6 +8,7 @@ import { Role } from '../../../domain/types/enums';
 import { IApiResponse, IUser } from '../../../domain/types/interfaces';
 import { IUserController } from './IUserController';
 import { BadRequestError } from '../../../domain/errors';
+import logger from '../../../logger';
 
 const ACCESS_TOKEN_MAX_AGE = 15 * 60 * 1000; // 15 minutes
 const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -50,7 +51,7 @@ export class UserController implements IUserController {
         data: result.user,
       } as IApiResponse<IUser>);
     } catch (error: unknown) {
-      console.error('Login Error:', error);
+      logger.error('Login Error:', error);
       const message =
         error instanceof Error ? error.message : 'Internal server error';
       res.status(HttpStatus.BAD_REQUEST).json({
@@ -75,7 +76,7 @@ export class UserController implements IUserController {
         message: 'Logout successful',
       } as IApiResponse<never>);
     } catch (error: unknown) {
-      console.error('Logout Error:', error);
+      logger.error('Logout Error:', error);
       const message =
         error instanceof Error ? error.message : 'Internal server error';
       res.status(HttpStatus.BAD_REQUEST).json({
@@ -117,7 +118,7 @@ export class UserController implements IUserController {
         data: user,
       } as IApiResponse<IUser>);
     } catch (error: unknown) {
-      console.error('Update Password Error:', error);
+      logger.error('Update Password Error:', error);
       const message =
         error instanceof Error ? error.message : 'Internal server error';
     }

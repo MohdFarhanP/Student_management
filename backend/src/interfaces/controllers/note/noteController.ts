@@ -33,7 +33,6 @@ export class NoteController implements INoteController {
       if (!title || !fileUrl || !fileHash) {
         throw new BadRequestError('Title, fileHash and fileUrl are required');
       }
-      console.log('Uploading note:', { title, fileUrl, fileHash });
       const note = await this.uploadNoteUseCase.execute(
         title,
         fileUrl,

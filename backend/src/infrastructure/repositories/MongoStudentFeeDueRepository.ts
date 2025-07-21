@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { IStudentFeeDueRepository } from '../../domain/repositories/IStudentFeeDueRepository';
 import { StudentFeeDue } from '../../domain/entities/StudentFeeDue';
 import { StudentFeeDueModel } from '../database/mongoos/models/StudentFeeDueModel';
+import logger from '../../logger';
 
 function isValidObjectId(id: any): boolean {
   return mongoose.Types.ObjectId.isValid(id) && String(id).length === 24;
@@ -52,7 +53,7 @@ export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
         if (isValidObjectId(paymentIdRaw)) {
           paymentIdObj = new mongoose.Types.ObjectId(paymentIdRaw);
         } else {
-          console.error(`Invalid paymentId provided: ${paymentIdRaw}`);
+          logger.error(`Invalid paymentId provided: ${paymentIdRaw}`);
           paymentIdObj = undefined;
         }
       } else {
@@ -71,7 +72,7 @@ export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
         }
       );
     } catch (error) {
-      console.log('form update on mongostddrrdue repo', error);
+      logger.error('form update on mongostddrrdue repo', error);
       throw error;
     }
   }

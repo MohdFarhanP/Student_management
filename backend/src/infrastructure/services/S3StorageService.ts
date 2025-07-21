@@ -43,9 +43,6 @@ export class S3StorageService implements IStorageService {
       expiresIn: 60,
     });
     const fileUrl = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${key}`;
-    console.log(
-      `This is the signedUrl ${signedUrl} and this is the fileUrl ${fileUrl}`
-    );
     return { signedUrl, fileUrl };
   }
 

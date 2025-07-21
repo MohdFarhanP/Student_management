@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { IEmailService } from '../../application/services/IEmailService';
+import logger from '../../logger';
 
 dotenv.config();
 
@@ -44,9 +45,8 @@ export class EmailService implements IEmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`Default password ${password} sent to ${to}`);
     } catch (error) {
-      console.error('Error sending email:', error);
+      logger.error('Error sending email:', error);
       throw new Error('Failed to send default password email');
     }
   }

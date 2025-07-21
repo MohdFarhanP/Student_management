@@ -5,6 +5,7 @@ import { RecurringFee } from '../../../../domain/entities/RecurringFee';
 import { IApiResponse } from '../../../../domain/types/interfaces';
 import { IRecurringFeeController } from './IRecurringFeeController';
 import { IRecurringFeeDto } from '../../../../application/dtos/feeDtos';
+import logger from '../../../../logger';
 
 export class RecurringFeeController implements IRecurringFeeController {
   constructor(private recurringFeeRepository: IRecurringFeeRepository) {}
@@ -51,7 +52,7 @@ export class RecurringFeeController implements IRecurringFeeController {
         data: payload,
       } as IApiResponse<typeof payload>);
     } catch (error: any) {
-      console.error('Error creating recurring fee:', error);
+      logger.error('Error creating recurring fee:', error);
 
       const message =
         error instanceof Error ? error.message : 'Internal server error';
@@ -82,7 +83,7 @@ export class RecurringFeeController implements IRecurringFeeController {
         data: feesDto,
       } as IApiResponse<IRecurringFeeDto[]>);
     } catch (error: any) {
-      console.error('Error creating recurring fee:', error);
+      logger.error('Error creating recurring fee:', error);
 
       const message =
         error instanceof Error ? error.message : 'Internal server error';

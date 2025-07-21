@@ -13,7 +13,7 @@ export const socket: Socket = io(PORT, {
 });
 
 socket.on('connect', () => {
-  console.log('Socket.IO connected successfully, socket ID:', socket.id);
+  console.info('Socket.IO connected successfully, socket ID:', socket.id);
 });
 
 socket.on('connect_error', (err) => {
@@ -21,11 +21,11 @@ socket.on('connect_error', (err) => {
 });
 
 socket.on('disconnect', (reason) => {
-  console.log('Socket.IO disconnected, reason:', reason);
+  console.info('Socket.IO disconnected, reason:', reason);
 });
 
 socket.on('reconnect', (attempt) => {
-  console.log('Socket.IO reconnected after attempt:', attempt);
+  console.info('Socket.IO reconnected after attempt:', attempt);
 });
 
 socket.on('reconnect_error', (err) => {

@@ -5,6 +5,7 @@ import { TeacherModel } from '../database/mongoos/models/teacherModel';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { Role } from '../../domain/types/enums';
 import { IUser } from '../../domain/types/interfaces';
+import logger from '../../logger';
 
 interface IUserDocument extends Document {
   id: string;
@@ -56,7 +57,7 @@ export class UserRepository implements IUserRepository {
         refreshToken: user.refreshToken ?? null,
       };
     } catch (error) {
-      console.log('error on user repo: ', error);
+      logger.error('error on user repo: ', error);
       return null;
     }
   }
@@ -89,7 +90,7 @@ export class UserRepository implements IUserRepository {
         if (user) break;
       }
     } catch (error) {
-      console.log('error on update refresh token', error);
+      logger.error('error on update refresh token', error);
     }
   }
 

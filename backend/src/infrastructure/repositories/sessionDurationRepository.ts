@@ -1,5 +1,6 @@
 import { SessionDuration } from '../../domain/entities/sessionDuration';
 import { ISessionDurationRepository } from '../../domain/repositories/ISessionDurationRepository';
+import logger from '../../logger';
 import { SessionDurationModel } from '../database/mongoos/models/sessionDurationModel';
 
 export class MongoSessionDurationRepository
@@ -14,7 +15,7 @@ export class MongoSessionDurationRepository
       leaveTime: sessionDuration.leaveTime,
     });
     await doc.save();
-    console.log(
+    logger.info(
       '[MongoSessionDurationRepository] Saved duration at',
       new Date().toISOString(),
       { userId: sessionDuration.userId, sessionId: sessionDuration.sessionId }

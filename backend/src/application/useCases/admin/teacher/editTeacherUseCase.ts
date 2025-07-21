@@ -6,6 +6,7 @@ import { IClassRepository } from '../../../../domain/repositories/IClassReposito
 import { ISubjectRepository } from '../../../../domain/repositories/ISubjectRepository';
 import { Types } from 'mongoose';
 import { Gender, Day } from '../../../../domain/types/enums';
+import logger from '../../../../logger';
 
 export class EditTeacherUseCase implements IEditTeacherUseCase {
   constructor(
@@ -39,14 +40,14 @@ export class EditTeacherUseCase implements IEditTeacherUseCase {
         teacherData.assignedClass &&
         typeof teacherData.assignedClass === 'string'
       ) {
-        console.log(
+        logger.debug(
           'assinged class in teacher data',
           teacherData.assignedClass
         );
         const classDoc = await this.classRepository.findByName(
           teacherData.assignedClass
         );
-        console.log('editClassUseCase getting class doc from repo :', classDoc);
+        logger.debug('editClassUseCase getting class doc from repo :', classDoc);
         if (!classDoc) {
           throw new Error(`Class '${teacherData.assignedClass}' not found`);
         }

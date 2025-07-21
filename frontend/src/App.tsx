@@ -56,7 +56,6 @@ const AppContent: React.FC = () => {
     }
 
     socket.on('connect', () => {
-      console.log('App.tsx: Socket connected, socket ID:', socket.id);
       socket.emit('joinNotification');
     });
 

@@ -43,7 +43,6 @@ export class ViewLeaveHistoryUseCase implements IViewLeaveHistoryUseCase {
       );
     }
     const le = this.leaveRepository.findByStudentId(dto.studentId);
-    console.log('finded the history for students ', le);
     return le;
   }
 }

@@ -3,6 +3,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { INotificationRepository } from '../../domain/repositories/INotificationRepository';
 import { INotification } from '../../domain/types/interfaces';
 import { RecipientType } from '../../domain/types/enums';
+import logger from '../../logger';
 
 export const setupNotificationQueue = (
   io: SocketIOServer,
@@ -13,9 +14,6 @@ export const setupNotificationQueue = (
     'notifications',
     async (job) => {
       const notification = job.data as INotification;
-      console.log(
-        `Processing queued notification ${notification.id} at ${new Date().toISOString()}`
-      );
 
       if (notification.recipientType === RecipientType.Global) {
         io.emit('notification', notification);
@@ -30,7 +28,6 @@ export const setupNotificationQueue = (
       }
 
       await notificationRepository.markAsSent(notification.id);
-      console.log(`Marked notification ${notification.id} as sent`);
     },
     {
       connection: {
@@ -42,15 +39,15 @@ export const setupNotificationQueue = (
   );
 
   worker.on('error', (error) => {
-    console.error('Worker error:', error);
+    logger.error('Worker error:', error);
   });
 
   worker.on('completed', (job) => {
-    console.log(`Job ${job.id} completed`);
+    logger.info(`Job ${job.id} completed`);
   });
 
   worker.on('failed', (job, error) => {
-    console.error(`Job ${job.id} failed with error:`, error);
+    logger.error(`Job ${job.id} failed with error:`, error);
   });
 
   return worker;

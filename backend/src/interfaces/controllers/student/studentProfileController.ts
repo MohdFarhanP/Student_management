@@ -10,6 +10,7 @@ import { IStudentFeeDueRepository } from '../../../domain/repositories/IStudentF
 import { IProcessPaymentUseCase } from '../../../domain/useCase/IProcessPaymentUseCase';
 import { IGetStudentInfoUseCase } from '../../../domain/useCase/IGetStudentInfoUseCase';
 import { studentInfoDto } from '../../../application/dtos/studentDtos';
+import logger from '../../../logger';
 
 export class StudentProfileController implements IStudentProfileController {
   constructor(
@@ -133,7 +134,7 @@ export class StudentProfileController implements IStudentProfileController {
         data: duesDto,
       } as IApiResponse<typeof duesDto>);
     } catch (error: any) {
-      console.error('Error fetching unpaid dues:', error);
+      logger.error('Error fetching unpaid dues:', error);
 
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
@@ -171,7 +172,7 @@ export class StudentProfileController implements IStudentProfileController {
         data: payload,
       } as IApiResponse<typeof payload>);
     } catch (error: any) {
-      console.error('Error processing payment:', error);
+      logger.error('Error processing payment:', error);
 
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,

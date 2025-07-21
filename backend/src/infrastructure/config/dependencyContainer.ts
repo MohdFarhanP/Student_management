@@ -188,6 +188,7 @@ import { GetStudentInfoUseCase } from '../../application/useCases/student/GetStu
 import { MongoPaymentRepository } from '../repositories/MongoPaymentRepository';
 import { IGenerateMonthlyDuesUseCase } from '../../domain/useCase/IGenerateMonthlyDuesUseCase';
 import { EmailService } from '../services/emailService';
+import logger from '../../logger';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -1212,19 +1213,19 @@ export class DependencyContainer {
 
     if (notificationWorker) {
       await notificationWorker.close();
-      console.log('Notification Worker closed');
+      logger.info('Notification Worker closed');
     }
     if (notificationQueue) {
       await notificationQueue.close();
-      console.log('Notification Queue closed');
+      logger.info('Notification Queue closed');
     }
     if (sessionWorker) {
       await sessionWorker.close();
-      console.log('Session Worker closed');
+      logger.info('Session Worker closed');
     }
     if (sessionQueue) {
       await sessionQueue.close();
-      console.log('Session Queue closed');
+      logger.info('Session Queue closed');
     }
   }
 

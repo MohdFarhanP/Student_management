@@ -185,7 +185,6 @@ export class AttendanceController implements IAttendanceController {
 
       const sessionAttendance =
         await this.getRecentSessionAttendanceUseCase.execute(user.id);
-      console.log('this is the session attendance', sessionAttendance);
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Attendance records fetched successfully',

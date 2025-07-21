@@ -10,6 +10,7 @@ import {
 } from '../../../domain/errors';
 import { HttpStatus } from '../../../domain/types/enums';
 import { Role } from '../../../domain/types/enums';
+import logger from '../../../logger';
 
 export class ChatController implements IChatController {
   constructor(
@@ -54,7 +55,7 @@ export class ChatController implements IChatController {
       } else if (error instanceof AppError) {
         res.status(error.statusCode).json({ error: error.message });
       } else {
-        console.error(error);
+        logger.error(error);
         res
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
           .json({ error: 'An unexpected error occurred' });
