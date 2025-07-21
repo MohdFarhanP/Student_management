@@ -39,19 +39,16 @@ const AppContent: React.FC = () => {
   // Manage socket connection at the app level
   useEffect(() => {
     if (loading || !hasCheckedAuth) {
-      console.log('App.tsx: Still loading or checking auth, skipping socket connection');
       return;
     }
 
     if (!user) {
-      console.log('App.tsx: No user, disconnecting socket');
       if (socket.connected) {
         socket.disconnect();
       }
       return;
     }
 
-    console.log('App.tsx: Connecting socket for user:', user.id);
     socket.auth = { userId: user.id, userRole: user.role };
 
     if (!socket.connected) {
@@ -68,7 +65,6 @@ const AppContent: React.FC = () => {
     });
 
     socket.on('disconnect', (reason: string) => {
-      console.log('App.tsx: Socket disconnected, reason:', reason);
       if (reason === 'io server disconnect' && user) {
         // Server disconnected us, attempt to reconnect
         socket.connect();
@@ -76,7 +72,6 @@ const AppContent: React.FC = () => {
     });
 
     return () => {
-      console.log('App.tsx: Cleaning up socket listeners');
       socket.off('connect');
       socket.off('connect_error');
       socket.off('disconnect');

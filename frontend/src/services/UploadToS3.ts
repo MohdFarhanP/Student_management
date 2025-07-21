@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { axiosInstance } from "../api/apiClient";
 const presignedUrl = import.meta.env.VITE_PRESIGNED_URL;
 
 export enum FileType {
@@ -50,7 +50,7 @@ export const uploadToS3 = async (file: File): Promise<{ fileUrl: string; fileHas
     console.log('Uploading file:', fileName, 'Type:', file.type, 'Hash:', fileHash, 'Size:', file.size);
 
     // Request pre-signed URL from backend
-    const response = await axios.post<ApiResponse<PresignedUrlResponse>>(
+    const response = await axiosInstance.post<ApiResponse<PresignedUrlResponse>>(
       presignedUrl,
       {
         fileName, // Use the computed fileName instead of file.name
@@ -66,7 +66,7 @@ export const uploadToS3 = async (file: File): Promise<{ fileUrl: string; fileHas
     console.log(`signedUrl: ${signedUrl}, fileUrl will be: ${fileUrl}`);
 
     // Upload file to S3 using pre-signed URL
-    await axios.put(signedUrl, file, {
+    await axiosInstance.put(signedUrl, file, {
       headers: {
         'Content-Type': file.type,
       },

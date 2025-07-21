@@ -52,4 +52,4 @@ export const refreshUserToken = (showErrorToast = true) =>
   ).then((res) =>{
     console.log("refreshUsertoken api response",res.data);
     return res.data
-  }).catch((err)=> console.log('auth refresh token error', err));
+  }).catch((err)=> console.error('auth refresh token error', err));
