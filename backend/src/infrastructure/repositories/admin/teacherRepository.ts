@@ -243,4 +243,14 @@ export class TeacherRepository implements ITeacherRepository {
 
     return sessionDtos;
   }
+  async search(quary: string): Promise<TeacherEntity[] | null> {
+    const rawTeachersData = await TeacherModel
+      .find({ name: { $regex: quary, $options: 'i' }, isDeleted: false })
+      .lean();
+    if (!rawTeachersData) return null;
+    const teachers = rawTeachersData.map(
+      (s) => new TeacherEntity(mapTeacherDocToEntity(s))
+    );
+    return teachers;
+  }
 }

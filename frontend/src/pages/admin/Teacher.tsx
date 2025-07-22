@@ -1,5 +1,5 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
-import { getTeachers } from '../../api/admin/teacherApi';
+import { ChangeEvent, Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { getTeachers, searchTeachers } from '../../api/admin/teacherApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBoundary from '../../components/ErrorBoundary';
 // import { ITeacher } from './Teacher';
@@ -37,21 +37,24 @@ const Teacher = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isOpen, setIsOpen] = useState(false); // For AdminSideBar
+  const [isOpen, setIsOpen] = useState(false); 
+
+  const fetch = useCallback(async () => {
+    const data = await getTeachers(page, limit);
+    if (data) {
+      setTeachers(data.teachers ?? []);
+      setTotalCount(data.totalCount ?? 0);
+    } else {
+      setTeachers([]);
+      setTotalCount(0);
+    }
+  }, [page, limit]);
 
   useEffect(() => {
-    const fetch = async () => {
-      const data = await getTeachers(page, limit);
-      if (data) {
-        setTeachers(data.teachers ?? []);
-        setTotalCount(data.totalCount ?? 0);
-      } else {
-        setTeachers([]);
-        setTotalCount(0);
-      }
-    };
-    fetch();
-  }, [page]);
+    if(searchTerm.trim() === '') {
+      fetch();
+    }
+  }, [searchTerm,page, fetch]);
 
 
   const totalPages = Math.max(Math.ceil(totalCount / limit), 1);
@@ -75,9 +78,16 @@ const Teacher = () => {
     if (selectedTeacher?.id === teacherId) setSelectedTeacher(null);
   };
 
-  const filterTeachers = teachers.filter((teacher) =>
-    teacher.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target?.value)
+    if (searchTerm.trim() !== '') {
+      const teachers = await searchTeachers(searchTerm);
+      if (teachers) {
+        setTeachers(teachers);
+        setTotalCount(teachers.length);
+      }
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-base-100 dark:bg-gray-900 overflow-hidden">
@@ -115,7 +125,7 @@ const Teacher = () => {
         <input
           type="search"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => handleSearch(e)}
           className="input input-bordered w-full max-w-md mb-6 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600 focus:ring-primary"
           placeholder="Search teachers by name..."
         />
@@ -126,7 +136,7 @@ const Teacher = () => {
             <Suspense fallback={<LoadingSpinner />}>
               <TeacherTable
                 setSelectedTeacher={setSelectedTeacher}
-                teachers={filterTeachers}
+                teachers={teachers}
                 totalPages={totalPages}
                 setIsOpen={setIsEditModalOpen}
                 page={page}

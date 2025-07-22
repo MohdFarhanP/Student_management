@@ -9,4 +9,5 @@ export interface ITeacherController {
   getClasses(req: Request, res: Response): Promise<void>;
   getTodaySchedule(req: Request, res: Response): Promise<void>;
   getLiveSessions(req: Request, res: Response): Promise<void>;
+  searchTeachers(req: Request, res: Response): Promise<void>
 }

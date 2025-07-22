@@ -13,7 +13,6 @@ export const mapToFullStudent = (data: any): IStudent => ({
     typeof data.class === 'string'
       ? data.class
       : data.class?.name || data.class?.toString() || '',
-  password: data.password ?? '',
   profileImage: data.profileImage ?? '',
   address: {
     houseName: data.address?.houseName || '',

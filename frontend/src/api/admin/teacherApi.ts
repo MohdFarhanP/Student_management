@@ -4,8 +4,8 @@ import { ITeacher } from '../../pages/admin/Teacher';
 const ADMIN_TEACHER_API_URL = '/admin/teacher';
 
 interface TeachersResponse {
-    teachers: ITeacher[];
-    totalCount?: number;
+  teachers: ITeacher[];
+  totalCount?: number;
 }
 
 interface TeacherName {
@@ -53,7 +53,7 @@ export const getTeachers = (page: number, limit: number) =>
       params: { page, limit },
     }
   )
-    .then((res)=> res.data);
+    .then((res) => res.data);
 
 export const editTeacher = (teacherId: string, data: ITeacher) =>
   apiRequest<ApiResponse<ITeacher>, ITeacher>(
@@ -61,7 +61,7 @@ export const editTeacher = (teacherId: string, data: ITeacher) =>
     `${ADMIN_TEACHER_API_URL}/${teacherId}`,
     data
   )
-    .then((res)=> res.data);
+    .then((res) => res.data);
 
 export const addTeacher = (data: Partial<ITeacher>) =>
   apiRequest<ApiResponse<ITeacher>, Partial<ITeacher>>(
@@ -69,7 +69,7 @@ export const addTeacher = (data: Partial<ITeacher>) =>
     `${ADMIN_TEACHER_API_URL}/teacher`,
     data
   )
-    .then((res)=> res.data);
+    .then((res) => res.data);
 
 export const deleteTeacher = (teacherId: string) =>
   apiRequest<ApiResponse<void>>(
@@ -79,12 +79,19 @@ export const deleteTeacher = (teacherId: string) =>
 
 export const getTeacherClasses = async () =>
   apiRequest<ApiResponse<ClassSubject[]>>('get', `${ADMIN_TEACHER_API_URL}/classes`)
-    .then((res)=> res.data);
+    .then((res) => res.data);
 
-export const getTodaySchedule = async ()=>
+export const getTodaySchedule = async () =>
   apiRequest<ApiResponse<Schedule[]>>('get', `${ADMIN_TEACHER_API_URL}/schedule/today`)
-    .then((res)=> res.data);
+    .then((res) => res.data);
 
 export const getLiveSessions = async () =>
   apiRequest<ApiResponse<Session[]>>('get', `${ADMIN_TEACHER_API_URL}/sessions`)
-    .then((res)=> res.data);
+    .then((res) => res.data);
+
+export const searchTeachers = async (quary: string) =>
+  await apiRequest<ApiResponse<ITeacher[]>>(
+    'get',
+    `${ADMIN_TEACHER_API_URL}/search?q=${quary}`
+  )
+    .then((res) => res.data);

@@ -23,4 +23,5 @@ export interface ITeacherRepository {
   getTeacherClasses(teacherId: string): Promise<ClassSubjectDto[]>;
   getTodaySchedule(teacherId: string): Promise<ScheduleDto[]>;
   getLiveSessions(teacherId: string): Promise<SessionDto[]>;
+  search(quary: string): Promise<TeacherEntity[] | null>;
 }

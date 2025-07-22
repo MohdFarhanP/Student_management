@@ -1,5 +1,5 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
-import { IStudent } from '../../api/admin/studentApi';
+import { ChangeEvent, Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { IStudent, searchStudents } from '../../api/admin/studentApi';
 import { getStudents } from '../../api/admin/studentApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBoundary from '../../components/ErrorBoundary';
@@ -21,17 +21,20 @@ const Student = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isOpen, setIsOpen] = useState(false); // For AdminSideBar
+  const [isOpen, setIsOpen] = useState(false);
+
+  const fetch = useCallback(async () => {
+    const { students, totalCount } = await getStudents(page, limit);
+    console.log("studentpage", students, totalCount);
+    setStudents(students);
+    setTotalCount(totalCount);
+  },[page, limit]);
 
   useEffect(() => {
-    const fetch = async () => {
-      const { students, totalCount } = await getStudents(page, limit);
-      console.log("studentpage", students, totalCount);
-      setStudents(students);
-      setTotalCount(totalCount);
-    };
-    fetch();
-  }, [page]);
+    if (searchTerm.trim() === '') {
+      fetch();
+    }
+  }, [searchTerm, page, fetch]);
 
   const totalPages = Math.max(Math.ceil(totalCount / limit), 1);
 
@@ -54,9 +57,16 @@ const Student = () => {
     if (selectedStudent?.id === studentId) setSelectedStudent(null);
   };
 
-  const filterStudent = students.filter((student) =>
-    student.name.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase())
-  );
+  const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target?.value)
+    if (searchTerm.trim() !== '') {
+      const students = await searchStudents(searchTerm);
+      if (students) {
+        setStudents(students);
+        setTotalCount(students.length);
+      }
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-base-100 dark:bg-gray-900 overflow-hidden">
@@ -94,7 +104,7 @@ const Student = () => {
         <input
           type="search"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) =>handleSearch(e)}
           className="input input-bordered w-full max-w-md mb-6 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600 focus:ring-primary"
           placeholder="Search students by name..."
         />
@@ -105,7 +115,7 @@ const Student = () => {
             <Suspense fallback={<LoadingSpinner />}>
               <StudentTable
                 setSelectedStudent={setSelectedStudent}
-                students={filterStudent}
+                students={students}
                 totalPages={totalPages}
                 setIsOpen={setIsEditModalOpen}
                 page={page}

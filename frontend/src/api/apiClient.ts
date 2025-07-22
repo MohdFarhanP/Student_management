@@ -6,7 +6,7 @@ import { HttpStatus } from '../types/httpStatus';
 
 const AXIOS_BASE_URL = import.meta.env.VITE_AXIOS_BASE_URL;
 
-const axiosInstance = axios.create({
+export const axiosInstance = axios.create({
   baseURL: AXIOS_BASE_URL,
   withCredentials: true,
 });

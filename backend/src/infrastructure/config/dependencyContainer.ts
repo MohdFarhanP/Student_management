@@ -188,6 +188,8 @@ import { GetStudentInfoUseCase } from '../../application/useCases/student/GetStu
 import { MongoPaymentRepository } from '../repositories/MongoPaymentRepository';
 import { IGenerateMonthlyDuesUseCase } from '../../domain/useCase/IGenerateMonthlyDuesUseCase';
 import { EmailService } from '../services/emailService';
+import { SearchStudentsUseCase } from '../../application/useCases/admin/student/searchStudentUseCase';
+import { SearchTeachersUseCase } from '../../application/useCases/admin/teacher/searchTeachersUseCase';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -551,6 +553,10 @@ export class DependencyContainer {
       new GetStdSessionsUsecase(this.dependencies.get('IStudentRepository'))
     );
     this.dependencies.set(
+      'ISearchStudentsUseCase',
+      new SearchStudentsUseCase(this.dependencies.get('IStudentRepository'))
+    );
+    this.dependencies.set(
       'IAdminGetStudentProfileUseCase',
       new AdminGetStudentProfileUseCase(
         this.dependencies.get('IStudentRepository')
@@ -605,6 +611,10 @@ export class DependencyContainer {
     this.dependencies.set(
       'IFetchLiveSessionsUseCase',
       new FetchLiveSessionsUseCase(this.dependencies.get('ITeacherRepository'))
+    );
+    this.dependencies.set(
+      'ISearchTeachersUseCase',
+      new SearchTeachersUseCase(this.dependencies.get('ITeacherRepository'))
     );
 
     // Use Cases (Timetable)
@@ -791,7 +801,8 @@ export class DependencyContainer {
         this.dependencies.get('IEditStudentUseCase'),
         this.dependencies.get('IDeleteStudentUseCase'),
         this.dependencies.get('IAdminGetStudentProfileUseCase'),
-        this.dependencies.get('IGetStdSessionsUsecase')
+        this.dependencies.get('IGetStdSessionsUsecase'),
+        this.dependencies.get('ISearchStudentsUseCase')
       )
     );
     this.dependencies.set(
@@ -804,7 +815,8 @@ export class DependencyContainer {
         this.dependencies.get('IDeleteTeacherUseCase'),
         this.dependencies.get('IFetchTeacherClassesUseCase'),
         this.dependencies.get('IFetchTodayScheduleUseCase'),
-        this.dependencies.get('IFetchLiveSessionsUseCase')
+        this.dependencies.get('IFetchLiveSessionsUseCase'),
+        this.dependencies.get('ISearchTeachersUseCase')
       )
     );
     this.dependencies.set(

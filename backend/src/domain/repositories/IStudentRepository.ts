@@ -20,4 +20,5 @@ export interface IStudentRepository {
   getSessions(userId: string): Promise<ILiveSessionDto[] | null>;
   findManyByIds(ids: string[]): Promise<UserInfo[]>;
   findByPhoneNo(userId: string, phonNo: number): Promise<StudentEntity | null>;
+  search(quary: string): Promise<StudentEntity[] | null>;
 }

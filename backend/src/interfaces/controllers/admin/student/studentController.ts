@@ -11,6 +11,8 @@ import { IStudent } from '../../../../domain/types/interfaces';
 import { StudentEntity } from '../../../../domain/entities/student';
 import { IGetStdSessionsUsecase } from '../../../../domain/useCase/IGetStdSessionsUsecase';
 import { ILiveSessionDto } from '../../../../application/dtos/liveSessionDtos';
+import { ISearchStudentsUseCase } from '../../../../domain/useCase/ISearchStudentsUseCase';
+import { StudentDTO } from '../../../../application/dtos/studentDtos';
 
 export class StudentController implements IStudentController {
   constructor(
@@ -19,8 +21,9 @@ export class StudentController implements IStudentController {
     private editStudentUseCase: IEditStudentUseCase,
     private deleteStudentUseCase: IDeleteStudentUseCase,
     private getStudentProfileUseCase: IGetStudentProfileUseCase,
-    private getStdSessionsUsecase: IGetStdSessionsUsecase
-  ) {}
+    private getStdSessionsUsecase: IGetStdSessionsUsecase,
+    private searchStudentsUseCase: ISearchStudentsUseCase,
+  ) { }
 
   async getStudents(req: Request, res: Response): Promise<void> {
     try {
@@ -149,6 +152,24 @@ export class StudentController implements IStudentController {
         success: true,
         message: 'Student deleted successfully',
       } as IApiResponse<never>);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
+    }
+  }
+
+  searchStudents = async (req: Request, res: Response):Promise<void> => {
+    try {
+      const query = req.query.q as string;
+      const students = await this.searchStudentsUseCase.execute(query);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Students searched successfully',
+        data: students,
+      } as IApiResponse<StudentDTO[]>);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(HttpStatus.BAD_REQUEST).json({
