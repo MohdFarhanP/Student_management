@@ -23,7 +23,6 @@ export function mapTeacherDocToEntity(doc: ITeacherModel): ITeacher {
         : doc.subject?.toString(),
     dateOfBirth: doc.dateOfBirth,
     profileImage: doc.profileImage || undefined,
-    fileHash: doc.fileHash || undefined,
     specialization: doc.specialization || undefined,
     experienceYears: doc.experienceYears || undefined,
     qualification: doc.qualification || undefined,

@@ -12,7 +12,8 @@ import { TeacherEntity } from '../../../../domain/entities/teacher';
 import { IFetchTeacherClassesUseCase } from '../../../../domain/useCase/IFetchTeacherClassesUseCase';
 import { IFetchTodayScheduleUseCase } from '../../../../domain/useCase/IFetchTodayScheduleUseCase';
 import { IFetchLiveSessionsUseCase } from '../../../../domain/useCase/IFetchLiveSessionsUseCase';
-import { TeacherNameDTO } from '../../../../application/dtos/teacherDtos';
+import { TeacherDTO, TeacherNameDTO } from '../../../../application/dtos/teacherDtos';
+import { ISearchTeachersUseCase } from '../../../../domain/useCase/ISearchTeachersUseCase';
 
 export class TeacherController implements ITeacherController {
   constructor(
@@ -23,8 +24,9 @@ export class TeacherController implements ITeacherController {
     private deleteTeacherUseCase: IDeleteTeacherUseCase,
     private fetchTeacherClassesUseCase: IFetchTeacherClassesUseCase,
     private fetchTodayScheduleUseCase: IFetchTodayScheduleUseCase,
-    private fetchLiveSessionsUseCase: IFetchLiveSessionsUseCase
-  ) {}
+    private fetchLiveSessionsUseCase: IFetchLiveSessionsUseCase,
+    private searchTeachersUseCase: ISearchTeachersUseCase,
+  ) { }
 
   async getTeachers(req: Request, res: Response): Promise<void> {
     try {
@@ -184,6 +186,24 @@ export class TeacherController implements ITeacherController {
       res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ success: false, message });
+    }
+  }
+
+  searchTeachers = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const query = req.query.q as string;
+      const teachers = await this.searchTeachersUseCase.execute(query);
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Teachers searched successfully',
+        data: teachers,
+      } as IApiResponse<TeacherDTO[]>);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message,
+      } as IApiResponse<never>);
     }
   }
 }

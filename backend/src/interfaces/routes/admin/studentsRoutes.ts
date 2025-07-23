@@ -109,4 +109,13 @@ router.get('/sessions/:userId', authenticateUser, (req, res, next) => {
   studentController.getSessions.bind(studentController)(req, res, next);
 });
 
+router.get('/search', authenticateUser,(req, res, next) => {
+  if (!studentController) {
+    throw new Error(
+      'StudentController not initialized. Dependency injection failed.'
+    );
+  }
+  studentController.searchStudents(req, res);
+});
+
 export default router;

@@ -131,3 +131,10 @@ export const getPaymentStatuses = async () =>
     `${ADMIN_STUDENT_API_URL}/payments`
   )
     .then((res)=> res.data);
+
+export const searchStudents = async (quary:string) =>
+  await apiRequest<ApiResponse<IStudent[]>>(
+    'get',
+    `${ADMIN_STUDENT_API_URL}/search?q=${quary}`
+  )
+    .then((res)=> res.data);
