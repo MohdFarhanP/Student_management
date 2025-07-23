@@ -3,6 +3,7 @@ import { IStudent, searchStudents } from '../../api/admin/studentApi';
 import { getStudents } from '../../api/admin/studentApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import SearchBar from '../../components/searchBar';
 
 // Lazy-load components
 const AdminSideBar = lazy(() => import('../../components/AdminSideBar'));
@@ -101,13 +102,7 @@ const Student = () => {
         </div>
 
         {/* Search Bar */}
-        <input
-          type="search"
-          value={searchTerm}
-          onChange={(e) =>handleSearch(e)}
-          className="input input-bordered w-full max-w-md mb-6 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600 focus:ring-primary"
-          placeholder="Search students by name..."
-        />
+        <SearchBar searchTerm={searchTerm} placeholder={"Search students by name..."} handleSearch={handleSearch}/>
 
         {/* Student List and Profile Card */}
         <div className="flex flex-col lg:flex-row gap-6">

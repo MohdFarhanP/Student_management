@@ -2,6 +2,7 @@ import { ChangeEvent, Suspense, lazy, useCallback, useEffect, useState } from 'r
 import { getTeachers, searchTeachers } from '../../api/admin/teacherApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import SearchBar from '../../components/searchBar';
 // import { ITeacher } from './Teacher';
 export interface ITeacher {
   id: string;
@@ -122,13 +123,7 @@ const Teacher = () => {
         </div>
 
         {/* Search Bar */}
-        <input
-          type="search"
-          value={searchTerm}
-          onChange={(e) => handleSearch(e)}
-          className="input input-bordered w-full max-w-md mb-6 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600 focus:ring-primary"
-          placeholder="Search teachers by name..."
-        />
+        <SearchBar searchTerm={searchTerm} placeholder={"Search teachers by name..."} handleSearch={handleSearch}/>
 
         {/* Teacher List and Profile Card */}
         <div className="flex flex-col lg:flex-row gap-6">
