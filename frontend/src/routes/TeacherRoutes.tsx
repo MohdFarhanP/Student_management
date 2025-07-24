@@ -2,7 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import TeacherProfile from '../pages/teacher/TeacherProfile';
 import TeacherAttendanceDashboard from '../pages/teacher/TeacherAttendanceDashboard';
 import TeacherChat from '../pages/teacher/TeacherChat';
-import NoteUpload from '../components/NoteUpload';
+import NoteUpload from '../pages/teacher/NoteUpload';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import TeacherDashboard from '../pages/teacher/TeacherDashboard';

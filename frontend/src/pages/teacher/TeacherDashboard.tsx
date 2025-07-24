@@ -125,7 +125,7 @@ const TeacherDashboard: React.FC = () => {
       </ErrorBoundary>
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-h-screen">
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-base-content dark:text-white sm:text-3xl">
+          <h1 className="text-2xl ml-12 font-bold text-base-content dark:text-white sm:text-3xl">
             Teacher Dashboard
           </h1>
           <ErrorBoundary>

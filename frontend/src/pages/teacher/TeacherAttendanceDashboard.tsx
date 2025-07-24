@@ -174,12 +174,12 @@ const TeacherAttendanceDashboard: React.FC = () => {
   return (
     <ErrorBoundary>
       <div className="flex min-h-screen bg-base-100 dark:bg-gray-900">
-        <Suspense fallback={<div>Loading Sidebar...</div>}>
+        <Suspense fallback={<div><LoadingSpinner/></div>}>
           <TeacherSidebar />
         </Suspense>
-        <div className="flex-1 p-4 sm:p-6 lg:p-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-h-screen">
           <div className="max-w-5xl mx-auto">
-            <h2 className="mb-6 text-2xl sm:text-3xl font-bold ml-15 text-base-content dark:text-white">
+            <h2 className="mb-6 text-2xl sm:text-3xl font-bold ml-12 text-base-content dark:text-white">
               Attendance
             </h2>
             <div className="card bg-base-100 dark:bg-gray-800 shadow-xl">

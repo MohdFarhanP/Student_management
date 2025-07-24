@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { uploadNote } from '../redux/slices/noteSlice';
-import { AppDispatch, RootState } from '../redux/store';
+import { uploadNote } from '../../redux/slices/noteSlice';
+import { AppDispatch, RootState } from '../../redux/store';
 import { toast } from 'react-toastify';
-import TeacherSidebar from './TeacherSidebar';
-import { uploadToS3 } from '../services/UploadToS3';
+import TeacherSidebar from '../../components/TeacherSidebar';
+import { uploadToS3 } from '../../services/UploadToS3';
 import { DocumentTextIcon, PaperClipIcon } from '@heroicons/react/24/outline';
 import { AxiosError } from 'axios';
 
@@ -47,7 +47,7 @@ const NoteUpload: React.FC = () => {
     <div className="flex min-h-screen bg-base-100 dark:bg-gray-900">
       <TeacherSidebar />
       <div className="flex-1 p-4 sm:p-6 lg:p-8">
-        <h2 className="text-2xl font-bold text-base-content ml-15 dark:text-white mb-6 sm:text-3xl">
+        <h2 className="text-2xl font-bold text-base-content ml-12 dark:text-white mb-6 sm:text-3xl">
           Upload Note
         </h2>
         <div className="max-w-lg mx-auto">

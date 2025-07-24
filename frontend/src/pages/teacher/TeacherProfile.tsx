@@ -153,7 +153,7 @@ const TeacherProfile: React.FC = () => {
       <TeacherSidebar />
       <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl mx-auto w-full space-y-6">
-          <h2 className="mb-6 text-2xl sm:text-3xl font-bold ml-15 text-base-content dark:text-white">
+          <h2 className="mb-6 text-2xl sm:text-3xl font-bold ml-12 text-base-content dark:text-white">
             Profile
           </h2>
           {/* Profile Picture and General Information */}

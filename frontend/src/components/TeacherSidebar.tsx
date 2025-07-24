@@ -119,4 +119,4 @@ const TeacherSidebar: React.FC = () => {
   );
 };
 
-export default TeacherSidebar;
+export default React.memo(TeacherSidebar);
