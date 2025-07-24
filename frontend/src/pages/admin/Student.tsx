@@ -1,16 +1,31 @@
-import { ChangeEvent, Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import {
+  ChangeEvent,
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import { IStudent, searchStudents } from '../../api/admin/studentApi';
 import { getStudents } from '../../api/admin/studentApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import SearchBar from '../../components/SearchBar';
+import { ITeacher } from './Teacher';
+import StudentTeacherProfileCard from '../../components/StudentTeacherProfileCard';
 
 // Lazy-load components
 const AdminSideBar = lazy(() => import('../../components/AdminSideBar'));
-const BulkUploadButton = lazy(() => import('../../components/BulkUploadButton'));
-const StudentTable = lazy(() => import('../../components/StudentTable'));
-const ProfileCardStudents = lazy(() => import('../../components/ProfileCardStudents'));
-const EditStudentModal = lazy(() => import('../../components/EditStudentModal'));
+const BulkUploadButton = lazy(
+  () => import('../../components/BulkUploadButton')
+);
+const EditStudentModal = lazy(
+  () => import('../../components/EditStudentModal')
+);
 const AddStudentModal = lazy(() => import('../../components/AddStudentModal'));
+const StudentTeacherTable = lazy(
+  () => import('../../components/StudentTeacherTable')
+);
 
 const Student = () => {
   const [page, setPage] = useState<number>(1);
@@ -25,10 +40,10 @@ const Student = () => {
 
   const fetch = useCallback(async () => {
     const { students, totalCount } = await getStudents(page, limit);
-    console.log("studentpage", students, totalCount);
+    console.log('studentpage', students, totalCount);
     setStudents(students);
     setTotalCount(totalCount);
-  },[page, limit]);
+  }, [page, limit]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -58,7 +73,7 @@ const Student = () => {
   };
 
   const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target?.value)
+    setSearchTerm(e.target?.value);
     if (searchTerm.trim() !== '') {
       const students = await searchStudents(searchTerm);
       if (students) {
@@ -69,28 +84,31 @@ const Student = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-base-100 dark:bg-gray-900 overflow-hidden">
+    <div className="bg-base-100 flex min-h-screen overflow-hidden dark:bg-gray-900">
       <ErrorBoundary>
         <Suspense fallback={<LoadingSpinner />}>
           <AdminSideBar isOpen={isOpen} setIsOpen={setIsOpen} />
         </Suspense>
       </ErrorBoundary>
+
       <div
-        className={`flex-1 overflow-y-auto p-4 sm:p-6 max-h-screen ${
-          isOpen ? 'md:overflow-hidden overflow-hidden' : ''
+        className={`max-h-screen flex-1 overflow-y-auto p-4 sm:p-6 ${
+          isOpen ? 'overflow-hidden md:overflow-hidden' : ''
         }`}
       >
         {/* Header */}
-        <div className="my-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-base-content dark:text-white">
+        <div className="my-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-base-content text-xl font-bold sm:text-2xl dark:text-white">
             Students
           </h1>
-          <div className="flex flex-col sm:flex-row gap-3">
+
+          <div className="flex flex-col gap-3 sm:flex-row">
             <ErrorBoundary>
               <Suspense fallback={<LoadingSpinner />}>
                 <BulkUploadButton role={'Student'} />
               </Suspense>
             </ErrorBoundary>
+
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="btn btn-primary btn-sm sm:btn-md"
@@ -101,34 +119,107 @@ const Student = () => {
         </div>
 
         {/* Search Bar */}
-        <input
-          type="search"
-          value={searchTerm}
-          onChange={(e) =>handleSearch(e)}
-          className="input input-bordered w-full max-w-md mb-6 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600 focus:ring-primary"
-          placeholder="Search students by name..."
+        <SearchBar
+          searchTerm={searchTerm}
+          placeholder={'Search students by name...'}
+          handleSearch={handleSearch}
         />
 
         {/* Student List and Profile Card */}
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col gap-6 lg:flex-row">
           <ErrorBoundary>
             <Suspense fallback={<LoadingSpinner />}>
-              <StudentTable
-                setSelectedStudent={setSelectedStudent}
-                students={students}
+              <StudentTeacherTable
+                data={students}
                 totalPages={totalPages}
-                setIsOpen={setIsEditModalOpen}
                 page={page}
                 setPage={setPage}
+                setSelectedItem={
+                  setSelectedStudent as (
+                    item: IStudent | ITeacher | null
+                  ) => void
+                }
+                setIsOpen={setIsEditModalOpen}
                 onDelete={handleDeleteStudent}
+                itemType="student"
               />
             </Suspense>
           </ErrorBoundary>
+
           {selectedStudent && (
             <ErrorBoundary>
               <Suspense fallback={<LoadingSpinner />}>
                 <div className="lg:w-80">
-                  <ProfileCardStudents selectedStudent={selectedStudent} />
+                  <StudentTeacherProfileCard
+                    selectedItem={selectedStudent}
+                    renderDetails={(student) => (
+                      <>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <p className="font-semibold">Age:</p>
+                            <p>{student.age}</p>
+                          </div>
+                          <div>
+                            <p className="font-semibold">Roll No:</p>
+                            <p>{student.roleNumber || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="font-semibold">Gender:</p>
+                            <p>{student.gender}</p>
+                          </div>
+                          <div>
+                            <p className="font-semibold">DOB:</p>
+                            <p>{student.dob || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="font-semibold">Class:</p>
+                            <p>{student.class || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="font-semibold">Subjects:</p>
+                            <p>{student.subjectIds?.length || 0}</p>
+                          </div>
+                        </div>
+
+                        {/* Address */}
+                        <h3 className="mt-3 font-semibold">Address</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <p className="font-semibold">House:</p>
+                            <p>{student.address?.houseName || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="font-semibold">Place:</p>
+                            <p>{student.address?.place || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="font-semibold">District:</p>
+                            <p>{student.address?.district || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="font-semibold">Pincode:</p>
+                            <p>{student.address?.pincode || 'N/A'}</p>
+                          </div>
+                          <div className="col-span-2">
+                            <p className="font-semibold">Phone:</p>
+                            <p>{student.address?.phoneNo || 'N/A'}</p>
+                          </div>
+                        </div>
+
+                        <h3 className="mt-3 font-semibold">Guardian</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <p className="font-semibold">Name:</p>
+                            <p>{student.address?.guardianName || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="font-semibold">Contact:</p>
+                            <p>{student.address?.guardianContact || 'N/A'}</p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  />
                 </div>
               </Suspense>
             </ErrorBoundary>
