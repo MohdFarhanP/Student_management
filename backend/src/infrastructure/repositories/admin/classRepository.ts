@@ -73,7 +73,7 @@ export class ClassRepository implements IClassRepository {
             timetable: c.timetable ? c.timetable.toString() : null,
             students: c.students?.map((id) => id.toString()) || [],
             totalStudents: c.totalStudents || 0,
-            tutor: c.tutor ? (c.tutor as any)._id.toString() : '',
+            tutor: c.tutor ? (c.tutor as any).name.toString() : '',
             roomNo: c.roomNo,
             subjects: c.subjects?.map((id) => id.toString()) || [],
             grade: c.grade as Grade,

@@ -3,7 +3,7 @@ import { IClassData } from '../api/admin/classApi';
 import ErrorBoundary from '../components/ErrorBoundary';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { PencilIcon } from '@heroicons/react/24/outline';
-
+import classes from '../assets/Class.jpg'; 
 const EditClassModal = lazy(() => import('./EditClassModal'));
 
 interface UserTableProps {
@@ -27,9 +27,11 @@ const ClassTable: React.FC<UserTableProps> = ({ data = [] }) => {
         {/* Icon (Class Placeholder) */}
         <div className="avatar">
           <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-            <span className="text-lg font-medium text-gray-500 dark:text-gray-300">
-              {cls.name.charAt(0).toUpperCase()}
-            </span>
+            <img
+              src={classes}
+              alt="Class Icon"
+              className="w-8 h-8"
+            />
           </div>
         </div>
 
