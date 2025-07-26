@@ -60,6 +60,7 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
     else if (!/\S+@\S+\.\S+/.test(trimmedEmail))
       newErrors.email = 'Email is invalid';
     if (!formData.gender) newErrors.gender = 'Gender is required';
+    if (!formData.subject) newErrors.subject = 'subject is required';
     if (!formData.phoneNo || formData.phoneNo <= 0)
       newErrors.phoneNo = 'Valid phone number is required';
     if (!String(formData.empId || '').trim())
@@ -262,15 +263,35 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Subject
               </label>
-              <input
-                type="text"
+              <select
                 name="subject"
                 value={formData.subject || ''}
                 onChange={handleChange}
-                placeholder="Subject"
                 className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
-              />
+              >
+                <option value="">Select Subject</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Biology">Biology</option>
+                <option value="English">English</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Sanskrit">Sanskrit</option>
+                <option value="Malayalam">Malayalam</option>
+                <option value="Tamil">Tamil</option>
+                <option value="Kannada">Kannada</option>
+                <option value="Urdu">Urdu</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Social Science">Social Science</option>
+                <option value="Environmental Science">Environmental Science</option>
+                <option value="Basic Science">Basic Science</option>
+                <option value="Physical Education">Physical Education</option>
+                <option value="Information Technology">Information Technology</option>
+              </select>
+              {errors.subject && (
+                <p className="mt-1 text-xs text-error">{errors.subject}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-base-content dark:text-gray-300">
@@ -290,29 +311,21 @@ const EditTeacherModal: React.FC<EditTeacherModalProps> = ({
               <label className="block text-sm font-medium text-base-content dark:text-gray-300">
                 Qualification
               </label>
-              <input
-                type="text"
+              <select
                 name="qualification"
                 value={formData.qualification || ''}
                 onChange={handleChange}
-                placeholder="Qualification"
-                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
+                className="select select-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
                 disabled={isSubmitting}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-base-content dark:text-gray-300">
-                Profile Image
-              </label>
-              <input
-                type="text"
-                name="profileImage"
-                value={formData.profileImage || ''}
-                onChange={handleChange}
-                placeholder="Image URL"
-                className="input input-bordered w-full mt-1 text-base-content dark:text-white dark:bg-gray-700 dark:border-gray-600"
-                disabled={isSubmitting}
-              />
+              >
+                <option value="" disabled>Select Qualification</option>
+                <option value="BA B.Ed.">BA B.Ed.</option>
+                <option value="BSc B.Ed.">BSc B.Ed.</option>
+                <option value="B.Com B.Ed.">B.Com B.Ed.</option>
+                <option value="MA B.Ed.">MA B.Ed.</option>
+                <option value="MSc B.Ed.">MSc B.Ed.</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <div className="col-span-1 sm:col-span-2 mt-6 flex justify-end gap-3">
               <button

@@ -25,21 +25,20 @@ const SUBJECT_OPTIONS = [
   'Malayalam',
   'Tamil',
   'Kannada',
-  'Urdu',
-  'Gujarati',
+  'Urudu',
+  'English',
   'Sanskrit',
   'Arabic',
   'Hindi',
-  'English',
   'Mathematics',
   'Physics',
   'Chemistry',
   'Biology',
-  'History',
-  'Geography',
-  'Civics',
-  'Economics',
-  'General Knowledge',
+  'EnvironmentalScience',
+  'BasicScience',
+  'SocialScience',
+  'PhysicalEducation',
+  'InformationTechnology',
 ];
 
 const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
@@ -146,6 +145,7 @@ const EditSubjectModal: React.FC<EditSubjectModalProps> = ({
       setErrors({});
       onClose();
     } catch (error) {
+      console.log(error);
       toast.error('Failed to edit subject.');
     } finally {
       setLoading(false);
