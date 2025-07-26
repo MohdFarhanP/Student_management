@@ -2,25 +2,23 @@ import { Document, Types } from 'mongoose';
 
 export interface ISubjectModel extends Document {
   subjectName:
-    | 'Malayalam'
-    | 'Tamil'
-    | 'Kannada'
-    | 'Urdu'
-    | 'English'
-    | 'Sanskrit'
-    | 'Arabic'
-    | 'Hindi'
-    | 'Math'
-    | 'Physics'
-    | 'Chemistry'
-    | 'Biology'
-    | 'Science'
-    | 'History'
-    | 'Geography'
-    | 'Economics'
-    | 'ComputerScience'
-    | 'Literature'
-    | 'GeneralKnowledge';
+    'Malayalam'
+      |'Tamil'
+      |'Kannada'
+      |'Urudu'
+      |'English'
+      |'Sanskrit'
+      |'Arabic'
+      |'Hindi'
+      |'Mathematics'
+      |'Physics'
+      |'Chemistry'
+      |'Biology'
+      |'EnvironmentalScience'
+      |'BasicScience'
+      |'SocialScience'
+      |'PhysicalEducation'
+      |'InformationTechnology'
   teachers: Types.ObjectId[];
   notes: string[];
 }

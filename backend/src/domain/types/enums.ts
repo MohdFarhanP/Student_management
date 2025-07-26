@@ -69,17 +69,15 @@ export enum SubjectName {
   Arabic = 'Arabic',
   Hindi = 'Hindi',
   English = 'English',
-  Math = 'Math',
+  Mathematics = 'Mathematics',
   Physics = 'Physics',
   Chemistry = 'Chemistry',
   Biology = 'Biology',
-  Science = 'Science',
-  History = 'History',
-  Geography = 'Geography',
-  Economics = 'Economics',
-  ComputerScience = 'ComputerScience',
-  Literature = 'Literature',
-  GeneralKnowledge = 'GeneralKnowledge',
+  EnvironmentalScience = 'Environmental Science',
+  BasicScience = 'Basic Science',
+  SocialScience = 'Social Science',
+  PhysicalEducation = 'Physical Education',
+  InformationTechnology = 'Information Technology',
 }
 
 export enum FileType {
