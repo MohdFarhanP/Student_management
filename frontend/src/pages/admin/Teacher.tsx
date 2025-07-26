@@ -74,23 +74,28 @@ const Teacher = () => {
 
   const totalPages = Math.max(Math.ceil(totalCount / limit), 1);
 
-  const handleAddTeacher = (newTeacher: ITeacher) => {
+  const handleAddTeacher = async(newTeacher: ITeacher) => {
     setTeachers((prevTeachers) => [newTeacher, ...prevTeachers]);
     setTotalCount((prevCount) => prevCount + 1);
+    await fetch();
+    setSelectedTeacher(newTeacher);
   };
 
-  const handleEditTeacher = (updatedTeacher: ITeacher) => {
+  const handleEditTeacher = async(updatedTeacher: ITeacher) => {
     setTeachers((prevTeachers) =>
       prevTeachers.map((t) => (t.id === updatedTeacher.id ? updatedTeacher : t))
     );
+    await fetch();
+    setSelectedTeacher(updatedTeacher);
   };
 
-  const handleDeleteTeacher = (teacherId: string) => {
+  const handleDeleteTeacher = async(teacherId: string) => {
     setTeachers((prevTeachers) =>
       prevTeachers.filter((t) => t.id !== teacherId)
     );
     setTotalCount((prevCount) => prevCount - 1);
     if (selectedTeacher?.id === teacherId) setSelectedTeacher(null);
+    await fetch();
   };
 
   const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {

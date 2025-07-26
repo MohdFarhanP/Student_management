@@ -53,23 +53,28 @@ const Student = () => {
 
   const totalPages = Math.max(Math.ceil(totalCount / limit), 1);
 
-  const handleAddStudent = (newStudent: IStudent) => {
+  const handleAddStudent = async (newStudent: IStudent) => {
     setStudents((prevStudents) => [newStudent, ...prevStudents]);
     setTotalCount((prevCount) => prevCount + 1);
+    await fetch();
+    setSelectedStudent(newStudent);
   };
 
-  const handleUpdateStudent = (updatedStudent: IStudent) => {
+  const handleUpdateStudent = async(updatedStudent: IStudent) => {
     setStudents((prevStudents) =>
       prevStudents.map((s) => (s.id === updatedStudent.id ? updatedStudent : s))
     );
+    await fetch();
+    setSelectedStudent(updatedStudent);
   };
 
-  const handleDeleteStudent = (studentId: string) => {
+  const handleDeleteStudent = async(studentId: string) => {
     setStudents((prevStudents) =>
       prevStudents.filter((s) => s.id !== studentId)
     );
     setTotalCount((prevCount) => prevCount - 1);
     if (selectedStudent?.id === studentId) setSelectedStudent(null);
+    await fetch();
   };
 
   const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {
