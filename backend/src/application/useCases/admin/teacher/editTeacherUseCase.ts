@@ -27,32 +27,7 @@ export class EditTeacherUseCase implements IEditTeacherUseCase {
       if (!existingTeacher) {
         throw new Error('Teacher not found');
       }
-      if (teacherData.subject && typeof teacherData.subject === 'string') {
-        const subjectDoc = await this.subjectRepository.findByName(
-          teacherData.subject
-        );
-        if (!subjectDoc) {
-          throw new Error(`Subject '${teacherData.subject}' not found`);
-        }
-        teacherData.subject = subjectDoc.id;
-      }
-      if (
-        teacherData.assignedClass &&
-        typeof teacherData.assignedClass === 'string'
-      ) {
-        logger.debug(
-          'assinged class in teacher data',
-          teacherData.assignedClass
-        );
-        const classDoc = await this.classRepository.findByName(
-          teacherData.assignedClass
-        );
-        logger.debug('editClassUseCase getting class doc from repo :', classDoc);
-        if (!classDoc) {
-          throw new Error(`Class '${teacherData.assignedClass}' not found`);
-        }
-        teacherData.assignedClass = classDoc.id;
-      }
+
       if (teacherData.gender && typeof teacherData.gender === 'string') {
         if (
           teacherData.gender !== Gender.Male &&

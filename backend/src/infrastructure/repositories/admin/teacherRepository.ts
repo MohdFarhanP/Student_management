@@ -17,6 +17,7 @@ import {
   mapTeacherDocToEntity,
   mapTeacherEntityToDoc,
 } from '../../database/mongoos/helpers/teacherMapper';
+import logger from '../../../logger';
 
 export class TeacherRepository implements ITeacherRepository {
   async insertMany(teachers: TeacherEntity[]): Promise<void> {
@@ -87,7 +88,8 @@ export class TeacherRepository implements ITeacherRepository {
   }
 
   async update(id: string, data: Partial<ITeacher>): Promise<TeacherEntity> {
-    const doc = await mapTeacherEntityToDoc(data as TeacherEntity);
+    try {
+      const doc = await mapTeacherEntityToDoc(data as TeacherEntity);
 
     const updatedTeacher = await TeacherModel.findByIdAndUpdate(
       id,
@@ -99,8 +101,11 @@ export class TeacherRepository implements ITeacherRepository {
       .lean();
 
     if (!updatedTeacher) throw new Error('Teacher not found or update failed');
-
     return mapTeacherDocToEntity(updatedTeacher);
+  } catch (error) {
+      logger.error('Error updating teacher:', error);
+      throw new Error('Failed to update teacher');
+    }
   }
 
   async create(data: Partial<ITeacher>): Promise<TeacherEntity> {

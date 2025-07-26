@@ -1,11 +1,13 @@
 import { TeacherEntity } from '../../../../domain/entities/teacher';
 import { Gender } from '../../../../domain/types/enums';
 import { ITeacher } from '../../../../domain/types/interfaces';
+import logger from '../../../../logger';
 import { ITeacherModel } from '../interface/ITeacherModel';
 import { ClassModel } from '../models/classModel';
 import { SubjectModel } from '../models/subjectModel';
 
 export function mapTeacherDocToEntity(doc: ITeacherModel): ITeacher {
+  try {
   return {
     id: doc._id.toString(),
     name: doc.name,
@@ -31,6 +33,10 @@ export function mapTeacherDocToEntity(doc: ITeacherModel): ITeacher {
     isDeleted: doc.isDeleted,
     refreshToken: doc.refreshToken,
   };
+  } catch (error) {
+    logger.error('Error mapping teacher doc to entity:', error);
+    throw new Error('Failed to map teacher document to entity');
+  }
 }
 
 export async function mapTeacherEntityToDoc(
