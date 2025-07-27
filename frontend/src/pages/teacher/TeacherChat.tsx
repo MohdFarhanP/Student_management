@@ -256,7 +256,6 @@ const TeacherChat: React.FC = () => {
                 messages={messages}
                 sendMessage={sendMessage}
                 chatRoomId={selectedClassId}
-                isTeacher={true}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">

@@ -5,6 +5,8 @@ import { Message } from '../types/message';
 import { RootState } from '../redux/store';
 import { uploadToS3 } from '../services/UploadToS3';
 import { MdAttachFile, MdSend } from 'react-icons/md';
+import AddEmoji from './AddEmoji';
+import { FaRegSmile } from "react-icons/fa";
 
 enum MediaType {
   Image = 'image',
@@ -19,13 +21,11 @@ interface ChatWindowProps {
     mediaType?: MediaType
   ) => void;
   chatRoomId?: string;
-  isTeacher: boolean;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
   messages,
   sendMessage,
-  isTeacher,
 }) => {
   const [content, setContent] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -33,6 +33,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const user = useSelector((state: RootState) => state.auth.user);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,7 +45,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     let mediaUrl: string | undefined;
     let mediaType: MediaType | undefined;
 
-    if (file && isTeacher) {
+    if (file) {
       try {
         const uploadResult = await uploadToS3(file);
         mediaUrl = uploadResult.fileUrl;
@@ -52,7 +53,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           setUploadError('Upload failed: No file URL returned');
           return;
         }
-        mediaType = file.type.startsWith('image/') ? MediaType.Image : MediaType.Document;
+        mediaType = file.type.startsWith('image/')
+          ? MediaType.Image
+          : MediaType.Document;
         setFile(null);
         setUploadError(null);
       } catch (error) {
@@ -82,16 +85,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   };
 
-  if (!user) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">Please log in to access the chat.</div>;
+  if (!user)
+    return (
+      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+        Please log in to access the chat.
+      </div>
+    );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] sm:h-[calc(100vh-14rem)] lg:h-[calc(100vh-10rem)] bg-white dark:bg-gray-800 p-4 rounded-lg">
+    <div className="flex h-[calc(100vh-8rem)] flex-col rounded-lg bg-white p-4 sm:h-[calc(100vh-14rem)] lg:h-[calc(100vh-10rem)] dark:bg-gray-800">
       {uploadError && (
-        <div className="mb-4 text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900 p-3 rounded-lg text-sm">
+        <div className="mb-4 rounded-lg bg-red-100 p-3 text-sm text-red-500 dark:bg-red-900 dark:text-red-400">
           {uploadError}
         </div>
       )}
-      <div className="flex-1 overflow-y-auto space-y-3">
+      <div className="flex-1 space-y-3 overflow-y-auto">
         {messages.map((msg) => (
           <MessageBubble
             key={msg.id || `${msg.chatRoomId}-${messages.indexOf(msg)}`}
@@ -102,43 +110,49 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         <div ref={messagesEndRef} />
       </div>
       <div className="mt-4">
+        {showEmojiPicker && <AddEmoji setContent={setContent} showEmojiPicker={showEmojiPicker}/>}
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            {isTeacher && (
-              <>
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
-                >
-                  <MdAttachFile size={20} />
-                </button>
-                <input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </>
-            )}
+            
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400"
+            >
+              <MdAttachFile size={20} />
+            </button>
+            <button
+              onClick={() =>setShowEmojiPicker(!showEmojiPicker)}
+              className="absolute top-1/2 left-10 -translate-y-1/2 transform text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400"
+            >
+              <FaRegSmile size={17} />
+            </button>
+            
+            <input
+              type="file"
+              accept="image/*,application/pdf"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            
             <input
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown ={handleKeyPress}
               placeholder="Type a message..."
-              className={`w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-10 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                isTeacher ? 'pl-12' : 'pl-4'
-              }`} // Adjust padding for the icon
+              className={`w-full rounded-lg border border-gray-300 bg-white px-10 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 pl-16`} 
             />
+            
           </div>
           <button
             onClick={handleSend}
-            className="rounded-lg bg-blue-500 dark:bg-blue-600 text-white p-2 hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
+            className="rounded-lg bg-blue-500 p-2 text-white transition-colors hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
           >
             <MdSend size={20} />
           </button>
         </div>
-        {file && isTeacher && (
+
+        {file && (
           <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
             Selected file: {file.name}
             <button

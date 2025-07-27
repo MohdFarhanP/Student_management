@@ -11,7 +11,7 @@ export class SubjectEntity {
 
   static create({
     id = new Types.ObjectId().toString(),
-    subjectName = SubjectName.Math,
+    subjectName = SubjectName.Mathematics,
     teachers = [],
     notes = [],
   }: Partial<SubjectEntity>): SubjectEntity {

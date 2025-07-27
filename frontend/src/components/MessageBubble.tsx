@@ -18,7 +18,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           : 'mr-auto bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
       }`}
     >
-      {message.content && <p className="text-sm">{message.content}</p>}
+      {message.content && <p className="text-lg">{message.content}</p>}
       {message.mediaUrl && message.mediaType === 'image' && (
         <img
           src={message.mediaUrl}
@@ -37,7 +37,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         </a>
       )}
       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-        {new Date(message.createdAt).toLocaleTimeString()}
+        {new Date(message.createdAt).toLocaleTimeString().replace(/(.*)\D\d+/, '$1')}
       </p>
     </div>
   );
