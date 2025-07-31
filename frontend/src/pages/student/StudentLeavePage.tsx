@@ -47,40 +47,6 @@ const StudentLeavePage: React.FC = () => {
           <StudentSidebar />
         </div>
       </div>
-
-      {/* Main Content for Desktop */}
-      <div className="hidden lg:flex lg:flex-1 overflow-y-auto p-4 sm:p-6 max-h-screen">
-        <div className="flex-1">
-          <div className="my-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h1 className="text-xl sm:text-2xl font-bold text-base-content dark:text-white">
-              Leave Management
-            </h1>
-          </div>
-
-          {/* Tabs */}
-          <div className="tabs mb-6">
-            <button
-              className={`tab tab-lg tab-lifted ${
-                activeTab === 'apply' ? 'tab-active' : ''
-              }`}
-              onClick={() => setActiveTab('apply')}
-            >
-              Apply for Leave
-            </button>
-            <button
-              className={`tab tab-lg tab-lifted ${
-                activeTab === 'history' ? 'tab-active' : ''
-              }`}
-              onClick={() => setActiveTab('history')}
-            >
-              Leave History
-            </button>
-          </div>
-
-          {/* Leave Management Component */}
-          <LeaveManagement mode={activeTab} />
-        </div>
-      </div>
     </div>
   );
 };

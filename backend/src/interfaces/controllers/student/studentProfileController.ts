@@ -18,7 +18,8 @@ export class StudentProfileController implements IStudentProfileController {
     private updateStudentProfileImageUseCase: IUpdateStudentProfileImageUseCase,
     private studentFeeDueRepository: IStudentFeeDueRepository,
     private processPaymentUseCase: IProcessPaymentUseCase,
-    private getStudentInfoUseCase: IGetStudentInfoUseCase
+    private getStudentInfoUseCase: IGetStudentInfoUseCase,
+    private verifyPaymentUseCase: IVerifyPaymentUseCase,
   ) {}
 
   async getProfile(req: Request, res: Response): Promise<void> {
@@ -156,23 +157,59 @@ export class StudentProfileController implements IStudentProfileController {
         return;
       }
 
-      const result = await this.processPaymentUseCase.execute(
+      const orderId = await this.processPaymentUseCase.execute(
         studentId,
         feeDueId
       );
 
-      const payload = {
-        order: result.order,
-        paymentId: result.paymentId,
-      };
-
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Payment processed successfully',
-        data: payload,
-      } as IApiResponse<typeof payload>);
+        data: orderId,
+      } as IApiResponse<string>);
     } catch (error: any) {
       logger.error('Error processing payment:', error);
+
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Internal server error',
+      } as IApiResponse<never>);
+    }
+  }
+  async verifyPayment(req: Request, res: Response): Promise<void> {
+    try {
+      const {feeDueId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
+      const studentId = req.user.id;
+
+      if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
+        res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'Missing required payment verification data',
+        } as IApiResponse<never>);
+        return;
+      }
+
+      const isVerified = await this.verifyPaymentUseCase.execute(
+        feeDueId,
+        studentId,
+        razorpayOrderId,
+        razorpayPaymentId,
+        razorpaySignature
+      );
+
+      if (isVerified) {
+        res.status(HttpStatus.OK).json({
+          success: true,
+          message: 'Payment verified successfully',
+        } as IApiResponse<null>);
+      } else {
+        res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: 'Payment verification failed',
+        } as IApiResponse<never>);
+      }
+    } catch (error: any) {
+      logger.error('Error verifying payment:', error);
 
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,

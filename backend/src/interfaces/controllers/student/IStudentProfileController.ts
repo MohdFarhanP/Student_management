@@ -6,4 +6,5 @@ export interface IStudentProfileController {
   getUnpaidDues(req: Request, res: Response): Promise<void>;
   processPayment(req: Request, res: Response): Promise<void>;
   getBasicInfo(req: Request, res: Response): Promise<void>;
+  verifyPayment(req: Request, res: Response): Promise<void>;
 }

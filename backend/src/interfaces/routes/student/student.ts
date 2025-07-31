@@ -105,4 +105,17 @@ router.post('/fees/pay', authenticateUser, (req, res, next) => {
   );
 });
 
+router.post('/fees/verify', authenticateUser, (req, res, next) => {
+  if (!studentProfileController) {
+    throw new Error(
+      'ClassController not initialized. Dependency injection failed.'
+    );
+  }
+  studentProfileController.verifyPayment.bind(studentProfileController)(
+    req,
+    res,
+    next
+  );
+});
+
 export default router;

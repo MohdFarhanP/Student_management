@@ -14,7 +14,7 @@ const StudentPayment = () => {
       </ErrorBoundary>
       <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-base-content dark:text-white mb-6">
+          <h1 className="text-2xl sm:pl-10 font-bold text-base-content dark:text-white mb-6">
             My Payment Dashboard
           </h1>
           <Suspense fallback={<div className="p-2">Loading...</div>}>

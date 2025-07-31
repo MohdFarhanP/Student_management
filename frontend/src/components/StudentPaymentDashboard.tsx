@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { getStdInfo, getUnpaidDues, processPayment, StudentFeeDue, studentInfo } from '../api/student/studentApi';
+import { getStdInfo, getUnpaidDues, processPayment, StudentFeeDue, studentInfo, verifyPayment } from '../api/student/studentApi';
 
 
-// Define the Razorpay type to avoid using `any`
 interface RazorpayResponse {
   razorpay_payment_id: string;
   razorpay_order_id: string;
@@ -26,6 +25,8 @@ interface RazorpayOptions {
     color: string;
   };
   modal: {
+    animation: boolean;
+    confirm_close: boolean;
     ondismiss: () => void;
   };
 }
@@ -83,29 +84,42 @@ const StudentPaymentDashboard: React.FC = () => {
   const handlePay = async (feeDue: StudentFeeDue) => {
     try {
       setLoading(true);
-      const { order } = await processPayment(feeDue.id);
+      const orderId = await processPayment(feeDue.id);
 
       // Razorpay checkout options
       const options: RazorpayOptions = {
         key: RAZORPAY_KEY_ID,
-        amount: feeDue.amount * 100, // Convert to paise
+        amount: feeDue.amount * 100,
         currency: 'INR',
-        name: 'Monthly School Payment',
+        name: `${feeDue.feeTitle} Payment`,
         description: `Payment for ${feeDue.feeTitle} (${feeDue.month})`,
-        order_id: order.id,
-        handler: (response: RazorpayResponse) => {
-          console.log(response,'response form razorpay');
-          toast.success('Payment successful!');
-          setDues(dues.filter((d) => d.id !== feeDue.id));
+        order_id: orderId,
+        handler: async (response: RazorpayResponse) => {
+          console.log('Payment response:', response.razorpay_order_id,response.razorpay_payment_id,response.razorpay_signature);
+          const data = {
+            feeDueId: feeDue.id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpayOrderId: response.razorpay_order_id,
+            razorpaySignature: response.razorpay_signature,
+          };
+          const result = await verifyPayment(data);
+          if (result) {
+            setDues(dues.filter((d) => d.id !== feeDue.id));
+            toast.success('Payment successful!');
+          } else {
+            toast.error('Payment verification failed.');
+          }
         },
         prefill: {
           name: studentInfo?.name ?? 'Student Name',
           email: studentInfo?.email ?? 'student@example.com',
         },
         theme: {
-          color: '#3399cc',
+          color: '#3527d6',
         },
         modal: {
+          animation: true,
+          confirm_close: true,
           ondismiss: () => {
             toast.info('Payment cancelled');
             setLoading(false);
@@ -152,7 +166,7 @@ const StudentPaymentDashboard: React.FC = () => {
                 <tr>
                   <th>Fee Title</th>
                   <th>Month</th>
-                  <th>Amount (₹)</th>
+                  <th>Amount</th>
                   <th>Due Date</th>
                   <th>Action</th>
                 </tr>

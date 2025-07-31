@@ -6,8 +6,8 @@ import logger from '../../logger';
 
 export class MongoPaymentRepository implements IPaymentRepository {
   async create(payment: Payment): Promise<void> {
-    logger.debug('studentId:', payment.getStudentId());
-    logger.debug('feeDueId:', payment.getFeeDueId());
+    logger.debug(`studentId:, ${payment.getStudentId()}`);
+    logger.debug(`feeDueId:, ${payment.getFeeDueId()}`);
 
     try {
       const paymentModel = new PaymentModel({

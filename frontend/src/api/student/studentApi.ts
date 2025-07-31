@@ -32,6 +32,12 @@ export interface StudentProfile {
   profileImage: string;
   address: StudentAddress;
 }
+interface RazorpayVerifyData {
+  feeDueId: string;
+  razorpayPaymentId: string;
+  razorpayOrderId: string;
+  razorpaySignature: string;
+}
 
 interface Attendance {
   classId: string;
@@ -61,10 +67,6 @@ export interface StudentFeeDue {
   paymentId?: string;
 }
 
-interface PaymentResponse {
-  order: { id: string };
-  paymentId: string;
-}
 interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -102,6 +104,9 @@ export const getUnpaidDues = async () =>
   );
 
 export const processPayment = async (feeDueId: string) =>
-  apiRequest<ApiResponse<PaymentResponse>,{feeDueId:string}>('post', `${STUDENT_API_URL}/fees/pay`, {
+  apiRequest<ApiResponse<string>,{feeDueId:string}>('post', `${STUDENT_API_URL}/fees/pay`, {
     feeDueId,
   }).then((res) => res.data! );
+
+export const verifyPayment = async (data: RazorpayVerifyData) =>
+  apiRequest<ApiResponse<string>,RazorpayVerifyData>('post', `${STUDENT_API_URL}/fees/verify`,data).then((res) => res.success );

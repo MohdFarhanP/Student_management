@@ -714,9 +714,7 @@ export class SocketServer implements ISocketServer {
       });
 
       socket.on('disconnect', () => {
-        logger.info(
-          `User disconnected: ${socket.data.userId} (socket ID: ${socket.id})`
-        );
+
       });
     });
   }
