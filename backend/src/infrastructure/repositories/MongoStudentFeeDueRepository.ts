@@ -101,7 +101,7 @@ export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
           model.dueDate,
           model.amount,
           model.isPaid,
-          model.paymentId.toString()
+          model.paymentId?.toString()
         )
     );
     const totalCount = await StudentFeeDueModel.countDocuments();
