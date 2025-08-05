@@ -125,10 +125,10 @@ export const generateMonthlyDues = async (month: string) =>
   )
     .then((res)=> res.data);
 
-export const getPaymentStatuses = async () =>
-  await apiRequest<ApiResponse<StudentFeeDue[]>>(
+export const getPaymentStatuses = async (page:number,limit:number) =>
+  await apiRequest<ApiResponse<{duesDto:StudentFeeDue[];totalCount:number}>>(
     'get',
-    `${ADMIN_STUDENT_API_URL}/payments`
+    `${ADMIN_STUDENT_API_URL}/payments?page=${page}&limit=${limit}`
   )
     .then((res)=> res.data);
 

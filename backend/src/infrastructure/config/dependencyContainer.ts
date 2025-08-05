@@ -191,6 +191,8 @@ import { EmailService } from '../services/emailService';
 import logger from '../../logger';
 import { SearchStudentsUseCase } from '../../application/useCases/admin/student/searchStudentUseCase';
 import { SearchTeachersUseCase } from '../../application/useCases/admin/teacher/searchTeachersUseCase';
+import { VerifyPaymentUseCase } from '../../application/useCases/fee/VerifyPaymentUseCase';
+import { PaymentUseCase } from '../../application/useCases/admin/student/paymentUseCase';
 
 export class DependencyContainer {
   private static instance: DependencyContainer;
@@ -649,11 +651,25 @@ export class DependencyContainer {
       )
     );
     this.dependencies.set(
+      'IPaymentUseCase',
+      new PaymentUseCase(
+        this.dependencies.get('IStudentFeeDueRepository'),
+      )
+    );
+    this.dependencies.set(
       'IProcessPaymentUseCase',
       new ProcessPaymentUseCase(
         this.dependencies.get('IStudentFeeDueRepository'),
+        this.dependencies.get('IPaymentGateway'),
+      )
+    );
+    this.dependencies.set(
+      'IVerifyPaymentUseCase',
+      new VerifyPaymentUseCase(
+        this.dependencies.get('IPaymentGateway'),
+        this.dependencies.get('IStudentFeeDueRepository'),
         this.dependencies.get('IPaymentRepository'),
-        this.dependencies.get('IPaymentGateway')
+        
       )
     );
     this.dependencies.set(
@@ -831,7 +847,8 @@ export class DependencyContainer {
         this.dependencies.get('IUpdateStudentProfileImageUseCase'),
         this.dependencies.get('IStudentFeeDueRepository'),
         this.dependencies.get('IProcessPaymentUseCase'),
-        this.dependencies.get('IGetStudentInfoUseCase')
+        this.dependencies.get('IGetStudentInfoUseCase'),
+        this.dependencies.get('IVerifyPaymentUseCase')
       )
     );
     this.dependencies.set(
@@ -882,7 +899,7 @@ export class DependencyContainer {
     );
     this.dependencies.set(
       'IPaymentController',
-      new PaymentController(this.dependencies.get('IStudentFeeDueRepository'))
+      new PaymentController(this.dependencies.get('IPaymentUseCase'))
     );
   }
 

@@ -30,6 +30,10 @@ export class Payment {
     return this.id;
   }
 
+  setId(id: string) {
+    this.id = id;
+  }
+
   getStudentId(): string {
     return this.studentId;
   }

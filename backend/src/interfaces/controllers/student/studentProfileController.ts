@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import { IApiResponse, IUser } from '../../../domain/types/interfaces';
 import { HttpStatus } from '../../../domain/types/enums';
 import { StudentEntity } from '../../../domain/entities/student';
-import { BadRequestError } from '../../../domain/errors';
+import { BadRequestError, ConflictError } from '../../../domain/errors';
 import { IStudentFeeDueRepository } from '../../../domain/repositories/IStudentFeeDueRepository';
 import { IProcessPaymentUseCase } from '../../../domain/useCase/IProcessPaymentUseCase';
 import { IGetStudentInfoUseCase } from '../../../domain/useCase/IGetStudentInfoUseCase';
@@ -211,10 +211,19 @@ export class StudentProfileController implements IStudentProfileController {
     } catch (error: any) {
       logger.error('Error verifying payment:', error);
 
+      if(error instanceof ConflictError){
+        res.status(HttpStatus.CONFLICT).json({
+          success: false,
+          message: error.message,
+        } as IApiResponse<never>);
+        return;
+      }
+
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: error.message || 'Internal server error',
       } as IApiResponse<never>);
+      return;
     }
   }
 }

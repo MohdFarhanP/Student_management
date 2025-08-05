@@ -51,13 +51,14 @@ const apiRequest = async <T, D = undefined>(
     });
     return response.data;
   } catch (error) {
+
     if (error instanceof AxiosError) {
       const status = error.response?.status;
       const isRefresh = error.config?.url === '/auth/refresh-token';
 
       if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
         console.error('[apiRequest] 500 Internal Server Error at', new Date().toISOString(), { method, url });
-        window.location.href = '/500';
+        window.location.href = '/500 ';
         toast.error('Internal Server Error');
       }
 

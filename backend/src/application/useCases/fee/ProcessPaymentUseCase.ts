@@ -12,6 +12,11 @@ export class ProcessPaymentUseCase implements IProcessPaymentUseCase {
     studentId: string,
     feeDueId: string
   ): Promise<string> {
+
+    const isPaid = await this.studentFeeDueRepository.IsPaid(feeDueId);
+    if (isPaid) {
+      throw new Error('Fee due is already paid');
+    }
     
     const feeDues =
       await this.studentFeeDueRepository.findUnpaidByStudentId(studentId);

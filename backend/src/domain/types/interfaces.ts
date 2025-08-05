@@ -202,3 +202,14 @@ export interface AdminDashboardStats {
   totalTeachers: number;
   totalClasses: number;
 }
+
+export interface StudentFeeDue {
+    id:string,
+    studentId:string,
+    feeTitle:string,
+    month:string,
+    dueDate:string,
+    amount:number,
+    isPaid:boolean,
+    paymentId:string
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { getStdInfo, getUnpaidDues, processPayment, StudentFeeDue, studentInfo, verifyPayment } from '../api/student/studentApi';
+import LoadingSpinner from './LoadingSpinner';
 
 
 interface RazorpayResponse {
@@ -51,13 +52,13 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID as string;
 const StudentPaymentDashboard: React.FC = () => {
   const [dues, setDues] = useState<StudentFeeDue[]>([]);
   const [studentInfo, setStudentInfo] = useState<studentInfo | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
+  const [loadingDueId, setLoadingDueId] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  // Fetch unpaid dues on mount
   useEffect(() => {
     const fetchDues = async () => {
       try {
-        setLoading(true);
+        setLoading(true);  
         const [unpaidDues, studentinfo] = await Promise.all([
           getUnpaidDues(),
           getStdInfo(),
@@ -83,7 +84,7 @@ const StudentPaymentDashboard: React.FC = () => {
   // Handle payment initiation
   const handlePay = async (feeDue: StudentFeeDue) => {
     try {
-      setLoading(true);
+      setLoadingDueId(feeDue.id);
       const orderId = await processPayment(feeDue.id);
 
       // Razorpay checkout options
@@ -104,11 +105,14 @@ const StudentPaymentDashboard: React.FC = () => {
           };
           const result = await verifyPayment(data);
           if (result) {
-            setDues(dues.filter((d) => d.id !== feeDue.id));
+            const updatedDues = await getUnpaidDues();
+            if(updatedDues) setDues(updatedDues);
+
             toast.success('Payment successful!');
           } else {
             toast.error('Payment verification failed.');
           }
+          setLoadingDueId(null);
         },
         prefill: {
           name: studentInfo?.name ?? 'Student Name',
@@ -122,7 +126,7 @@ const StudentPaymentDashboard: React.FC = () => {
           confirm_close: true,
           ondismiss: () => {
             toast.info('Payment cancelled');
-            setLoading(false);
+            setLoadingDueId(null);
           },
         },
       };
@@ -131,7 +135,7 @@ const StudentPaymentDashboard: React.FC = () => {
       const rzp = new window.Razorpay(options);
       rzp.on('payment.failed', (response: { error: { description: string } }) => {
         toast.error(`Payment failed: ${response.error.description}`);
-        setLoading(false);
+        setLoadingDueId(null);
       });
       rzp.open();
     } catch (error: unknown) {
@@ -144,7 +148,7 @@ const StudentPaymentDashboard: React.FC = () => {
       }
     }
     finally{
-      setLoading(false);
+      setLoadingDueId(null);
     }
   };
 
@@ -156,7 +160,7 @@ const StudentPaymentDashboard: React.FC = () => {
           Unpaid Dues
         </h2>
         {loading ? (
-          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+          <LoadingSpinner/>
         ) : dues.length === 0 ? (
           <p className="text-gray-600 dark:text-gray-300">No unpaid dues.</p>
         ) : (
@@ -182,9 +186,9 @@ const StudentPaymentDashboard: React.FC = () => {
                       <button
                         onClick={() => handlePay(due)}
                         className="btn btn-primary btn-sm"
-                        disabled={loading}
+                        disabled={loadingDueId === due.id}
                       >
-                        {loading ? 'Processing...' : 'Pay Now'}
+                        {loadingDueId === due.id ? <LoadingSpinner/> : 'Pay Now'}
                       </button>
                     </td>
                   </tr>

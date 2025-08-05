@@ -1,30 +1,22 @@
 import { Request, Response } from 'express';
-import { IStudentFeeDueRepository } from '../../../../domain/repositories/IStudentFeeDueRepository';
 import { IPaymentController } from './IPaymentController';
 import { HttpStatus } from '../../../../domain/types/enums';
-import { IApiResponse } from '../../../../domain/types/interfaces';
+import { IApiResponse, StudentFeeDue } from '../../../../domain/types/interfaces';
+import { IPaymentUseCase } from '../../../../domain/useCase/IPaymentUseCase';
 
 export class PaymentController implements IPaymentController {
-  constructor(private studentFeeDueRepository: IStudentFeeDueRepository) {}
+  constructor(private paymentUseCase: IPaymentUseCase) {}
 
   async getPaymentStatuses(req: Request, res: Response): Promise<void> {
     try {
-      const dues = await this.studentFeeDueRepository.findAll();
-      const duesDto = dues.map((due) => ({
-        id: due.getId(),
-        studentId: due.getStudentId(),
-        feeTitle: due.getFeeTitle(),
-        month: due.getMonth(),
-        dueDate: due.getDueDate().toISOString(),
-        amount: due.getAmount(),
-        isPaid: due.isPaidStatus(),
-        paymentId: due.getPaymentId(),
-      }));
+      const page = Number(req.query.page);
+      const limit = Number(req.query.limit);
+      const {duesDto,totalCount} = await this.paymentUseCase.exicute(page,limit)
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Successfully sent response',
-        data: duesDto,
-      } as IApiResponse<typeof duesDto>);
+        data: {duesDto,totalCount},
+      } as IApiResponse<{duesDto:StudentFeeDue[];totalCount:number}>);
     } catch (error: any) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(HttpStatus.BAD_REQUEST).json({

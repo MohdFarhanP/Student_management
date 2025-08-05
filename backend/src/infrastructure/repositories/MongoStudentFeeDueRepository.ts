@@ -3,12 +3,14 @@ import { IStudentFeeDueRepository } from '../../domain/repositories/IStudentFeeD
 import { StudentFeeDue } from '../../domain/entities/StudentFeeDue';
 import { StudentFeeDueModel } from '../database/mongoos/models/StudentFeeDueModel';
 import logger from '../../logger';
+import { skip } from 'node:test';
 
 function isValidObjectId(id: any): boolean {
   return mongoose.Types.ObjectId.isValid(id) && String(id).length === 24;
 }
 
 export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
+  
   async createMany(dues: StudentFeeDue[]): Promise<void> {
     const models = dues.map((due) => ({
       studentId: new mongoose.Types.ObjectId(due.getStudentId()),
@@ -42,6 +44,10 @@ export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
           model.isPaid
         )
     );
+  }
+  async IsPaid(feeDueId: string): Promise<boolean> {
+    const result = await StudentFeeDueModel.findById({_id:feeDueId}).lean();
+    return result.isPaid === true;
   }
 
   async update(feeDue: StudentFeeDue): Promise<void> {
@@ -77,9 +83,10 @@ export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
     }
   }
 
-  async findAll(): Promise<StudentFeeDue[]> {
-    const models = await StudentFeeDueModel.find().lean();
-    return models.map(
+  async findByLimit(page:number,limit:number): Promise<{studentFeeDue:StudentFeeDue[];totalCount:number}> {
+    const skip = (page-1)* limit;
+    const models = await StudentFeeDueModel.find().skip(skip).limit(limit).lean();
+    const studentFeeDue = models.map(
       (model) =>
         new StudentFeeDue(
           model._id.toString(),
@@ -89,8 +96,11 @@ export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
           model.dueDate,
           model.amount,
           model.isPaid,
-          model.paymentId?.toString()
+          model.paymentId.toString()
         )
     );
+    const totalCount = await StudentFeeDueModel.countDocuments();
+    return {studentFeeDue,totalCount}
+
   }
 }

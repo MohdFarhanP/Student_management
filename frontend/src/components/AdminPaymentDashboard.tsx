@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { createRecurringFee, getAllRecurringFees, getPaymentStatuses, RecurringFee, StudentFeeDue } from '../api/admin/studentApi';
-import { fetchClasses, } from '../api/admin/classApi';
+import {
+  createRecurringFee,
+  getAllRecurringFees,
+  getPaymentStatuses,
+  RecurringFee,
+} from '../api/admin/studentApi';
+import { fetchClasses } from '../api/admin/classApi';
 import ClassSelector from './ClassSelector';
+import PaymentStatus from './PaymentStatus';
+import FeeList from './FeeList';
+import { StudentFeeDue } from '../api/student/studentApi';
 
 type Class = {
   _id?: string;
@@ -17,28 +25,26 @@ const AdminPaymentDashboard: React.FC = () => {
     endMonth: '',
     classId: '',
   });
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [feeUpdateCount, setFeeUpdateCount] = useState(0);
   const [recurringFees, setRecurringFees] = useState<RecurringFee[]>([]);
   const [paymentStatuses, setPaymentStatuses] = useState<StudentFeeDue[]>([]);
-  const [classes, setClasses] = useState<Class[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingPaymentStatus, setLoadingPaymentStatus] = useState(false);
+  const [loadingRecurringFees, setLoadingRecurringFees] = useState(false);
+  const [creatingFee, setCreatingFee] = useState(false);
+  const [page, setPage] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const limit = 5;
 
-  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
-        const [fees, statuses, classData] = await Promise.all([
-          getAllRecurringFees(),
-          getPaymentStatuses(),
-          fetchClasses(),
-        ]);
-        setRecurringFees(fees!);
-        setPaymentStatuses(statuses!);
-        // Map the class data to match the Class type 
-        const mappedClasses: Class[] = classData?.map((cls) => ({
-          _id: cls._id,
-          name: cls.name,
-        })) || [];
+        const classData = await fetchClasses();
+        const mappedClasses: Class[] =
+          classData?.map((cls) => ({
+            _id: cls._id,
+            name: cls.name,
+          })) || [];
         setClasses(mappedClasses);
       } catch (error: unknown) {
         if (error instanceof Error) {
@@ -48,23 +54,71 @@ const AdminPaymentDashboard: React.FC = () => {
           toast.error('An unexpected error occurred.');
           console.error('Unknown error:', error);
         }
-      } finally {
-        setLoading(false);
       }
     };
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        setLoadingPaymentStatus(true);
+        const res = await getPaymentStatuses(page, limit);
+        if (res) {
+          setPaymentStatuses(res.duesDto);
+          setTotalCount(res.totalCount);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+          console.error('Error:', error.message);
+        } else {
+          toast.error('An unexpected error occurred.');
+          console.error('Unknown error:', error);
+        }
+      } finally {
+        setLoadingPaymentStatus(false);
+      }
+    };
+    fetch();
+  }, [page]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        setLoadingRecurringFees(true);
+        const fees = await getAllRecurringFees();
+        if (fees) setRecurringFees(fees);
+      } catch (error) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+          console.error('Error:', error.message);
+        } else {
+          toast.error('An unexpected error occurred.');
+          console.error('Unknown error:', error);
+        }
+      } finally {
+        setLoadingRecurringFees(false);
+      }
+    };
+    fetch();
+  }, [feeUpdateCount]);
+
   // Handle form submission for creating a recurring fee
   const handleCreateFee = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      setLoading(true);
-      if (!feeForm.title || !feeForm.amount || isNaN(parseFloat(feeForm.amount)) || !feeForm.classId) {
+      setCreatingFee(true);
+      if (
+        !feeForm.title ||
+        !feeForm.amount ||
+        isNaN(parseFloat(feeForm.amount)) ||
+        !feeForm.classId
+      ) {
         toast.error('Please fill all fields with valid data.');
         return;
       }
-      const newFee = await createRecurringFee({
+      await createRecurringFee({
         title: feeForm.title,
         amount: parseFloat(feeForm.amount),
         startMonth: feeForm.startMonth,
@@ -73,8 +127,14 @@ const AdminPaymentDashboard: React.FC = () => {
         className: 'unknown',
         recurring: true,
       });
-      setRecurringFees([...recurringFees, newFee!]);
-      setFeeForm({ title: '', amount: '', startMonth: '', endMonth: '', classId: '' });
+      setFeeUpdateCount((prev) => prev + 1);
+      setFeeForm({
+        title: '',
+        amount: '',
+        startMonth: '',
+        endMonth: '',
+        classId: '',
+      });
       toast.success('Recurring fee created successfully!');
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -85,7 +145,7 @@ const AdminPaymentDashboard: React.FC = () => {
         console.error('Unknown error:', error);
       }
     } finally {
-      setLoading(false);
+      setCreatingFee(false);
     }
   };
 
@@ -97,8 +157,8 @@ const AdminPaymentDashboard: React.FC = () => {
   return (
     <div className="container mx-auto p-6">
       {/* Create Recurring Fee Form */}
-      <div className="card bg-base-100 dark:bg-gray-800 shadow-xl p-6 mb-6">
-        <h2 className="text-lg font-semibold text-base-content dark:text-white mb-4">
+      <div className="card bg-base-100 mb-6 p-6 shadow-xl dark:bg-gray-800">
+        <h2 className="text-base-content mb-4 text-lg font-semibold dark:text-white">
           Create Recurring Fee
         </h2>
         <form onSubmit={handleCreateFee} className="space-y-4">
@@ -108,7 +168,7 @@ const AdminPaymentDashboard: React.FC = () => {
             value={feeForm.title}
             onChange={(e) => setFeeForm({ ...feeForm, title: e.target.value })}
             className="input input-bordered w-full"
-            disabled={loading}
+            disabled={creatingFee}
           />
           <input
             type="number"
@@ -116,137 +176,56 @@ const AdminPaymentDashboard: React.FC = () => {
             value={feeForm.amount}
             onChange={(e) => setFeeForm({ ...feeForm, amount: e.target.value })}
             className="input input-bordered w-full"
-            disabled={loading}
+            disabled={creatingFee}
           />
           <input
             type="month"
             value={feeForm.startMonth}
-            onChange={(e) => setFeeForm({ ...feeForm, startMonth: e.target.value })}
+            onChange={(e) =>
+              setFeeForm({ ...feeForm, startMonth: e.target.value })
+            }
             className="input input-bordered w-full"
-            disabled={loading}
+            disabled={creatingFee}
           />
           <input
             type="month"
             value={feeForm.endMonth}
-            onChange={(e) => setFeeForm({ ...feeForm, endMonth: e.target.value })}
+            onChange={(e) =>
+              setFeeForm({ ...feeForm, endMonth: e.target.value })
+            }
             className="input input-bordered w-full"
-            disabled={loading}
+            disabled={creatingFee}
           />
           <ClassSelector
             classes={classes}
             selectedClassId={feeForm.classId}
             onSelectClass={handleSelectClass}
           />
-          <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-            {loading ? 'Creating...' : 'Create Fee'}
+          <button
+            type="submit"
+            className="btn btn-primary w-full"
+            disabled={creatingFee}
+          >
+            {creatingFee ? 'Creating...' : 'Create Fee'}
           </button>
         </form>
       </div>
 
       {/* List of Recurring Fees */}
-      <div className="card bg-base-100 dark:bg-gray-800 shadow-xl p-6 mb-6">
-        <h2 className="text-lg font-semibold text-base-content dark:text-white mb-4">
-          Recurring Fees
-        </h2>
-        {loading ? (
-          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
-        ) : recurringFees.length === 0 ? (
-          <p className="text-gray-600 dark:text-gray-300">No recurring fees found.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="table w-full">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Amount (₹)</th>
-                  <th>Start Month</th>
-                  <th>End Month</th>
-                  <th>Class Name</th>
-                  <th>Recurring</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recurringFees.map((fee) => (
-                  <tr key={fee.id}>
-                    <td>{fee.title}</td>
-                    <td>{fee.amount}</td>
-                    <td>{fee.startMonth}</td>
-                    <td>{fee.endMonth || 'N/A'}</td>
-                    <td>{fee.className}</td>
-                    <td>{fee.recurring ? 'Yes' : 'No'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Generate Monthly Dues Manually */}
-      {/* <div className="card bg-base-100 dark:bg-gray-800 shadow-xl p-6 mb-6">
-        <h2 className="text-lg font-semibold text-base-content dark:text-white mb-4">
-          Generate Monthly Dues (Manual)
-        </h2>
-        <div className="flex space-x-4 items-center">
-          <input
-            type="month"
-            value={generateMonth}
-            onChange={(e) => setGenerateMonth(e.target.value)}
-            className="input input-bordered w-full max-w-xs"
-            disabled={loading}
-          />
-          <button
-            onClick={handleGenerateDues}
-            className="btn btn-primary"
-            disabled={loading}
-          >
-            {loading ? 'Generating...' : 'Generate Dues'}
-          </button>
-        </div>
-      </div> */}
+      <FeeList recurringFees={recurringFees} loading={loadingRecurringFees} />
 
       {/* Payment Status Overview */}
-      <div className="card bg-base-100 dark:bg-gray-800 shadow-xl p-6">
-        <h2 className="text-lg font-semibold text-base-content dark:text-white mb-4">
-          Payment Status Overview
-        </h2>
-        {loading ? (
-          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
-        ) : paymentStatuses.length === 0 ? (
-          <p className="text-gray-600 dark:text-gray-300">No payment records found.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="table w-full">
-              <thead>
-                <tr>
-                  <th>Student ID</th>
-                  <th>Fee Title</th>
-                  <th>Month</th>
-                  <th>Amount (₹)</th>
-                  <th>Due Date</th>
-                  <th>Status</th>
-                  <th>Payment ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paymentStatuses.map((status) => (
-                  <tr key={status.id}>
-                    <td>{status.studentId}</td>
-                    <td>{status.feeTitle}</td>
-                    <td>{status.month}</td>
-                    <td>{status.amount}</td>
-                    <td>{new Date(status.dueDate).toLocaleDateString()}</td>
-                    <td>{status.isPaid ? 'Paid' : 'Unpaid'}</td>
-                    <td>{status.paymentId || 'N/A'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <PaymentStatus
+        paymentStatuses={paymentStatuses}
+        totalCount={totalCount}
+        limit={limit}
+        loading={loadingPaymentStatus}
+        page={page}
+        setPage={setPage}
+      />
     </div>
   );
 };
 
 export default AdminPaymentDashboard;
+
