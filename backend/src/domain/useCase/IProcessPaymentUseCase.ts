@@ -1,6 +1,3 @@
 export interface IProcessPaymentUseCase {
-  execute(
-    studentId: string,
-    feeDueId: string
-  ): Promise<string>;
+  execute(studentId: string, feeDueId: string): Promise<string>;
 }

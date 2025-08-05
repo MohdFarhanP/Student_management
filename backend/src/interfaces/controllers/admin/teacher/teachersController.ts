@@ -12,7 +12,10 @@ import { TeacherEntity } from '../../../../domain/entities/teacher';
 import { IFetchTeacherClassesUseCase } from '../../../../domain/useCase/IFetchTeacherClassesUseCase';
 import { IFetchTodayScheduleUseCase } from '../../../../domain/useCase/IFetchTodayScheduleUseCase';
 import { IFetchLiveSessionsUseCase } from '../../../../domain/useCase/IFetchLiveSessionsUseCase';
-import { TeacherDTO, TeacherNameDTO } from '../../../../application/dtos/teacherDtos';
+import {
+  TeacherDTO,
+  TeacherNameDTO,
+} from '../../../../application/dtos/teacherDtos';
 import { ISearchTeachersUseCase } from '../../../../domain/useCase/ISearchTeachersUseCase';
 
 export class TeacherController implements ITeacherController {
@@ -25,8 +28,8 @@ export class TeacherController implements ITeacherController {
     private fetchTeacherClassesUseCase: IFetchTeacherClassesUseCase,
     private fetchTodayScheduleUseCase: IFetchTodayScheduleUseCase,
     private fetchLiveSessionsUseCase: IFetchLiveSessionsUseCase,
-    private searchTeachersUseCase: ISearchTeachersUseCase,
-  ) { }
+    private searchTeachersUseCase: ISearchTeachersUseCase
+  ) {}
 
   async getTeachers(req: Request, res: Response): Promise<void> {
     try {
@@ -205,5 +208,5 @@ export class TeacherController implements ITeacherController {
         message,
       } as IApiResponse<never>);
     }
-  }
+  };
 }

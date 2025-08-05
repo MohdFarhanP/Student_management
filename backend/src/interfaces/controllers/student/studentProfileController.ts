@@ -11,6 +11,7 @@ import { IProcessPaymentUseCase } from '../../../domain/useCase/IProcessPaymentU
 import { IGetStudentInfoUseCase } from '../../../domain/useCase/IGetStudentInfoUseCase';
 import { studentInfoDto } from '../../../application/dtos/studentDtos';
 import logger from '../../../logger';
+import { IVerifyPaymentUseCase } from '../../../domain/useCase/IVerifyPaymentUseCase';
 
 export class StudentProfileController implements IStudentProfileController {
   constructor(
@@ -19,7 +20,7 @@ export class StudentProfileController implements IStudentProfileController {
     private studentFeeDueRepository: IStudentFeeDueRepository,
     private processPaymentUseCase: IProcessPaymentUseCase,
     private getStudentInfoUseCase: IGetStudentInfoUseCase,
-    private verifyPaymentUseCase: IVerifyPaymentUseCase,
+    private verifyPaymentUseCase: IVerifyPaymentUseCase
   ) {}
 
   async getProfile(req: Request, res: Response): Promise<void> {
@@ -134,7 +135,7 @@ export class StudentProfileController implements IStudentProfileController {
         message: 'Unpaid dues fetched successfully',
         data: duesDto,
       } as IApiResponse<typeof duesDto>);
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error fetching unpaid dues:', error);
 
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
@@ -167,7 +168,7 @@ export class StudentProfileController implements IStudentProfileController {
         message: 'Payment processed successfully',
         data: orderId,
       } as IApiResponse<string>);
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error processing payment:', error);
 
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
@@ -178,7 +179,12 @@ export class StudentProfileController implements IStudentProfileController {
   }
   async verifyPayment(req: Request, res: Response): Promise<void> {
     try {
-      const {feeDueId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
+      const {
+        feeDueId,
+        razorpayPaymentId,
+        razorpayOrderId,
+        razorpaySignature,
+      } = req.body;
       const studentId = req.user.id;
 
       if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
@@ -208,10 +214,10 @@ export class StudentProfileController implements IStudentProfileController {
           message: 'Payment verification failed',
         } as IApiResponse<never>);
       }
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error verifying payment:', error);
 
-      if(error instanceof ConflictError){
+      if (error instanceof ConflictError) {
         res.status(HttpStatus.CONFLICT).json({
           success: false,
           message: error.message,

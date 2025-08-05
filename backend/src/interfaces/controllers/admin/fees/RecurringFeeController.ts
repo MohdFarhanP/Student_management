@@ -51,7 +51,7 @@ export class RecurringFeeController implements IRecurringFeeController {
         message: 'Successfully sent response',
         data: payload,
       } as IApiResponse<typeof payload>);
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error creating recurring fee:', error);
 
       const message =
@@ -82,7 +82,7 @@ export class RecurringFeeController implements IRecurringFeeController {
         message: 'Successfully sent response',
         data: feesDto,
       } as IApiResponse<IRecurringFeeDto[]>);
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error creating recurring fee:', error);
 
       const message =

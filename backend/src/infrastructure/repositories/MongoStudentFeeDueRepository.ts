@@ -10,7 +10,6 @@ function isValidObjectId(id: any): boolean {
 }
 
 export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
-  
   async createMany(dues: StudentFeeDue[]): Promise<void> {
     const models = dues.map((due) => ({
       studentId: new mongoose.Types.ObjectId(due.getStudentId()),
@@ -46,7 +45,7 @@ export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
     );
   }
   async IsPaid(feeDueId: string): Promise<boolean> {
-    const result = await StudentFeeDueModel.findById({_id:feeDueId}).lean();
+    const result = await StudentFeeDueModel.findById({ _id: feeDueId }).lean();
     return result.isPaid === true;
   }
 
@@ -83,9 +82,15 @@ export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
     }
   }
 
-  async findByLimit(page:number,limit:number): Promise<{studentFeeDue:StudentFeeDue[];totalCount:number}> {
-    const skip = (page-1)* limit;
-    const models = await StudentFeeDueModel.find().skip(skip).limit(limit).lean();
+  async findByLimit(
+    page: number,
+    limit: number
+  ): Promise<{ studentFeeDue: StudentFeeDue[]; totalCount: number }> {
+    const skip = (page - 1) * limit;
+    const models = await StudentFeeDueModel.find()
+      .skip(skip)
+      .limit(limit)
+      .lean();
     const studentFeeDue = models.map(
       (model) =>
         new StudentFeeDue(
@@ -100,7 +105,6 @@ export class MongoStudentFeeDueRepository implements IStudentFeeDueRepository {
         )
     );
     const totalCount = await StudentFeeDueModel.countDocuments();
-    return {studentFeeDue,totalCount}
-
+    return { studentFeeDue, totalCount };
   }
 }

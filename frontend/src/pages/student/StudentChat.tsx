@@ -175,7 +175,6 @@ const StudentChat: React.FC = () => {
                 messages={messages}
                 sendMessage={sendMessage}
                 chatRoomId={classData.chatRoomId}
-                isTeacher={false}
               />
             </Suspense>
           </div>

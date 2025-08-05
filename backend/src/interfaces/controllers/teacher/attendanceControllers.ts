@@ -79,7 +79,7 @@ export class AttendanceController implements IAttendanceController {
   async batchMarkAttendance(req: Request, res: Response): Promise<void> {
     try {
       const { classId } = req.params;
-      const { changes, date, period, day, teacherId } = req.body;
+      const { changes, date, period, day } = req.body;
       const user = req.user as IUser | undefined;
 
       if (!user?.id || !mongoose.Types.ObjectId.isValid(user.id)) {

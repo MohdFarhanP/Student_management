@@ -45,7 +45,7 @@ export class TeacherProfileRepository implements ITeacherProfileRepository {
       throw new Error('Email is required to update profile');
     }
 
-    const updateData: any = { ...profile };
+    const updateData = { ...profile };
 
     if (profile.subject && typeof profile.subject === 'string') {
       const subjectDoc = await SubjectModel.findOne({
@@ -54,7 +54,7 @@ export class TeacherProfileRepository implements ITeacherProfileRepository {
       if (!subjectDoc) {
         throw new Error(`Subject '${profile.subject}' not found`);
       }
-      updateData.subject = subjectDoc._id;
+      updateData.subject = subjectDoc._id as string;
     }
 
     if (profile.assignedClass && typeof profile.assignedClass === 'string') {
@@ -64,7 +64,7 @@ export class TeacherProfileRepository implements ITeacherProfileRepository {
       if (!classDoc) {
         throw new Error(`Class '${profile.assignedClass}' not found`);
       }
-      updateData.assignedClass = classDoc._id;
+      updateData.assignedClass = classDoc._id as string;
     }
 
     const rawTeacher = await TeacherModel.findOneAndUpdate(

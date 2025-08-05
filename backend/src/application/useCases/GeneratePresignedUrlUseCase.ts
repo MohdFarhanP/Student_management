@@ -4,7 +4,9 @@ import { IGeneratePresignedUrlUseCase } from '../../domain/useCase/IGeneratePres
 import { FileEntity } from '../../domain/entities/FileEntity';
 import { BadRequestError } from '../../domain/errors';
 
-export class GeneratePresignedUrlUseCase implements IGeneratePresignedUrlUseCase{
+export class GeneratePresignedUrlUseCase
+  implements IGeneratePresignedUrlUseCase
+{
   constructor(
     private fileValidationService: IFileValidationService,
     private storageService: IStorageService

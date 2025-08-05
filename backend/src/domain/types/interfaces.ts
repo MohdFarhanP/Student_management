@@ -9,8 +9,8 @@ import {
   MediaType,
   LeaveStatus,
 } from './enums';
-import mongoose, { ObjectId, Types } from 'mongoose';
-import { SessionStatus, ParticipantRole } from './enums';
+import mongoose, { ObjectId } from 'mongoose';
+import { SessionStatus } from './enums';
 
 // User entity (for authentication)
 export interface IUser {
@@ -204,12 +204,12 @@ export interface AdminDashboardStats {
 }
 
 export interface StudentFeeDue {
-    id:string,
-    studentId:string,
-    feeTitle:string,
-    month:string,
-    dueDate:string,
-    amount:number,
-    isPaid:boolean,
-    paymentId:string
+  id: string;
+  studentId: string;
+  feeTitle: string;
+  month: string;
+  dueDate: string;
+  amount: number;
+  isPaid: boolean;
+  paymentId: string;
 }

@@ -652,15 +652,13 @@ export class DependencyContainer {
     );
     this.dependencies.set(
       'IPaymentUseCase',
-      new PaymentUseCase(
-        this.dependencies.get('IStudentFeeDueRepository'),
-      )
+      new PaymentUseCase(this.dependencies.get('IStudentFeeDueRepository'))
     );
     this.dependencies.set(
       'IProcessPaymentUseCase',
       new ProcessPaymentUseCase(
         this.dependencies.get('IStudentFeeDueRepository'),
-        this.dependencies.get('IPaymentGateway'),
+        this.dependencies.get('IPaymentGateway')
       )
     );
     this.dependencies.set(
@@ -668,8 +666,7 @@ export class DependencyContainer {
       new VerifyPaymentUseCase(
         this.dependencies.get('IPaymentGateway'),
         this.dependencies.get('IStudentFeeDueRepository'),
-        this.dependencies.get('IPaymentRepository'),
-        
+        this.dependencies.get('IPaymentRepository')
       )
     );
     this.dependencies.set(

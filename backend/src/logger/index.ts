@@ -1,5 +1,5 @@
-import devolopmentLogger from "./devolopmentLogger";
-import productionLogger from "./productionLogger";
+import devolopmentLogger from './devolopmentLogger';
+import productionLogger from './productionLogger';
 let logger = null;
 
 if (process.env.NODE_ENV !== 'production') {

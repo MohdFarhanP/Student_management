@@ -5,18 +5,13 @@ import { ISendMessageUseCase } from '../../domain/useCase/ISendMessageUseCase';
 import { INotificationRepository } from '../../domain/repositories/INotificationRepository';
 import { ISendNotificationUseCase } from '../../domain/useCase/ISendNotificationUseCase';
 import { IClassRepository } from '../../domain/repositories/IClassRepository';
-import { UserInfo } from '../../domain/types/interfaces';
+import { Leave, UserInfo } from '../../domain/types/interfaces';
 import {
   ValidationError,
   UnauthorizedError,
   ForbiddenError,
 } from '../../domain/errors';
-import {
-  Role,
-  RecipientType,
-  SessionStatus,
-  LeaveStatus,
-} from '../../domain/types/enums';
+import { Role, RecipientType, SessionStatus } from '../../domain/types/enums';
 import { IScheduleLiveSessionUseCase } from '../../domain/useCase/IScheduleLiveSessionUseCase';
 import { IJoinLiveSessionUseCase } from '../../domain/useCase/IJoinLiveSessionUseCase';
 import { ILiveSessionRepository } from '../../domain/repositories/ILiveSessionRepository';
@@ -116,7 +111,6 @@ export class SocketServer implements ISocketServer {
     });
 
     this.io.on('connection', (socket: Socket) => {
-
       socket.on('joinRoom', async (chatRoomId: string, callback) => {
         if (!chatRoomId) {
           socket.emit(
@@ -340,7 +334,7 @@ export class SocketServer implements ISocketServer {
           dto: ViewLeaveHistoryDTO,
           callback: (response: {
             success: boolean;
-            leaves?: any[];
+            leaves?: Leave[];
             error?: string;
           }) => void
         ) => {
@@ -403,7 +397,6 @@ export class SocketServer implements ISocketServer {
                 'Only teachers can approve or reject leaves'
               );
             }
-
 
             const leave = await this.approveRejectLeaveUseCase.execute(dto);
             socket.emit('leave-updated', { leave }); // Emit leave object in a payload
@@ -531,7 +524,7 @@ export class SocketServer implements ISocketServer {
             dto.sessionId
           );
           const participants: UserInfo[] =
-            updatedSession?.participants?.map((participant: any) => ({
+            updatedSession?.participants?.map((participant) => ({
               id: participant.id,
               name: participant.name,
               email: participant.email || `user-${participant.id}@example.com`,
@@ -618,9 +611,7 @@ export class SocketServer implements ISocketServer {
               joinTime: new Date(data.joinTime),
               leaveTime: new Date(data.leaveTime),
             });
-
           } catch (error) {
-
             socket.emit('error', {
               message: `Failed to track session duration: ${(error as Error).message}`,
             });
@@ -713,9 +704,7 @@ export class SocketServer implements ISocketServer {
         }
       });
 
-      socket.on('disconnect', () => {
-
-      });
+      socket.on('disconnect', () => {});
     });
   }
 }

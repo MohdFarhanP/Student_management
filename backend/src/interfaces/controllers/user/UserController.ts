@@ -119,8 +119,6 @@ export class UserController implements IUserController {
       } as IApiResponse<IUser>);
     } catch (error: unknown) {
       logger.error('Update Password Error:', error);
-      const message =
-        error instanceof Error ? error.message : 'Internal server error';
     }
   }
 

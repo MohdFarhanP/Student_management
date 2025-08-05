@@ -22,8 +22,8 @@ export class StudentController implements IStudentController {
     private deleteStudentUseCase: IDeleteStudentUseCase,
     private getStudentProfileUseCase: IGetStudentProfileUseCase,
     private getStdSessionsUsecase: IGetStdSessionsUsecase,
-    private searchStudentsUseCase: ISearchStudentsUseCase,
-  ) { }
+    private searchStudentsUseCase: ISearchStudentsUseCase
+  ) {}
 
   async getStudents(req: Request, res: Response): Promise<void> {
     try {
@@ -127,7 +127,7 @@ export class StudentController implements IStudentController {
       const { studentId } = req.params;
       const studentData: Partial<IStudent> = req.body;
       const updatedStudent = await this.editStudentUseCase.execute(
-        studentData.id,
+        studentId,
         studentData
       );
       res.status(HttpStatus.OK).json({
@@ -161,7 +161,7 @@ export class StudentController implements IStudentController {
     }
   }
 
-  searchStudents = async (req: Request, res: Response):Promise<void> => {
+  searchStudents = async (req: Request, res: Response): Promise<void> => {
     try {
       const query = req.query.q as string;
       const students = await this.searchStudentsUseCase.execute(query);
@@ -177,5 +177,5 @@ export class StudentController implements IStudentController {
         message,
       } as IApiResponse<never>);
     }
-  }
+  };
 }

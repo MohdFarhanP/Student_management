@@ -8,31 +8,31 @@ import { SubjectModel } from '../models/subjectModel';
 
 export function mapTeacherDocToEntity(doc: ITeacherModel): ITeacher {
   try {
-  return {
-    id: doc._id.toString(),
-    name: doc.name,
-    email: doc.email,
-    gender: doc.gender as Gender,
-    phoneNo: doc.phoneNo,
-    empId: doc.empId,
-    assignedClass:
-      typeof doc.assignedClass === 'object' && doc.assignedClass !== null
-        ? (doc.assignedClass as any).name
-        : doc.assignedClass?.toString(),
-    subject:
-      typeof doc.subject === 'object' && doc.subject !== null
-        ? (doc.subject as any).subjectName
-        : doc.subject?.toString(),
-    dateOfBirth: doc.dateOfBirth,
-    profileImage: doc.profileImage || undefined,
-    specialization: doc.specialization || undefined,
-    experienceYears: doc.experienceYears || undefined,
-    qualification: doc.qualification || undefined,
-    availability: doc.availability,
-    isInitialLogin: doc.isInitialLogin,
-    isDeleted: doc.isDeleted,
-    refreshToken: doc.refreshToken,
-  };
+    return {
+      id: doc._id.toString(),
+      name: doc.name,
+      email: doc.email,
+      gender: doc.gender as Gender,
+      phoneNo: doc.phoneNo,
+      empId: doc.empId,
+      assignedClass:
+        typeof doc.assignedClass === 'object' && doc.assignedClass !== null
+          ? (doc.assignedClass as any).name
+          : doc.assignedClass?.toString(),
+      subject:
+        typeof doc.subject === 'object' && doc.subject !== null
+          ? (doc.subject as any).subjectName
+          : doc.subject?.toString(),
+      dateOfBirth: doc.dateOfBirth,
+      profileImage: doc.profileImage || undefined,
+      specialization: doc.specialization || undefined,
+      experienceYears: doc.experienceYears || undefined,
+      qualification: doc.qualification || undefined,
+      availability: doc.availability,
+      isInitialLogin: doc.isInitialLogin,
+      isDeleted: doc.isDeleted,
+      refreshToken: doc.refreshToken,
+    };
   } catch (error) {
     logger.error('Error mapping teacher doc to entity:', error);
     throw new Error('Failed to map teacher document to entity');

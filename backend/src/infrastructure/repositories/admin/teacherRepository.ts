@@ -91,18 +91,19 @@ export class TeacherRepository implements ITeacherRepository {
     try {
       const doc = await mapTeacherEntityToDoc(data as TeacherEntity);
 
-    const updatedTeacher = await TeacherModel.findByIdAndUpdate(
-      id,
-      { $set: doc },
-      { new: true, runValidators: true }
-    )
-      .populate('assignedClass', 'name')
-      .populate('subject', 'subjectName')
-      .lean();
+      const updatedTeacher = await TeacherModel.findByIdAndUpdate(
+        id,
+        { $set: doc },
+        { new: true, runValidators: true }
+      )
+        .populate('assignedClass', 'name')
+        .populate('subject', 'subjectName')
+        .lean();
 
-    if (!updatedTeacher) throw new Error('Teacher not found or update failed');
-    return mapTeacherDocToEntity(updatedTeacher);
-  } catch (error) {
+      if (!updatedTeacher)
+        throw new Error('Teacher not found or update failed');
+      return mapTeacherDocToEntity(updatedTeacher);
+    } catch (error) {
       logger.error('Error updating teacher:', error);
       throw new Error('Failed to update teacher');
     }
@@ -249,9 +250,10 @@ export class TeacherRepository implements ITeacherRepository {
     return sessionDtos;
   }
   async search(quary: string): Promise<TeacherEntity[] | null> {
-    const rawTeachersData = await TeacherModel
-      .find({ name: { $regex: quary, $options: 'i' }, isDeleted: false })
-      .lean();
+    const rawTeachersData = await TeacherModel.find({
+      name: { $regex: quary, $options: 'i' },
+      isDeleted: false,
+    }).lean();
     if (!rawTeachersData) return null;
     const teachers = rawTeachersData.map(
       (s) => new TeacherEntity(mapTeacherDocToEntity(s))

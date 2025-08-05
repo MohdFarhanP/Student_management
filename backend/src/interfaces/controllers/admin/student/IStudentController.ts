@@ -7,5 +7,5 @@ export interface IStudentController {
   editStudent(req: Request, res: Response): Promise<void>;
   deleteStudent(req: Request, res: Response): Promise<void>;
   getSessions(req: Request, res: Response): Promise<void>;
-  searchStudents(req: Request, res: Response):Promise<void>;
+  searchStudents(req: Request, res: Response): Promise<void>;
 }

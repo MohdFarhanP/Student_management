@@ -260,7 +260,7 @@ export class StudentRepository implements IStudentRepository {
     );
   }
 
-async search(quary: string): Promise<StudentEntity[] | null> {
+  async search(quary: string): Promise<StudentEntity[] | null> {
     const rawStudentsData = await studentModel
       .find({ name: { $regex: quary, $options: 'i' }, isDeleted: false })
       .lean();

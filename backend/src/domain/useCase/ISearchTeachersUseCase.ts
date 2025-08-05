@@ -1,5 +1,5 @@
-import { TeacherDTO } from "../../application/dtos/teacherDtos";
+import { TeacherDTO } from '../../application/dtos/teacherDtos';
 
 export interface ISearchTeachersUseCase {
-    execute(query: string): Promise<TeacherDTO[]>;
+  execute(query: string): Promise<TeacherDTO[]>;
 }

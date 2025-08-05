@@ -4,7 +4,6 @@ import { PaymentModel } from '../database/mongoos/models/PaymentModel';
 import logger from '../../logger';
 
 export class MongoPaymentRepository implements IPaymentRepository {
-
   async create(payment: Payment): Promise<Payment> {
     logger.debug(`studentId:, ${payment.getStudentId()}`);
     logger.debug(`feeDueId:, ${payment.getFeeDueId()}`);
@@ -33,9 +32,9 @@ export class MongoPaymentRepository implements IPaymentRepository {
       throw new Error(error);
     }
   }
-  async isPaidDue(feeDueId:string): Promise<Payment> {
+  async isPaidDue(feeDueId: string): Promise<Payment> {
     try {
-      const  result = await PaymentModel.findOne({feeDueId}).lean();
+      const result = await PaymentModel.findOne({ feeDueId }).lean();
       return new Payment(
         result._id.toString(),
         result.studentId.toString(),

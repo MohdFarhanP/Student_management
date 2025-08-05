@@ -1,5 +1,5 @@
-import { StudentEntity } from "../../domain/entities/student";
-import { Gender } from "../../domain/types/enums";
+import { StudentEntity } from '../../domain/entities/student';
+import { Gender } from '../../domain/types/enums';
 
 export interface StudentIdsDTO {
   studentIds: string[];
@@ -41,7 +41,7 @@ export class StudentDTO {
 
   public static fromEntity(entity: StudentEntity): StudentDTO {
     return new StudentDTO(
-      entity.id ?? '',               
+      entity.id ?? '',
       entity.name,
       entity.email,
       entity.roleNumber,

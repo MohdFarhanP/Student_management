@@ -79,7 +79,7 @@ router.get('/sessions', authenticateUser, (req, res, next) => {
   }
   teacherController.getLiveSessions.bind(teacherController)(req, res, next);
 });
-router.get('/search', authenticateUser,(req, res, next) => {
+router.get('/search', authenticateUser, (req, res) => {
   if (!teacherController) {
     throw new Error(
       'TeacherController not initialized. Dependency injection failed.'

@@ -8,16 +8,12 @@ export class ProcessPaymentUseCase implements IProcessPaymentUseCase {
     private paymentGateway: IPaymentGateway
   ) {}
 
-  async execute(
-    studentId: string,
-    feeDueId: string
-  ): Promise<string> {
-
+  async execute(studentId: string, feeDueId: string): Promise<string> {
     const isPaid = await this.studentFeeDueRepository.IsPaid(feeDueId);
     if (isPaid) {
       throw new Error('Fee due is already paid');
     }
-    
+
     const feeDues =
       await this.studentFeeDueRepository.findUnpaidByStudentId(studentId);
     const feeDue = feeDues.find((due) => due.getId() === feeDueId);
@@ -27,6 +23,6 @@ export class ProcessPaymentUseCase implements IProcessPaymentUseCase {
       feeDue.getAmount() * 100,
       `receipt_${feeDueId}`
     );
-    return order.id ;
+    return order.id;
   }
 }

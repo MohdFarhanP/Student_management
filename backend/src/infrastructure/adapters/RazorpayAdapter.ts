@@ -24,13 +24,18 @@ export class RazorpayAdapter implements IPaymentGateway {
       throw new Error(`Failed to create Razorpay order: ${error.message}`);
     }
   }
-  async verifyPayment(orderId: string, paymentId: string, signature: string): Promise<boolean> {
-    try{
-      const generated_signature = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-        .update(orderId + "|" + paymentId)
-        .digest("hex");
-        return generated_signature === signature;
-    }catch (error: any) {
+  async verifyPayment(
+    orderId: string,
+    paymentId: string,
+    signature: string
+  ): Promise<boolean> {
+    try {
+      const generated_signature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+        .update(orderId + '|' + paymentId)
+        .digest('hex');
+      return generated_signature === signature;
+    } catch (error: any) {
       throw new Error(`Failed to verify Razorpay payment: ${error.message}`);
     }
   }

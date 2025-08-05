@@ -44,7 +44,7 @@ export class PresignedUrlController implements IPresignedUrlController {
         success: false,
         message,
         data,
-      } as IApiResponse<any>);
+      } as IApiResponse<never>);
     }
   }
 }
